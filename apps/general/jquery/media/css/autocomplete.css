@@ -1,0 +1,18 @@
+div.autocomplete ul.ul_james {
+	margin: 0;
+	padding: 0;
+    list-style-position: outside;
+    list-style: none;
+    border: 1px solid #000;
+}
+
+div.autocomplete li.li_james {
+	cursor: pointer;
+    background-color: #fff;
+    list-style: none;
+}
+
+div.autocomplete li.li_james_hovered {
+    background-color: #aaa;
+    list-style: none;
+}

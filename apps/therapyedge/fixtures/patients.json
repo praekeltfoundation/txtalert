@@ -1,0 +1,57 @@
+[
+
+    {
+        "pk":"1",
+        "model":"therapyedge.msisdn",
+        "fields":{
+            "msisdn":"27821111111"
+        }
+    },
+    {
+        "pk":"1",
+        "model":"therapyedge.contact",
+        "fields":{
+            "msisdns":["1"]
+        }
+    },
+    {
+        "pk":"1",
+        "model":"therapyedge.patient",
+        "fields":{
+            "te_id":"01-12345",
+            "age":"33",
+            "sex":"m",
+            "opted_in":true,
+            "disclosed":true,
+            "deceased":false
+        }
+    },
+
+    {
+        "pk":"2",
+        "model":"therapyedge.msisdn",
+        "fields":{
+            "msisdn":"27822222222"
+        }
+    },
+    {
+        "pk":"2",
+        "model":"therapyedge.contact",
+        "fields":{
+            "msisdns":["2"]
+        }
+    },
+    {
+        "pk":"2",
+        "model":"therapyedge.patient",
+        "fields":{
+            "te_id":"02-12345",
+            "age":"23",
+            "sex":"f",
+            "opted_in":true,
+            "disclosed":true,
+            "deceased":false
+        }
+    }
+
+]

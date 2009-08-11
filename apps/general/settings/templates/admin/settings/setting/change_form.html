@@ -1,0 +1,36 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_modify adminmedia %}
+
+{% block after_field_sets %}
+    <script type="text/javascript">
+
+        fields = [ 
+            '.form-row.text_value',
+            '.form-row.int_value',
+            '.form-row.object_type',
+            '.form-row.object_id'
+        ]
+
+        function showValue(select) {
+            value = select.value;
+            if (value == 't') {
+                $$(fields).each(function(e) {e.hide()});
+                $$('.form-row.text_value')[0].show();
+            } else if (value == 'n') {
+                $$(fields).each(function(e) {e.hide()});
+                $$('.form-row.int_value')[0].show();
+            } else if (value == 'o') {
+                $$(fields).each(function(e) {e.hide()});
+                $$('.form-row.object_type')[0].show();
+                $$('.form-row.object_id')[0].show();
+            }
+        }
+
+        showValue($('id_type'));
+
+        $('id_type').observe('change', function(event) {
+            showValue(event.element());
+        });
+
+    </script>
+{% endblock %}

@@ -1,0 +1,10 @@
+[
+    {
+        "pk":"1",
+        "model":"therapyedge.clinic",
+        "fields":{
+            "te_id":"01",
+            "name":"Test Clinic"
+        }
+    }
+]

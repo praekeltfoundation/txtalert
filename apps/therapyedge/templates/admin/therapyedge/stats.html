@@ -1,0 +1,71 @@
+{% extends "admin/therapyedge/fake_base.html" %}
+{% load i18n %}
+
+{% block content %}
+    <div id="content-main">
+
+        <div class="module" style="width:500px;float:left;">
+            <table>
+                <caption>Last 30 days</caption>
+                <thead>
+                    <tr>
+                        <th style="width:100%;">Date</th><th>Messages</th><th>Attended</th><th>Missed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in month %}
+                        <tr>
+                            <td>{{ day.date }}</td>
+                            <td>{{ day.messages }}</td>
+                            <td>{{ day.attended }}</td>
+                            <td>{{ day.missed }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="float:left;">
+            <div class="module" style="width:500px;margin-left:30px;">
+                <table>
+                    <caption>Last 12 months</caption>
+                    <thead>
+                        <tr>
+                            <th style="width:100%;">Date</th><th>Messages</th><th>Attended</th><th>Missed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for month in year %}
+                            <tr>
+                                <td>{{ month.date }}</td>
+                                <td>{{ month.messages }}</td>
+                                <td>{{ month.attended }}</td>
+                                <td>{{ month.missed }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="module" style="width:500px;margin-left:30px;">
+                <table>
+                    <caption>Risk Profiles</caption>
+                    <thead>
+                        <tr>
+                            <th style="width:100%;">Profile</th><th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for profile in risk_profiles %}
+                            <tr>
+                                <td><a href="{{ profile.link }}">{{ profile.name }}</a></td>
+                                <td>{{ profile.count }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "admin/therapyedge/fake_base.html" %}
+
+{% block content %}
+    <div id="content-main">
+        {% if action %}
+            <h2>Completed action '{{ action }}'.</h2>
+        {% endif %}
+        <div class="module" style="width:300px">
+            <table width="100%">
+                <tbody>
+                    <tr><th>
+                        <a href="/therapyedge/action/import/">Import Data</a>
+                    </th></tr>
+                    <tr><th>
+                        <a href="/therapyedge/action/send-stats/">Send Reminders Stats</a>
+                    </th></tr>
+                    <tr><th>
+                        <a href="/therapyedge/action/send-all/">Send All Reminders</a>
+                    </th></tr>
+                    <tr><th>
+                        <a href="/therapyedge/action/send-missed/">Send Missed Reminders</a>
+                    </th></tr>
+                    <tr><th>
+                        <a href="/therapyedge/action/send-attended/">Send Attended Reminders</a>
+                    </th></tr>
+                    <tr><th>
+                        <a href="/therapyedge/action/send-tomorrow/">Send Tomorrow Reminders</a>
+                    </th></tr>
+                    <tr><th>
+                        <a href="/therapyedge/action/send-twoweeks/">Send Two Weeks Reminders</a>
+                    </th></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
