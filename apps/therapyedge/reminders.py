@@ -47,11 +47,14 @@ def send_stats(gateway, today):
     yesterday = today - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
     twoweeks = today + timedelta(weeks=2)
+
+    visits = Visit.objects.filter(patient__opted_in=True)
+    visitevents = VisitEvent.objects.filter(visit__patient__opted_in=True)
     
-    tomorrow_count = Visit.objects.filter(date__exact=tomorrow).count()
-    twoweeks_count = Visit.objects.filter(date__exact=twoweeks).count()
-    attended_count = VisitEvent.objects.filter(status__exact='a', date__exact=yesterday).count()
-    missed_count = VisitEvent.objects.filter(status__exact='m', date__exact=yesterday).count()
+    tomorrow_count = visits.filter(date__exact=tomorrow).count()
+    twoweeks_count = visits.filter(date__exact=twoweeks).count()
+    attended_count = visitevents.filter(status__exact='a', date__exact=yesterday).count()
+    missed_count = visitevents.filter(status__exact='m', date__exact=yesterday).count()
     yesterday_count = missed_count + attended_count
     if yesterday_count == 0: missed_percentage = 0
     else: missed_percentage = missed_count * (100.0 / yesterday_count)
@@ -90,53 +93,55 @@ def send(gateway, message, *args, **kwargs):
         return 0
 
 
-def tomorrow(gateway, today):
+def tomorrow(gateway, visits, today):
     # send reminders for patients due tomorrow
     tomorrow = today + timedelta(days=1)
     count = send(
         gateway,
         Setting.objects.get(name='Tomorrow Visit Reminder').value,
-        visits=Visit.objects.filter(date__exact=tomorrow).select_related(),
+        visits=visits.filter(date__exact=tomorrow).select_related(),
     )
     return count
 
 
-def two_weeks(gateway, today):
+def two_weeks(gateway, visits, today):
     # send reminders for patients due in two weeks
     twoweeks = today + timedelta(weeks=2)
     count = send(
         gateway,
         (Setting.objects.get(name='Two Weeks Visit Reminder').value % {'date':twoweeks.strftime('%A %d %b')}),
-        visits=Visit.objects.filter(date__exact=twoweeks).select_related(),
+        visits=visits.filter(date__exact=twoweeks).select_related(),
     )
     return count
 
 
-def attended(gateway, today):
+def attended(gateway, visitevents, today):
     # send reminders to patients who attended their visits
     yesterday = today - timedelta(days=1)
     count = send(
         gateway,
         Setting.objects.get(name='Attended Visit Message').value,
-        events=VisitEvent.objects.filter(status__exact='a', date__exact=yesterday),
+        events=visitevents.filter(status__exact='a', date__exact=yesterday),
     )
     return count
     
 
-def missed(gateway, today):
+def missed(gateway, visitevents, today):
     # send reminders to patients who missed their visits
     yesterday = today - timedelta(days=1)
     count = send(
         gateway,
         Setting.objects.get(name='Missed Visit Message').value,
-        events=VisitEvent.objects.filter(status__exact='m', date__exact=yesterday),
+        events=visitevents.filter(status__exact='m', date__exact=yesterday),
     )
     return count
 
 
 def all(gateway):
+    visits = Visit.objects.filter(patient__opted_in=True)
+    visitevents = VisitEvent.objects.filter(visit__patient__opted_in=True)
     today = datetime.now().date()
-    tomorrow(gateway, today)
-    two_weeks(gateway, today)
-    attended(gateway, today)
-    missed(gateway, today)
+    tomorrow(gateway, visits, today)
+    two_weeks(gateway, visits, today)
+    attended(gateway, visitevents, today)
+    missed(gateway, visitevents, today)

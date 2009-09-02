@@ -31,8 +31,8 @@ class MSISDN(models.Model):
     msisdn = models.CharField('MSISDN', max_length=32, unique=True)
 
     class Meta:
-        verbose_name = 'MSISDN'
-        verbose_name_plural = 'MSISDNs'
+        verbose_name = 'Mobile Number'
+        verbose_name_plural = 'Mobile Numbers'
 
     def __unicode__(self):
         return self.msisdn
