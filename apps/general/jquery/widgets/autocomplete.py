@@ -21,6 +21,7 @@ from django import forms
 from django.forms.util import flatatt
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_unicode
+from django.core.urlresolvers import reverse
 from . import plist_from_dict
 
 

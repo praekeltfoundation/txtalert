@@ -17,15 +17,29 @@
 from os.path import join
 import os
 import sys
+import logging
 
 APP_ROOT = os.path.abspath(os.path.dirname(__file__))
+PROJECT_NAME = os.path.basename(APP_ROOT)
 
-# Add APP_ROOT/apps to the load path
-sys.path.insert(0, join(APP_ROOT, 'apps'))
+LOGGING_CONFIG = {
+    "level": logging.DEBUG,
+    "format": '%(asctime)s %(levelname)s %(message)s',
+    "filename": join(APP_ROOT, 'log/%s.log' % PROJECT_NAME),
+    "filemode": 'a'
+}
 
+# give local settings the opportunity to update the LOGGING_CONFIG before 
+# initializing the logging
 from local_settings import *
 
-PROJECT_NAME = 'txtalert'
+logging.basicConfig(**LOGGING_CONFIG)
+logging.info("Setting APP_ROOT to '%s'" % APP_ROOT)
+
+# Add APP_ROOT/apps to the load path
+APP_PATH = join(APP_ROOT, 'apps')
+sys.path.insert(0, APP_PATH)
+logging.info("Adding '%s' to sys.path" % APP_PATH)
 
 SECRET_KEY = ''
 
@@ -54,6 +68,7 @@ SITE_ID = 1
 USE_I18N = True
 
 MEDIA_ROOT = join(APP_ROOT, 'webroot', 'media')
+MEDIA_URL = '/static/'
 
 ADMIN_MEDIA_PREFIX = '/media/'
 
@@ -86,3 +101,4 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
 )
+

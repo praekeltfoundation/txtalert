@@ -21,5 +21,3 @@ DATABASE_NAME = 'txtalert_dev'
 DATABASE_USER = ''
 DATABASE_PASSWORD = ''
 DATABASE_PORT = ''
-
-MEDIA_URL = '/static/'

@@ -15,8 +15,9 @@
 
 
 import re, errno, socket, time
-from xmlrpclib import ServerProxy, Error
+from xmlrpclib import ServerProxy, Error, ProtocolError
 from datetime import datetime, timedelta
+import logging
 
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
@@ -87,20 +88,32 @@ def validateField(event, record, regex, key, name):
 
 def importRecords(server, events, clinic, ranges, request, action):
     for range in ranges:
-        print range
+        logging.debug("Getting range '%s' for clinic '%s' with action '%s'" % (range, clinic, action))
+        
+        # FIXME: very fragile
         # loop the server communication to avoid being held up by errors
         while True:
             try:
                 records = server.patients_data(request, 0, range['start'], range['end'], 3, clinic.te_id)
                 break
-            except socket.error, e:
-                if not (e[0] in (errno.ETIMEDOUT, errno.ECONNRESET, 8)): raise e
-            
+            except socket.error, err:
+                logging.error(err)
+                if not (err[0] in (errno.ETIMEDOUT, errno.ECONNRESET, 8)): 
+                    raise err
+            except ProtocolError, err:
+                logging.error("A protocol error occurred")
+                logging.error("URL: %s" % err.url)
+                logging.error("HTTP/HTTPS headers: %s" % err.headers)
+                logging.error("Error code: %d" % err.errcode)
+                logging.error("Error message: %s" % err.errmsg)
+        
         for record in records:
             event = ImportEvent()
             try:
+                logging.debug("Calling '%s' with args '%s'" % (action, (event, clinic, record)))
                 event = action(event, clinic, record)
             except ImportError, e:
+                logging.error(e)
                 event.append(str(e), 'error')
             events.append(event)
     return events
@@ -111,8 +124,10 @@ def importPatient(event, clinic, record):
     age = validateField(event, record, PATIENT_AGE_RE, 'age', 'Age')
     sex = validateField(event, record, PATIENT_SEX_RE, 'sex', 'Sex')
     msisdns = validateField(event, record, MSISDNS_RE, 'celphone', 'Mobile Number')
-
-    if not event.isError():
+    
+    if event.isError():
+        logging.error("Event Error: %s" % event.messages)
+    else:
         try:
             patient = models.Patient.objects.get(te_id=te_id)
             event.append("Updated patient record for id '%s'." % (te_id), 'update')
@@ -289,10 +304,15 @@ def importVisits():
 
 
 def importAll():
+    import logging
+    logging.debug("importing patients")
     events = importPatients()
     message = "New: %s\nUpdated: %s\nErrors: %s\n\n%s" % (events.new, events.updated, events.errors, '\n'.join(events.error_messages)) 
+    logging.debug("mailing admins: %s" % message)
     mail.mail_admins('Patient Import Report', message, fail_silently=True)
 
+    logging.debug("importing visits")
     events = importVisits()
     message = "New: %s\nUpdated: %s\nErrors: %s\n\n%s" % (events.new, events.updated, events.errors, '\n'.join(events.error_messages)) 
+    logging.debug("mailing admings: %s" % message)
     mail.mail_admins('Visit Import Report', message, fail_silently=True)
