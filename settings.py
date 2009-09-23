@@ -14,8 +14,16 @@
 #  along with TxtAlert.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from config import *
+from os.path import join
+import os
+import sys
 
+APP_ROOT = os.path.abspath(os.path.dirname(__file__))
+
+# Add APP_ROOT/apps to the load path
+sys.path.insert(0, join(APP_ROOT, 'apps'))
+
+from local_settings import *
 
 PROJECT_NAME = 'txtalert'
 
@@ -45,9 +53,9 @@ LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
 USE_I18N = True
 
-MEDIA_ROOT = '/home/django/' + ENVIRONMENT + '/projects/' + PROJECT_NAME + '/webroot/media/'
+MEDIA_ROOT = join(APP_ROOT, 'webroot', 'media')
 
-ADMIN_MEDIA_PREFIX = '/media/admin/'
+ADMIN_MEDIA_PREFIX = '/media/'
 
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
@@ -61,7 +69,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 TEMPLATE_DIRS = (
-    '/home/django/' + ENVIRONMENT + '/projects/' + PROJECT_NAME + '/templates',
+    join(APP_ROOT, 'templates')
 )
 
 ROOT_URLCONF = 'urls'

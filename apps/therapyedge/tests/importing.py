@@ -16,9 +16,10 @@
 
 import datetime
 from django.test import TestCase
-from therapyedge.providers.te import *
+# from therapyedge.providers.te import *
 from therapyedge import models
-
+from therapyedge.importing import *
+from therapyedge.events import *
 
 class PatientImportTestCase(TestCase):
     fixtures = ['clinics.json', 'patients.json',]

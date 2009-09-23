@@ -14,14 +14,12 @@
 #  along with TxtAlert.  If not, see <http://www.gnu.org/licenses/>.
 
 
-ENVIRONMENT = 'dev'
-
 DEBUG = True
 
-DATABASE_ENGINE = 'mysql'
+DATABASE_ENGINE = 'postgresql_psycopg2'
 DATABASE_NAME = 'txtalert_dev'
-DATABASE_USER = 'database_user'
-DATABASE_PASSWORD = 'database_user_password'
+DATABASE_USER = ''
+DATABASE_PASSWORD = ''
 DATABASE_PORT = ''
 
-MEDIA_URL = 'http://txtalert:8000/media/'
+MEDIA_URL = '/static/'
