@@ -29,10 +29,6 @@ LOGGING_CONFIG = {
     "filemode": 'a'
 }
 
-# give local settings the opportunity to update the LOGGING_CONFIG before 
-# initializing the logging
-from local_settings import *
-
 logging.basicConfig(**LOGGING_CONFIG)
 logging.info("Setting APP_ROOT to '%s'" % APP_ROOT)
 
@@ -102,3 +98,4 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 )
 
+from local_settings import *

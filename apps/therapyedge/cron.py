@@ -17,7 +17,7 @@
 from datetime import datetime
 from general.cron import Job
 from general.settings.models import Setting
-import reminders, importing
+from therapyedge import reminders, importing
 
 
 class SendReminders(Job):
@@ -34,4 +34,4 @@ class ImportJob(Job):
     hour, minute = '08', '00'
 
     def job(self):
-        importing.import_all();
+        importing.importAll();

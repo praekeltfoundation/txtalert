@@ -68,6 +68,8 @@ class Job(threading.Thread):
         try:
             self.job()
         except:
+            import logging
+            logging.error("Cron Job Error: %s" % traceback.format_exc())
             mail.mail_admins('Cron Job Error', traceback.format_exc())
     
     def job(self):
