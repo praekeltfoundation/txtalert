@@ -39,6 +39,7 @@ logging.info("Adding '%s' to sys.path" % APP_PATH)
 
 SECRET_KEY = ''
 
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 TEST_DATABASE_CHARSET = 'utf8'

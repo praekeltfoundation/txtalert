@@ -17,7 +17,7 @@
 # <http://www.gnu.org/licenses/>.
 
 
-import simplejson as json
+from django.utils import simplejson as json
 from django.http import HttpResponse
 from django.db.models import get_model, Q
 

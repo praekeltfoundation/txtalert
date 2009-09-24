@@ -158,7 +158,7 @@ class SMSSendAction(models.Model):
         verbose_name_plural = 'SMS Send Actions'
 
     def __unicode__(self):
-        return "%s (%s)" % (self.gateway, self.contacts.count())
+        return "%s" % (self.gateway,)
 
 
 class SMSLog(models.Model):
