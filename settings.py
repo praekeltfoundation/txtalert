@@ -18,24 +18,31 @@ from os.path import join
 import os
 import sys
 import logging
+from logging.handlers import TimedRotatingFileHandler
 
 APP_ROOT = os.path.abspath(os.path.dirname(__file__))
 PROJECT_NAME = os.path.basename(APP_ROOT)
 
-LOGGING_CONFIG = {
-    "level": logging.DEBUG,
-    "format": '%(asctime)s %(levelname)s %(message)s',
-    "filename": join(APP_ROOT, 'log/%s.log' % PROJECT_NAME),
-    "filemode": 'a'
-}
+# Initialize logger that's rotated daily
+LOG_FORMAT = '[%(name)s] %(asctime)s %(levelname)s %(message)s'
+LOG_FILE = join(APP_ROOT, 'log/%s.log' % PROJECT_NAME)
 
-logging.basicConfig(**LOGGING_CONFIG)
-logging.info("Setting APP_ROOT to '%s'" % APP_ROOT)
+LOGGER = logging.getLogger()
+LOGGER.name = PROJECT_NAME
+LOGGER.level = logging.DEBUG
+
+# Due to a stupid bug in Django it'll load the settings file twice unless 
+# ./manage.py is called with the --settings option set. This potentially
+# creates two different loggers doing exactly the same thing. So we check if 
+# the current list of handlers already contains an instance of TimedRotatingFileHandler
+if not any(isinstance(h, TimedRotatingFileHandler) for h in LOGGER.handlers):
+    handler = TimedRotatingFileHandler(LOG_FILE, when='midnight', backupCount=14)
+    handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    LOGGER.addHandler(handler)
 
 # Add APP_ROOT/apps to the load path
 APP_PATH = join(APP_ROOT, 'apps')
 sys.path.insert(0, APP_PATH)
-logging.info("Adding '%s' to sys.path" % APP_PATH)
 
 SECRET_KEY = ''
 
