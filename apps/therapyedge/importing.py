@@ -21,6 +21,7 @@ import logging
 
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
 
 from events import ImportEvent, ImportEvents
 
@@ -163,7 +164,7 @@ def importPatient(event, clinic, record):
 
 def importPatients():
     ct = models.ContentType.objects.get(model='patient')
-    server = ServerProxy(SERVICE_URL)
+    server = ServerProxy(SERVICE_URL, verbose=settings.DEBUG)
     all_events = ImportEvents()
 
     if models.Patient.objects.count() == 0:
