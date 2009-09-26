@@ -19,9 +19,7 @@ from django.conf.urls.defaults import *
 from django.contrib import admin
 from django.conf import settings
 from django.conf import settings
-from general import cron
 
-cron.autodiscover()
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -30,7 +28,6 @@ urlpatterns = patterns('',
 
     (r'', include('general.jquery.urls')),
     (r'^therapyedge/', include('therapyedge.urls')),
-    (r'^cron/', include('general.cron.urls')),
     (r'^admin/(.*)', admin.site.root),
     (r'^static/(?P<path>.*)$', 'django.views.static.serve', \
                             {'document_root': settings.MEDIA_ROOT}, "static"),
