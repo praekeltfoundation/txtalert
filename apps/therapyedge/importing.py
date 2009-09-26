@@ -21,11 +21,15 @@ import logging
 
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
 
 from events import ImportEvent, ImportEvents
 
 import models
 
+
+import logging
+logger = logging.getLogger("importing")
 
 SERVICE_URL = 'https://196.36.218.99/tools/ws/sms/patients/server.php'
 
@@ -88,7 +92,7 @@ def validateField(event, record, regex, key, name):
 
 def importRecords(server, events, clinic, ranges, request, action):
     for range in ranges:
-        logging.debug("Getting range '%s' for clinic '%s' with action '%s'" % (range, clinic, action))
+        logger.debug("Getting range '%s' for clinic '%s' with action '%s'" % (range, clinic, action))
         
         # FIXME: very fragile
         # loop the server communication to avoid being held up by errors
@@ -97,23 +101,24 @@ def importRecords(server, events, clinic, ranges, request, action):
                 records = server.patients_data(request, 0, range['start'], range['end'], 3, clinic.te_id)
                 break
             except socket.error, err:
-                logging.error(err)
+                logger.error(err)
                 if not (err[0] in (errno.ETIMEDOUT, errno.ECONNRESET, 8)): 
                     raise err
             except ProtocolError, err:
-                logging.error("A protocol error occurred")
-                logging.error("URL: %s" % err.url)
-                logging.error("HTTP/HTTPS headers: %s" % err.headers)
-                logging.error("Error code: %d" % err.errcode)
-                logging.error("Error message: %s" % err.errmsg)
+                logger.error("A protocol error occurred")
+                logger.error("URL: %s" % err.url)
+                logger.error("HTTP/HTTPS headers: %s" % err.headers)
+                logger.error("Error code: %d" % err.errcode)
+                logger.error("Error message: %s" % err.errmsg)
+                raise err
         
         for record in records:
             event = ImportEvent()
             try:
-                logging.debug("Calling '%s' with args '%s'" % (action, (event, clinic, record)))
+                logger.debug("Calling '%s' with args '%s'" % (action, (event, clinic, record)))
                 event = action(event, clinic, record)
             except ImportError, e:
-                logging.error(e)
+                logger.error(e)
                 event.append(str(e), 'error')
             events.append(event)
     return events
@@ -126,7 +131,7 @@ def importPatient(event, clinic, record):
     msisdns = validateField(event, record, MSISDNS_RE, 'celphone', 'Mobile Number')
     
     if event.isError():
-        logging.error("Event Error: %s" % event.messages)
+        logger.error("Event Error: %s" % event.messages)
     else:
         try:
             patient = models.Patient.objects.get(te_id=te_id)
@@ -159,7 +164,7 @@ def importPatient(event, clinic, record):
 
 def importPatients():
     ct = models.ContentType.objects.get(model='patient')
-    server = ServerProxy(SERVICE_URL)
+    server = ServerProxy(SERVICE_URL, verbose=settings.DEBUG)
     all_events = ImportEvents()
 
     if models.Patient.objects.count() == 0:
@@ -304,15 +309,14 @@ def importVisits():
 
 
 def importAll():
-    import logging
-    logging.debug("importing patients")
+    logger.debug("importing patients")
     events = importPatients()
     message = "New: %s\nUpdated: %s\nErrors: %s\n\n%s" % (events.new, events.updated, events.errors, '\n'.join(events.error_messages)) 
-    logging.debug("mailing admins: %s" % message)
+    logger.debug("mailing admins: %s" % message)
     mail.mail_admins('Patient Import Report', message, fail_silently=True)
 
-    logging.debug("importing visits")
+    logger.debug("importing visits")
     events = importVisits()
     message = "New: %s\nUpdated: %s\nErrors: %s\n\n%s" % (events.new, events.updated, events.errors, '\n'.join(events.error_messages)) 
-    logging.debug("mailing admings: %s" % message)
+    logger.debug("mailing admings: %s" % message)
     mail.mail_admins('Visit Import Report', message, fail_silently=True)

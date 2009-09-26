@@ -34,4 +34,4 @@ class ImportJob(Job):
     hour, minute = '08', '00'
 
     def job(self):
-        importing.importAll();
+        importing.importAll()
