@@ -26,6 +26,11 @@ class BookingPatient(Patient):
     opt_status = models.CharField(blank=True, max_length=20, choices=OPT_STATUSES)
     treatment_cycle = models.IntegerField(blank=False, null=True, choices=TREATMENT_CYCLES)
     
+    @property
+    def appointments(self):
+        midnight = datetime.now().date()
+        return self.visits.filter(date__gte=midnight)
+    
     def save(self, *args, **kwargs):
         """If the date_of_birth isn't set, we automatically pin the date of 
         birth based on the year, assuming the 1st of january."""
@@ -33,25 +38,4 @@ class BookingPatient(Patient):
             year_of_birth = datetime.now().year - self.age
             self.date_of_birth = datetime(day=1, month=1, year=year_of_birth)
         return super(Patient, self).save(*args, **kwargs)
-
-
-class Appointment(Visit):
-    """An Appointment is the same as a Visit with some subtle differences:
-    
-    - It is a visit scheduled in the future
-    - It doesn't automatically update the visited clinic
-    - It doesn't automatically calculate the risk profile
-    
-    FIXME: As I'm discovering more of TxtAlert I think this isn't necessary as
-            the Visit has a visit_status field that can be set to the future
-            when it's still scheduled
-    """
-    booking_patient = models.ForeignKey(BookingPatient)
-    class Meta:
-        verbose_name = 'Appointment'
-        verbose_name_plural = 'Appointments'
-    
-    def save(self, *args, **kwargs):
-        super(Visit, self).save(*args, **kwargs)
-    
 

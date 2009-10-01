@@ -116,8 +116,8 @@ class Patient(Contact):
         return self.te_id
 
     def get_last_clinic(self):
-        if self.visits.count() != 0:
-            return self.visits.order_by('date').all()[:1][0].clinic
+        if self.visits.count():
+            return self.visits.latest('date').clinic
         else:
             return None
 
@@ -130,7 +130,7 @@ class Visit(models.Model):
         ('pediatric', 'Pediatric'),
     )
     
-    patient = models.ForeignKey(Patient, related_name='%(class)ss')
+    patient = models.ForeignKey(Patient, related_name='visits')
     te_id = models.CharField('TE ID', max_length=20, unique=True)
     date = models.DateField('Date')
     status = models.CharField('Status', max_length=1, choices=VISIT_STATUS_CHOICES)

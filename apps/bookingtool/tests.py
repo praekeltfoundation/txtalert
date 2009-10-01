@@ -6,8 +6,10 @@ Replace these with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.db.models.query import QuerySet
 from therapyedge.models import *
 from bookingtool.models import *
+from datetime import datetime, timedelta
 
 
 def create_booking_patient():
@@ -31,6 +33,7 @@ class BookingPatientTestCase(TestCase):
     
     def setUp(self):
         self.booking_patient = create_booking_patient()
+        self.clinic = Clinic.objects.all()[0]
     
     def tearDown(self):
         pass
@@ -50,36 +53,22 @@ class BookingPatientTestCase(TestCase):
         self.assertEquals(self.booking_patient.date_of_birth.year, \
                                                     datetime.now().year - 30)
     
-
-
-class AppointmentTestCase(TestCase):
-    
-    fixtures = ['patients', 'clinics', 'visits', 'initial_data']
-    
-    def setUp(self):
-        self.booking_patient = create_booking_patient()
+    def test_booking_patient_appointments(self):
+        # make sure it's saved
         self.booking_patient.save()
-        self.appointment = Appointment()
-        self.appointment.booking_patient = self.booking_patient
-        self.appointment.patient = self.booking_patient.patient
-        self.appointment.te_id = self.booking_patient.te_id
-        self.appointment.date = datetime.now()
-        self.appointment.status = 's'
-        self.appointment.clinic = Clinic.objects.all()[0]
-    
-    def tearDown(self):
-        pass
-    
-    def test_appointment_inheritance(self):
-        initial_count = Visit.objects.count()
-        self.appointment.save()
-        self.assertEquals(initial_count + 1, Visit.objects.count())
-    
-    def test_not_calculating_risk_profile(self):
-        self.appointment.save()
-        # make sure we have appointments and visits which should trigger the
-        # save() in Visit - which is the one we're trying to override and test
-        self.assertTrue(self.booking_patient.appointment_set.count())
-        self.assertTrue(self.booking_patient.visits.count())
-        self.assertTrue(self.appointment.booking_patient.risk_profile == None)
-    
+        
+        # create one event in the past and one in the future
+        today = datetime.now()
+        yesterday = today - timedelta(days=1)
+        self.booking_patient.visits.create(te_id="123", date=yesterday,\
+                                            status='m', clinic=self.clinic, \
+                                            visit_type='arv')
+        
+        tomorrow = today + timedelta(days=1)
+        self.booking_patient.visits.create(te_id="456", date=tomorrow,\
+                                            status='s', clinic=self.clinic, \
+                                            visit_type='arv')
+        
+        self.assertTrue(isinstance(self.booking_patient.appointments, QuerySet))
+        self.assertEquals(self.booking_patient.visits.count(), 2)
+        self.assertEquals(self.booking_patient.appointments.count(), 1)
