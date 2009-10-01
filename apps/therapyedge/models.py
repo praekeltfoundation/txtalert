@@ -42,14 +42,14 @@ class Contact(models.Model):
     buddies = models.ManyToManyField('Contact', symmetrical=False, through='Relation')
     msisdns = models.ManyToManyField(MSISDN, related_name='contacts')
     active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', null=True, blank=True)
-
+    
     class Meta:
         verbose_name = 'Contact'
         verbose_name_plural = 'Contacts'
-
+    
     def __unicode__(self):
         return ('%s - ' % self.id) + u'/'.join([str(msisdn) for msisdn in self.msisdns.all()])
-
+    
     def save(self, *args, **kwargs):
         super(Contact, self).save(*args, **kwargs)
         msisdns = self.msisdns.all()
@@ -69,22 +69,24 @@ class Language(models.Model):
     attended_message = models.TextField('Attended Message')
     tomorrow_message = models.TextField('Tomorrow Message')
     twoweeks_message = models.TextField('Two Weeks Message')
-
+    
     def __unicode__(self):
         return self.name
+    
 
 
 class Clinic(models.Model):
     te_id = models.CharField('TE ID', max_length=2, unique=True)
     name = models.CharField('Name', max_length=100)
     group = models.ForeignKey(Group, related_name='clinic', blank=True, null=True)
-
+    
     class Meta:
         verbose_name = 'Clinic'
         verbose_name_plural = 'Clinics'
-
+    
     def __unicode__(self):
         return self.name
+    
 
 
 class Patient(Contact):
@@ -119,13 +121,21 @@ class Patient(Contact):
         else:
             return None
 
-
 class Visit(models.Model):
-    patient = models.ForeignKey(Patient, related_name='visits')
+    
+    VISIT_TYPES = (
+        ('arv', 'ARV'),
+        ('medical', 'Medical'), 
+        ('counselor', 'Counselor'),
+        ('pediatric', 'Pediatric'),
+    )
+    
+    patient = models.ForeignKey(Patient, related_name='%(class)ss')
     te_id = models.CharField('TE ID', max_length=20, unique=True)
     date = models.DateField('Date')
     status = models.CharField('Status', max_length=1, choices=VISIT_STATUS_CHOICES)
     clinic = models.ForeignKey(Clinic, verbose_name='Clinic', related_name='visits')
+    visit_type = models.CharField('Visit Type', blank=True, max_length=80, choices=VISIT_TYPES)
 
     class Meta:
         verbose_name = 'Visit'
