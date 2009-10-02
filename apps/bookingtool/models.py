@@ -21,7 +21,6 @@ class BookingPatient(Patient):
     
     name = models.CharField('First name', blank=True, max_length=80)
     surname = models.CharField('Surname', blank=True, max_length=80)
-    mrs_id = models.CharField('MRS ID', blank=True, max_length=80)
     date_of_birth = models.DateField('Date of Birth', blank=True, null=True, auto_now_add=False)
     opt_status = models.CharField(blank=True, max_length=20, choices=OPT_STATUSES)
     treatment_cycle = models.IntegerField(blank=False, null=True, choices=TREATMENT_CYCLES)
@@ -31,11 +30,20 @@ class BookingPatient(Patient):
         midnight = datetime.now().date()
         return self.visits.filter(date__gte=midnight)
     
+    def determine_year_of_birth(self):
+        year_of_birth = datetime.now().year - self.age
+        return datetime(day=1, month=1, year=year_of_birth)
+    
     def save(self, *args, **kwargs):
         """If the date_of_birth isn't set, we automatically pin the date of 
         birth based on the year, assuming the 1st of january."""
         if not self.date_of_birth:
-            year_of_birth = datetime.now().year - self.age
-            self.date_of_birth = datetime(day=1, month=1, year=year_of_birth)
+            self.date_of_birth = self.determine_year_of_birth()
+        
+        """If the patient was opted in and our opt_status hasn't been set yet
+        automatically set it to 'opt-in' based on the patient record"""
+        if self.opted_in and not self.opt_status:
+            self.opt_status = 'opt-in'
+        
         return super(Patient, self).save(*args, **kwargs)
 

@@ -20,16 +20,25 @@ from bookingtool.models import BookingPatient
 
 class BookingPatientAdmin(admin.ModelAdmin):
     form = forms.ModelForm
-    list_display = ('te_id', 'mrs_id', 'surname', 'name', 'age', 'sex', 'treatment_cycle')
-    list_display_links = ('te_id', 'mrs_id', 'surname', 'name')
+    list_display = ('te_id', 'surname', 'name', 'age', 'sex', 'treatment_cycle')
+    list_display_links = ('te_id', 'surname', 'name')
     list_filter = ('sex', 'treatment_cycle', 'opt_status')
     ordering = ('surname', 'name')
-    search_fields = ('surname', 'name', 'te_id', 'mrs_id', 'active_msisdn__msisdn')
+    search_fields = ('surname', 'name', 'te_id', 'active_msisdn__msisdn')
     radio_fields = { "treatment_cycle": admin.VERTICAL, 
                         "opt_status": admin.VERTICAL,
                         "sex": admin.VERTICAL,
                     }
     save_on_top = True
+    
+    fieldsets = (
+        (None, {
+            'fields': ('active_msisdn', 'te_id', 'surname', 'name', 'sex', 'age', 'language', 'treatment_cycle', 'opt_status'),
+        }),
+        ('Advanced options', {
+            'fields': ('last_clinic', 'risk_profile', 'date_of_birth')
+        })
+    )
     
 
 admin.site.register(BookingPatient, BookingPatientAdmin)

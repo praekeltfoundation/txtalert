@@ -98,7 +98,7 @@ class Patient(Contact):
         ('m>f', 'transgender m>f'),
     )
 
-    te_id = models.CharField('TE ID', max_length=10, unique=True)
+    te_id = models.CharField('MRS ID', max_length=10, unique=True)
     age = models.IntegerField('Age')
     sex = models.CharField('Sex', max_length=3, choices=SEX_CHOICES)
     opted_in = models.BooleanField('Opted In', default=False)
