@@ -1,0 +1,15 @@
+.availability.loading {
+    background: transparent url('/static/images/availability.loading.gif') no-repeat top right;
+}
+
+.availability.low {
+    background-color: green;
+}
+
+.availability.medium {
+    background-color: orange;
+}
+
+.availability.high {
+    background-color: red;
+}

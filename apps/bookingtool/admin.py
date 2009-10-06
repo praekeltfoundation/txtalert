@@ -15,10 +15,25 @@
 
 
 from django import forms
+from django.db import models
 from django.contrib import admin
 from bookingtool.models import BookingPatient
+from bookingtool.widgets import AvailabilityDateWidget
+from therapyedge.models import Visit
+
+class VisitInlineAdmin(admin.TabularInline):
+    model =  Visit
+    
+    formfield_overrides = {
+            models.DateField: {'widget': AvailabilityDateWidget},
+    }
 
 class BookingPatientAdmin(admin.ModelAdmin):
+    
+    inlines = [
+        VisitInlineAdmin, 
+    ]
+    
     form = forms.ModelForm
     list_display = ('te_id', 'surname', 'name', 'age', 'sex', 'treatment_cycle')
     list_display_links = ('te_id', 'surname', 'name')
@@ -33,10 +48,11 @@ class BookingPatientAdmin(admin.ModelAdmin):
     
     fieldsets = (
         (None, {
-            'fields': ('active_msisdn', 'te_id', 'surname', 'name', 'sex', 'age', 'language', 'treatment_cycle', 'opt_status'),
+            'fields': ('active_msisdn', 'te_id', 'language', 'surname', 'name', 'sex', 'age', 'treatment_cycle', 'opt_status'),
         }),
         ('Advanced options', {
-            'fields': ('last_clinic', 'risk_profile', 'date_of_birth')
+            'fields': ('last_clinic', 'risk_profile', 'date_of_birth'),
+            'classes': ['collapse'],
         })
     )
     
