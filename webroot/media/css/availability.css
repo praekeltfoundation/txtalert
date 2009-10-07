@@ -3,13 +3,16 @@
 }
 
 .availability.low {
-    background-color: green;
+    border-color: green;
+    color: green;
 }
 
 .availability.medium {
-    background-color: orange;
+    border-color: orange;
+    color: orange;
 }
 
 .availability.high {
-    background-color: red;
+    border-color: red;
+    color: red;
 }
