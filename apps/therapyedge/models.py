@@ -131,20 +131,19 @@ class Visit(models.Model):
     )
     
     patient = models.ForeignKey(Patient, related_name='visits')
-    te_id = models.CharField('TE ID', max_length=20, unique=True)
     date = models.DateField('Date')
     status = models.CharField('Status', max_length=1, choices=VISIT_STATUS_CHOICES)
     clinic = models.ForeignKey(Clinic, verbose_name='Clinic', related_name='visits')
     visit_type = models.CharField('Visit Type', blank=True, max_length=80, choices=VISIT_TYPES)
-
+    
     class Meta:
         verbose_name = 'Visit'
         verbose_name_plural = 'Visits'
         ordering = ['date']
-
+    
     def __unicode__(self):
-        return self.te_id
-
+        return self.get_visit_type_display()
+    
     def save(self, *args, **kwargs):
         patient = self.patient
         if patient.visits.count() == 0:

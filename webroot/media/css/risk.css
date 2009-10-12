@@ -1,0 +1,18 @@
+.riskField.loading {
+    background: transparent url('/static/images/risk.loading.gif') no-repeat top right;
+}
+
+.riskField.low {
+    border-color: green;
+    color: green;
+}
+
+.riskField.medium {
+    border-color: orange;
+    color: orange;
+}
+
+.riskField.high {
+    border-color: red;
+    color: red;
+}

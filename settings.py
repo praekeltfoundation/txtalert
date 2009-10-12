@@ -107,7 +107,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 )
 
-BOOKING_TOOL_AVAILABILITY_RANGES = {
+BOOKING_TOOL_RISK_LEVELS = {
     # pc is for patient count
     'high': lambda pc: pc > 100,
     'medium': lambda pc: 50 <= pc < 100,

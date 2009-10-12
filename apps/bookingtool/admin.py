@@ -18,14 +18,14 @@ from django import forms
 from django.db import models
 from django.contrib import admin
 from bookingtool.models import BookingPatient
-from bookingtool.widgets import AvailabilityDateWidget
+from bookingtool.widgets import RiskDateWidget
 from therapyedge.models import Visit
 
 class VisitInlineAdmin(admin.TabularInline):
     model =  Visit
     
     formfield_overrides = {
-            models.DateField: {'widget': AvailabilityDateWidget},
+            models.DateField: {'widget': RiskDateWidget},
     }
 
 class BookingPatientAdmin(admin.ModelAdmin):
