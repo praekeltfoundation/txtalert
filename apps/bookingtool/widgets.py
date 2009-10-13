@@ -20,7 +20,7 @@ class RiskDateWidget(widgets.AdminDateWidget):
     def __init__(self, attrs={}):
         # call the super's super as AdminDateWidget itself overrides __init__ 
         # and loses the passed attrs
-        attrs['class'] = 'riskField'
+        attrs['class'] = 'risk-field'
         super(widgets.AdminDateWidget, self).__init__(attrs=attrs)
     
     def render(self, name, value, attrs=None):

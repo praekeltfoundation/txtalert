@@ -47,4 +47,6 @@ class RiskCalendar(HTMLCalendar):
         )
 
     def day_cell(self, cssclass, body):
-        return '<td class="%s">%s</td>' % (cssclass, body)
+        return """<td class="day %s">
+                    <a href="#">%s</a>
+                </td>""" % (cssclass, body)

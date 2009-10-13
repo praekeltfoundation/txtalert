@@ -19,6 +19,10 @@ def risk(request):
     else:
         raise Http404
 
+def today(request):
+    today = datetime.now()
+    return calendar(request, today.year, today.month)
+
 def calendar(request, year, month):
     year, month = int(year), int(month)
     visits = Visit.objects.order_by('date').filter(date__year=year, \
