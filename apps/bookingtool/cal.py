@@ -1,6 +1,6 @@
 # http://journal.uggedal.com/creating-a-flexible-monthly-calendar-in-django
 from calendar import HTMLCalendar
-from datetime import date
+import datetime
 from itertools import groupby
 
 from django.utils.html import conditional_escape as esc
@@ -13,8 +13,8 @@ def risk_for_visit_count(visit_count):
         if check(visit_count):
             return level
 
-def risk_on_date(_date):
-    visit_count = Visit.objects.filter(date__exact=_date).count()
+def risk_on_date(date):
+    visit_count = Visit.objects.filter(date__exact=date).count()
     return risk_for_visit_count(visit_count)
 
 
@@ -27,13 +27,14 @@ class RiskCalendar(HTMLCalendar):
     def formatday(self, day, weekday):
         if day != 0:
             cssclass = self.cssclasses[weekday]
-            if date.today() == date(self.year, self.month, day):
+            if datetime.date.today() == datetime.date(self.year, self.month, day):
                 cssclass += ' today'
             if day in self.visits:
                 risk = risk_for_visit_count(len(self.visits[day]))
                 cssclass += ' %s' % risk
-            return self.day_cell(cssclass, day)
-        return self.day_cell('noday', '&nbsp;')
+            return self.day_cell(cssclass, datetime.date(self.year, \
+                                                        self.month, int(day)))
+        return self.day_cell('noday')
 
     def formatmonth(self, year, month):
         self.year, self.month = year, month
@@ -46,7 +47,8 @@ class RiskCalendar(HTMLCalendar):
                                                 in groupby(all_visits, field)]
         )
 
-    def day_cell(self, cssclass, body):
-        return """<td class="day %s">
-                    <a href="#">%s</a>
-                </td>""" % (cssclass, body)
+    def day_cell(self, cssclass, date="", body="&nbsp;"):
+        if isinstance(date,datetime.date):
+            body = '<a href="#" rel="%s">%s</a>' % \
+                                        (date.strftime("%Y-%m-%d"), date.day)
+        return '<td class="%s">%s</td>' % (cssclass, body)
