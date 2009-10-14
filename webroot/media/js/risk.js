@@ -4,7 +4,7 @@ BookingTool = {
 		inputs = $('input.risk-field');
 		inputs.each(function(idx) {
 			BookingTool.calendars[idx] = {};
-			BookingTool.calendars[idx].input = $(this);
+			BookingTool.calendars[idx].input = this;
 			
 			// add the calendar container
 			$(this).after('<div class="risk-calendar module" ' + 
@@ -42,6 +42,7 @@ BookingTool = {
 			BookingTool.calendars[calendar_id].img = this;
 			
 			$(this).click(function() {
+				BookingTool.hide_all_calendars();
 				BookingTool.show_calendar($(this));
 				// stop bubbling
 				return false;
@@ -65,14 +66,24 @@ BookingTool = {
 		// get the calendar id from the DOM id, icky I know
 		id = $(img).parent().attr('id');
 		calendar_id = parseInt(id.split("risk-calendar-")[1], 10);
-		container = $('div#risk-calendar-box-' + calendar_id);
+		
+		container = BookingTool.calendars[calendar_id].container;
 		container.html('<p><img src="/static/images/risk.loading.gif"> Loading calendar </p>');
 		// position loading message
 		BookingTool.position_container(container, img);
 		container.show();
 		
+		// get input value
+		input = BookingTool.calendars[calendar_id].input;
+		match = input.value.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+		if(match) {
+			path = '/bookingtool/calendar/' + match[1] + '/' + match[2] + '.html';
+		} else {
+			path = '';
+		}
+		
 		// load the calendar over ajax
-		BookingTool.load_calendar(calendar_id, container);
+		BookingTool.load_calendar(calendar_id, container, path);
 	},
 	
 	load_calendar: function(calendar_id, container, path) {
@@ -116,7 +127,7 @@ BookingTool = {
 	pick_date: function(calendar_id, date) {
 		BookingTool.hide_calendar(calendar_id);
 		input = BookingTool.calendars[calendar_id].input;
-		input.attr('value', date);
+		$(input).attr('value', date);
 		BookingTool.check_risk_for_field(input);
 	},
 	
@@ -132,6 +143,7 @@ BookingTool = {
 	
 	check_risk_for_field: function(input) {
 		// make user aware something is happening
+		input = $(input);
 		input.addClass('loading');
 		// for each event, get the json for the given date value
 		$.getJSON('/bookingtool/risk.js', {"date": input.attr('value')}, function(data) {
