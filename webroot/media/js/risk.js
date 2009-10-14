@@ -38,8 +38,8 @@ BookingTool = {
 			// and stores the id of the calendar
 			calendar_id = parseInt(anchor.attr("id").split("risk-calendar-")[1], 10);
 			
-			BookingTool.calendars[calendar_id]["anchor"] = $(anchor);
-			BookingTool.calendars[calendar_id]["img"] = $(this);
+			BookingTool.calendars[calendar_id].anchor = anchor;
+			BookingTool.calendars[calendar_id].img = this;
 			
 			$(this).click(function() {
 				BookingTool.show_calendar($(this));
@@ -55,7 +55,7 @@ BookingTool = {
 	calendars: [],
 	
 	position_container: function(container, img) {
-		position = img.position();
+		position = $(img).position();
 		container.css('position', 'absolute');
 		container.css('top', position.top - container.height() + 10);
 		container.css('left', position.left + 17);
@@ -63,7 +63,7 @@ BookingTool = {
 	
 	show_calendar: function(img) {
 		// get the calendar id from the DOM id, icky I know
-		id = img.parent().attr('id');
+		id = $(img).parent().attr('id');
 		calendar_id = parseInt(id.split("risk-calendar-")[1], 10);
 		container = $('div#risk-calendar-box-' + calendar_id);
 		container.html('<p><img src="/static/images/risk.loading.gif"> Loading calendar </p>');
@@ -71,13 +71,26 @@ BookingTool = {
 		BookingTool.position_container(container, img);
 		container.show();
 		
-		container.load('/bookingtool/calendar/today.html', '', function(resp, status, req) {
+		// load the calendar over ajax
+		BookingTool.load_calendar(calendar_id, container);
+	},
+	
+	load_calendar: function(calendar_id, container, path) {
+		
+		// if a path is given use it, otherwise go to today
+		if(!path) {
+			path = '/bookingtool/calendar/today.html';
+		}
+		
+		container.load(path, '', function(resp, status, req) {
 			if(status != "success") {
 				container.html("<p><strong>Oops!</strong> Something went wrong loading the calendar.</p>");
 			} else {
 				BookingTool.add_date_handlers(calendar_id, container);
+				BookingTool.add_month_pagination_handlers(calendar_id, container);
 			}
 			// reposition with calendar or err msg loaded
+			img = BookingTool.calendars[calendar_id].img;
 			BookingTool.position_container(container, img);
 		});
 	},
@@ -86,6 +99,15 @@ BookingTool = {
 		$('td a', container).each(function() {
 			$(this).click(function() {
 				BookingTool.pick_date(calendar_id, $(this).attr('rel'));
+				return false;
+			});
+		});
+	},
+	
+	add_month_pagination_handlers: function(calendar_id, container) {
+		$('p a', container).each(function() {
+			$(this).click(function() {
+				BookingTool.load_calendar(calendar_id, container, $(this).attr('href'));
 				return false;
 			});
 		});
