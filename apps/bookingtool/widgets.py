@@ -6,7 +6,7 @@ from bookingtool.cal import risk_on_date
 
 def url_path_for(path):
     """convert 'js/file.js' into a valid path for the current static route"""
-    return reverse("static", urlconf=urls, kwargs={"path": path}) 
+    return reverse("static", urlconf=urls, args=(path,)) 
 
 def url_paths_for(*paths):
     return [url_path_for(path) for path in paths]
