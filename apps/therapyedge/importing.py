@@ -194,7 +194,7 @@ def getPatient(patient_id, visit_id):
 
 def getVisit(visit_id):
     try:
-        return models.Visit.objects.get(te_id=visit_id)
+        return models.Visit.objects.get(te_visit_id=visit_id)
     except ObjectDoesNotExist:
         raise ImportError(MESSAGE_VISIT_NOTFOUND % (visit_id))
 
@@ -237,13 +237,13 @@ def importComingVisit(event, clinic, record):
     if not event.isError():
         patient = getPatient(patient_id, visit_id)
         try:
-            visit = models.Visit.objects.get(te_id=visit_id)
+            visit = models.Visit.objects.get(te_visit_id=visit_id)
             if visit.date != date:
                 visit.date = date
                 event.append("Visit '%s' had it's scheduled date updated." % (visit_id), 'update')
                 models.VisitEvent.objects.create(visit=visit, date=date, status='s')
         except ObjectDoesNotExist:
-            visit = models.Visit.objects.create(te_id=visit_id, clinic=clinic, patient=patient, date=date)
+            visit = models.Visit.objects.create(te_visit_id=visit_id, clinic=clinic, patient=patient, date=date)
             event.append("New visit with id '%s' created." % (visit_id), 'new')
             models.VisitEvent.objects.create(visit=visit, date=date, status='s')
     return event
@@ -254,10 +254,10 @@ def importMissedVisit(event, clinic, record):
     if not event.isError() or not (date > datetime.now().date()):
         patient = getPatient(patient_id, visit_id)
         try:
-            visit = models.Visit.objects.get(te_id=visit_id)
+            visit = models.Visit.objects.get(te_visit_id=visit_id)
             event.append("Visit '%s' had it's status updated." % (visit_id), 'update')
         except ObjectDoesNotExist:
-            visit = models.Visit.objects.create(te_id=visit_id, clinic=clinic, patient=patient, date=date)
+            visit = models.Visit.objects.create(te_visit_id=visit_id, clinic=clinic, patient=patient, date=date)
             event.append("New visit with id '%s' created." % (visit_id), 'new')
         status = 'r' if date < visit.date else 'm'
         models.VisitEvent.objects.create(visit=visit, date=date, status=status)
@@ -269,10 +269,10 @@ def importDoneVisit(event, clinic, record):
     if not event.isError():
         patient = getPatient(patient_id, visit_id)
         try:
-            visit = models.Visit.objects.get(te_id=visit_id)
+            visit = models.Visit.objects.get(te_visit_id=visit_id)
             event.append("Visit '%s' was updated." % (visit_id), 'update')
         except ObjectDoesNotExist:
-            visit = models.Visit.objects.create(te_id=visit_id, clinic=clinic, patient=patient, date=date)
+            visit = models.Visit.objects.create(te_visit_id=visit_id, clinic=clinic, patient=patient, date=date)
             event.append("New visit with id '%s' created." % (visit_id), 'new')
         models.VisitEvent.objects.get_or_create(visit=visit, date=date, status='a')
     return event
@@ -283,7 +283,7 @@ def importDeletedVisit(event, clinic, record):
     patient_id = validateField(event, record, PATIENT_ID_RE, 'te_id', 'Patient ID')
     if not event.isError():
         try:
-            visit = models.Visit.objects.get(te_id=visit_id)
+            visit = models.Visit.objects.get(te_visit_id=visit_id)
             visit.delete()
             event.append("Deleted visit with id '%s'." % (visit_id), 'update')
         except ObjectDoesNotExist:

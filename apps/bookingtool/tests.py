@@ -63,12 +63,14 @@ class BookingPatientTestCase(TestCase):
         # create one event in the past and one in the future
         today = datetime.now()
         yesterday = today - timedelta(days=1)
-        self.booking_patient.visits.create(date=yesterday,\
+        self.booking_patient.visits.create(date=yesterday, \
+                                            te_visit_id='123',
                                             status='m', clinic=self.clinic, \
                                             visit_type='arv')
         
         tomorrow = today + timedelta(days=1)
-        self.booking_patient.visits.create(date=tomorrow,\
+        self.booking_patient.visits.create(date=tomorrow, \
+                                            te_visit_id='456', 
                                             status='s', clinic=self.clinic, \
                                             visit_type='arv')
         

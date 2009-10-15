@@ -1,1 +1,1 @@
-[{"pk": 3, "model": "bookingtool.bookingpatient", "fields": {"surname": "surname", "name": "name", "treatment_cycle": 1, "date_of_birth": "1980-01-01", "opt_status": "not-yet", "msisdns": []}}]
+[{"pk": 3, "model": "bookingtool.bookingpatient", "fields": {"surname": "surname", "name": "first name", "treatment_cycle": 1, "date_of_birth": "1980-01-01", "opt_status": "", "msisdns": []}}]

@@ -131,6 +131,7 @@ class Visit(models.Model):
     )
     
     patient = models.ForeignKey(Patient, related_name='visits')
+    te_visit_id = models.CharField('TE Visit id', max_length=20, unique=True)
     date = models.DateField('Date')
     status = models.CharField('Status', max_length=1, choices=VISIT_STATUS_CHOICES)
     clinic = models.ForeignKey(Clinic, verbose_name='Clinic', related_name='visits')
