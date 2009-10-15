@@ -1,7 +1,8 @@
 from django.conf import settings
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.utils.simplejson import dumps
 from django.shortcuts import render_to_response
+from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 
 from therapyedge.models import Visit
@@ -21,7 +22,10 @@ def risk(request):
 
 def today(request):
     today = datetime.now()
-    return calendar(request, today.year, today.month)
+    return HttpResponseRedirect(reverse('calendar-date', kwargs={
+        'month': today.month,
+        'year': today.year
+    }))
 
 def calendar(request, year, month):
     year, month = int(year), int(month)

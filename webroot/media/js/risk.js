@@ -146,7 +146,7 @@ BookingTool = {
 		input = $(input);
 		input.addClass('loading');
 		// for each event, get the json for the given date value
-		$.getJSON('/bookingtool/risk.js', {"date": input.attr('value')}, function(data) {
+		$.getJSON('/bookingtool/calendar/risk.js', {"date": input.attr('value')}, function(data) {
 			// reset risk levels
 			$.each(['high', 'medium', 'low'], function() {
 				if(input.hasClass(this)) {
