@@ -5,7 +5,7 @@
         "fields":{
             "clinic":"1",
             "patient":"1",
-            "te_id":"01-123456789",
+            "te_visit_id":"01-123456789",
             "date":"2100-06-01",
             "status":"s"
         }

@@ -95,8 +95,8 @@ class VisitImportTestCase(TestCase):
         # import a new visit
         event = importComingVisit(self.event, self.clinic, {'key_id':'02-123456789', 'te_id':'01-12345', 'scheduled_visit_date':'2100-06-01 00:00:00'})
         self.assertEqual(event.type, 'new')
-        visit = models.Visit.objects.get(te_id='02-123456789')
-        self.assertEquals(visit.te_id, '02-123456789')
+        visit = models.Visit.objects.get(te_visit_id='02-123456789')
+        self.assertEquals(visit.te_visit_id, '02-123456789')
         self.assertEquals(visit.patient.te_id, '01-12345')
         self.assertEquals(visit.date, datetime(2100, 6, 1).date())
 
@@ -104,7 +104,7 @@ class VisitImportTestCase(TestCase):
         # reschedule an visit
         event = importMissedVisit(self.event, self.clinic, {'key_id':'01-123456789', 'te_id':'01-12345', 'missed_date':'2100-05-01 00:00:00'})
         self.assertEqual(event.type, 'update')
-        visit = models.Visit.objects.get(te_id='01-123456789')
+        visit = models.Visit.objects.get(te_visit_id='01-123456789')
         event = visit.events.all()[0]
         self.assertEquals(event.status, 'r')
         self.assertEquals(event.date, datetime(2100, 5, 1).date())
@@ -113,7 +113,7 @@ class VisitImportTestCase(TestCase):
         # indicate a missed visit
         event = importMissedVisit(self.event, self.clinic, {'key_id':'01-123456789', 'te_id':'01-12345', 'missed_date':'2100-06-01 00:00:00'})
         self.assertEqual(event.type, 'update')
-        visit = models.Visit.objects.get(te_id='01-123456789')
+        visit = models.Visit.objects.get(te_visit_id='01-123456789')
         event = visit.events.all()[0]
         self.assertEquals(event.status, 'm')
         self.assertEquals(event.date, datetime(2100, 6, 1).date())
@@ -122,7 +122,7 @@ class VisitImportTestCase(TestCase):
         # indicate a attended visit
         event = importDoneVisit(self.event, self.clinic, {'key_id':'01-123456789', 'te_id':'01-12345', 'done_date':'2100-07-01 00:00:00'})
         self.assertEqual(event.type, 'update')
-        visit = models.Visit.objects.get(te_id='01-123456789')
+        visit = models.Visit.objects.get(te_visit_id='01-123456789')
         event = visit.events.all()[0]
         self.assertEquals(event.status, 'a')
         self.assertEquals(event.date, datetime(2100, 7, 1).date())
@@ -131,7 +131,7 @@ class VisitImportTestCase(TestCase):
         # indicate a new attended visit
         event = importDoneVisit(self.event, self.clinic, {'key_id':'02-123456789', 'te_id':'01-12345', 'done_date':'2100-07-01 00:00:00'})
         self.assertEqual(event.type, 'new')
-        visit = models.Visit.objects.get(te_id='02-123456789')
+        visit = models.Visit.objects.get(te_visit_id='02-123456789')
         event = visit.events.all()[0]
         self.assertEquals(event.status, 'a')
         self.assertEquals(event.date, datetime(2100, 7, 1).date())
@@ -140,7 +140,7 @@ class VisitImportTestCase(TestCase):
         # indicate a new attended visit
         event = importMissedVisit(self.event, self.clinic, {'key_id':'02-123456789', 'te_id':'01-12345', 'missed_date':'2100-07-01 00:00:00'})
         self.assertEqual(event.type, 'new')
-        visit = models.Visit.objects.get(te_id='02-123456789')
+        visit = models.Visit.objects.get(te_visit_id='02-123456789')
         event = visit.events.all()[0]
         self.assertEquals(event.status, 'm')
         self.assertEquals(event.date, datetime(2100, 7, 1).date())

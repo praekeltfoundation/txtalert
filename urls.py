@@ -28,7 +28,8 @@ urlpatterns = patterns('',
 
     (r'', include('general.jquery.urls')),
     (r'^therapyedge/', include('therapyedge.urls')),
+    (r'^bookingtool/', include('bookingtool.urls')),
     (r'^admin/(.*)', admin.site.root),
-    (r'^static/(?P<path>.*)$', 'django.views.static.serve', \
+    (r'^static/(.*)$', 'django.views.static.serve', \
                             {'document_root': settings.MEDIA_ROOT}, "static"),
 )

@@ -1,0 +1,63 @@
+.risk-field.loading {
+    background: transparent url('/static/images/risk.loading.gif') no-repeat top right;
+}
+
+.risk-field.low {
+    border-color: green;
+    color: green;
+}
+
+.risk-field.medium {
+    border-color: orange;
+    color: orange;
+}
+
+.risk-field.high {
+    border-color: red;
+    color: red;
+}
+
+.risk-calendar td {
+    padding-top: 5px !important;
+    text-align: center;
+}
+
+.risk-calendar p {
+    text-align: center;
+}
+    .risk-calendar p a {
+        text-align: center;
+        padding: 5px;
+    }
+
+.risk-calendar th {
+    text-align: center;
+}
+
+.risk-calendar td.today {
+    background: #3A5274;
+}
+
+.risk-calendar td.today a {
+    font-weight: bold;
+    color: white !important;
+}
+
+.risk-calendar td.low {
+    background: green;
+}
+
+.risk-calendar td.medium {
+    background: orange;
+}
+
+.risk-calendar td.high {
+    background: red;
+}
+
+    .risk-calendar td.low a,
+    .risk-calendar td.medium a, 
+    .risk-calendar td.high a {
+        color: white !important;
+    }
+

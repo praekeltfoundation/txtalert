@@ -42,14 +42,14 @@ class Contact(models.Model):
     buddies = models.ManyToManyField('Contact', symmetrical=False, through='Relation')
     msisdns = models.ManyToManyField(MSISDN, related_name='contacts')
     active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', null=True, blank=True)
-
+    
     class Meta:
         verbose_name = 'Contact'
         verbose_name_plural = 'Contacts'
-
+    
     def __unicode__(self):
         return ('%s - ' % self.id) + u'/'.join([str(msisdn) for msisdn in self.msisdns.all()])
-
+    
     def save(self, *args, **kwargs):
         super(Contact, self).save(*args, **kwargs)
         msisdns = self.msisdns.all()
@@ -69,22 +69,24 @@ class Language(models.Model):
     attended_message = models.TextField('Attended Message')
     tomorrow_message = models.TextField('Tomorrow Message')
     twoweeks_message = models.TextField('Two Weeks Message')
-
+    
     def __unicode__(self):
         return self.name
+    
 
 
 class Clinic(models.Model):
     te_id = models.CharField('TE ID', max_length=2, unique=True)
     name = models.CharField('Name', max_length=100)
     group = models.ForeignKey(Group, related_name='clinic', blank=True, null=True)
-
+    
     class Meta:
         verbose_name = 'Clinic'
         verbose_name_plural = 'Clinics'
-
+    
     def __unicode__(self):
         return self.name
+    
 
 
 class Patient(Contact):
@@ -96,7 +98,7 @@ class Patient(Contact):
         ('m>f', 'transgender m>f'),
     )
 
-    te_id = models.CharField('TE ID', max_length=10, unique=True)
+    te_id = models.CharField('MRS ID', max_length=10, unique=True)
     age = models.IntegerField('Age')
     sex = models.CharField('Sex', max_length=3, choices=SEX_CHOICES)
     opted_in = models.BooleanField('Opted In', default=False)
@@ -114,27 +116,35 @@ class Patient(Contact):
         return self.te_id
 
     def get_last_clinic(self):
-        if self.visits.count() != 0:
-            return self.visits.order_by('date').all()[:1][0].clinic
+        if self.visits.count():
+            return self.visits.latest('date').clinic
         else:
             return None
 
-
 class Visit(models.Model):
+    
+    VISIT_TYPES = (
+        ('arv', 'ARV'),
+        ('medical', 'Medical'), 
+        ('counselor', 'Counselor'),
+        ('pediatric', 'Pediatric'),
+    )
+    
     patient = models.ForeignKey(Patient, related_name='visits')
-    te_id = models.CharField('TE ID', max_length=20, unique=True)
+    te_visit_id = models.CharField('TE Visit id', max_length=20, unique=True)
     date = models.DateField('Date')
     status = models.CharField('Status', max_length=1, choices=VISIT_STATUS_CHOICES)
     clinic = models.ForeignKey(Clinic, verbose_name='Clinic', related_name='visits')
-
+    visit_type = models.CharField('Visit Type', blank=True, max_length=80, choices=VISIT_TYPES)
+    
     class Meta:
         verbose_name = 'Visit'
         verbose_name_plural = 'Visits'
         ordering = ['date']
-
+    
     def __unicode__(self):
-        return self.te_id
-
+        return self.get_visit_type_display()
+    
     def save(self, *args, **kwargs):
         patient = self.patient
         if patient.visits.count() == 0:
