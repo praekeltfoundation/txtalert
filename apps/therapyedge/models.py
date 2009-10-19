@@ -107,7 +107,7 @@ class Patient(Contact):
     last_clinic = models.ForeignKey(Clinic, verbose_name='Last Clinic', blank=True, null=True)
     risk_profile = models.FloatField('Risk Profile', blank=True, null=True)
     language = models.ForeignKey(Language, verbose_name='Language', default=1)
-
+    
     class Meta:
         verbose_name = 'Patient'
         verbose_name_plural = 'Patients'

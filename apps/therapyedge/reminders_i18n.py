@@ -91,11 +91,10 @@ def send_stats(gateway, today):
 
 
 def send_messages(gateway, message_key, patients, message_formatter=lambda x: x):
-    print "sending messages %(message_key)s to %(patients)s" % locals()
     actions_per_language = {}
     for language, patients in group_by_language(patients).items():
         message = message_formatter(getattr(language, message_key))
-        msisdns = [patient.active_msisdn for patient in patients]
+        msisdns = [patient.active_msisdn.msisdn for patient in patients]
         actions_per_language[language] = gateway.sendSMS(msisdns, message)
     return actions_per_language
 
