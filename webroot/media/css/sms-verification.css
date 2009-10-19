@@ -1,0 +1,14 @@
+.sms-verification-result span {
+    color: white;
+    font-weight: bold;
+    padding: 3px;
+    margin: 3px 0px;
+}
+
+.sms-verification-result span.success {
+    background: green;
+}
+
+.sms-verification-result span.fail {
+    background: red;
+}

@@ -1,3 +1,4 @@
+import sys, traceback
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.utils.simplejson import dumps
@@ -6,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 
 from therapyedge.models import Visit
+from mobile.sms.models import OperaGateway
 from cal import *
 from datetime import date, datetime
 
@@ -52,3 +54,17 @@ def calendar(request, year, month):
         next_month = first_day.replace(month=first_day.month + 1)
 
     return render_to_response('calendar.html', locals())
+
+def verification(request):
+    try:
+        msisdn = request.POST.get('msisdn',None)
+        gateway = OperaGateway.objects.all()[0]
+        gateway.sendSMS([msisdn], 'Welcome to TxtAlert!')
+        response = "<span class='success'>SMS has been sent to %(msisdn)s</span>"
+    except Exception, e:
+        print "Exception in sendSMS code:"
+        print '-'*60
+        traceback.print_exc(file=sys.stdout)
+        print '-'*60
+        response = "<span class='fail'>Failed sending SMS verification to %(msisdn)s</span>"
+    return HttpResponse(response % {'msisdn': request.POST.get('msisdn', 'unknown')})

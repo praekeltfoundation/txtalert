@@ -1,10 +1,14 @@
-BookingTool = {
+if(!window.BookingTool) {
+	BookingTool = {};
+};
+
+BookingTool.Calendar = {
 	init: function() {
 		// get all risk inputs
 		inputs = $('input.risk-field');
 		inputs.each(function(idx) {
-			BookingTool.calendars[idx] = {};
-			BookingTool.calendars[idx].input = this;
+			BookingTool.Calendar.calendars[idx] = {};
+			BookingTool.Calendar.calendars[idx].input = this;
 			
 			// add the calendar container
 			$(this).after('<div class="risk-calendar module" ' + 
@@ -26,7 +30,7 @@ BookingTool = {
 		// collect the containers
 		containers = $('div[id^=risk-calendar-box]');
 		containers.each(function(idx) {
-			BookingTool.calendars[idx].container = $(this);
+			BookingTool.Calendar.calendars[idx].container = $(this);
 		});
 		
 		// collect img anchors, use those for positioning, easier than
@@ -38,19 +42,19 @@ BookingTool = {
 			// and stores the id of the calendar
 			calendar_id = parseInt(anchor.attr("id").split("risk-calendar-")[1], 10);
 			
-			BookingTool.calendars[calendar_id].anchor = anchor;
-			BookingTool.calendars[calendar_id].img = this;
+			BookingTool.Calendar.calendars[calendar_id].anchor = anchor;
+			BookingTool.Calendar.calendars[calendar_id].img = this;
 			
 			$(this).click(function() {
-				BookingTool.hide_all_calendars();
-				BookingTool.show_calendar($(this));
+				BookingTool.Calendar.hide_all_calendars();
+				BookingTool.Calendar.show_calendar($(this));
 				// stop bubbling
 				return false;
 			});
 		});
 		
 		// hide all calendars when clicking anything outside
-		$(window).click(BookingTool.hide_all_calendars);
+		$(window).click(BookingTool.Calendar.hide_all_calendars);
 	},
 	
 	calendars: [],
@@ -67,14 +71,14 @@ BookingTool = {
 		id = $(img).parent().attr('id');
 		calendar_id = parseInt(id.split("risk-calendar-")[1], 10);
 		
-		container = BookingTool.calendars[calendar_id].container;
+		container = BookingTool.Calendar.calendars[calendar_id].container;
 		container.html('<p><img src="/static/images/risk.loading.gif"> Loading calendar </p>');
 		// position loading message
-		BookingTool.position_container(container, img);
+		BookingTool.Calendar.position_container(container, img);
 		container.show();
 		
 		// get input value
-		input = BookingTool.calendars[calendar_id].input;
+		input = BookingTool.Calendar.calendars[calendar_id].input;
 		match = input.value.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
 		if(match) {
 			path = '/bookingtool/calendar/' + match[1] + '/' + match[2] + '.html';
@@ -83,7 +87,7 @@ BookingTool = {
 		}
 		
 		// load the calendar over ajax
-		BookingTool.load_calendar(calendar_id, container, path);
+		BookingTool.Calendar.load_calendar(calendar_id, container, path);
 	},
 	
 	load_calendar: function(calendar_id, container, path) {
@@ -97,19 +101,19 @@ BookingTool = {
 			if(status != "success") {
 				container.html("<p><strong>Oops!</strong> Something went wrong loading the calendar.</p>");
 			} else {
-				BookingTool.add_date_handlers(calendar_id, container);
-				BookingTool.add_month_pagination_handlers(calendar_id, container);
+				BookingTool.Calendar.add_date_handlers(calendar_id, container);
+				BookingTool.Calendar.add_month_pagination_handlers(calendar_id, container);
 			}
 			// reposition with calendar or err msg loaded
-			img = BookingTool.calendars[calendar_id].img;
-			BookingTool.position_container(container, img);
+			img = BookingTool.Calendar.calendars[calendar_id].img;
+			BookingTool.Calendar.position_container(container, img);
 		});
 	},
 	
 	add_date_handlers: function(calendar_id, container) {
 		$('td a', container).each(function() {
 			$(this).click(function() {
-				BookingTool.pick_date(calendar_id, $(this).attr('rel'));
+				BookingTool.Calendar.pick_date(calendar_id, $(this).attr('rel'));
 				return false;
 			});
 		});
@@ -118,26 +122,26 @@ BookingTool = {
 	add_month_pagination_handlers: function(calendar_id, container) {
 		$('p a', container).each(function() {
 			$(this).click(function() {
-				BookingTool.load_calendar(calendar_id, container, $(this).attr('href'));
+				BookingTool.Calendar.load_calendar(calendar_id, container, $(this).attr('href'));
 				return false;
 			});
 		});
 	},
 	
 	pick_date: function(calendar_id, date) {
-		BookingTool.hide_calendar(calendar_id);
-		input = BookingTool.calendars[calendar_id].input;
+		BookingTool.Calendar.hide_calendar(calendar_id);
+		input = BookingTool.Calendar.calendars[calendar_id].input;
 		$(input).attr('value', date);
-		BookingTool.check_risk_for_field(input);
+		BookingTool.Calendar.check_risk_for_field(input);
 	},
 	
 	hide_calendar: function(calendar_id) {
-		BookingTool.calendars[calendar_id].container.hide();
+		BookingTool.Calendar.calendars[calendar_id].container.hide();
 	},
 	
 	hide_all_calendars: function() {
-		$(BookingTool.calendars).each(function(idx) {
-			BookingTool.hide_calendar(idx);
+		$(BookingTool.Calendar.calendars).each(function(idx) {
+			BookingTool.Calendar.hide_calendar(idx);
 		});
 	},
 	
@@ -160,4 +164,4 @@ BookingTool = {
 	}
 };
 
-$(BookingTool.init);
+$(BookingTool.Calendar.init);

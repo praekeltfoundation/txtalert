@@ -108,3 +108,4 @@ class RemindersI18NTestCase(TestCase):
         missed_message = self.language.missed_message
         missed_queue = self.gateway.queue[missed_message]
         self.assertTrue(self.patient.active_msisdn.msisdn in missed_queue)
+    

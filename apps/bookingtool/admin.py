@@ -18,15 +18,23 @@ from django import forms
 from django.db import models
 from django.contrib import admin
 from bookingtool.models import BookingPatient
-from bookingtool.widgets import RiskDateWidget
+from bookingtool import widgets
 from therapyedge.models import Visit
 
 class VisitInlineAdmin(admin.TabularInline):
     model =  Visit
     
     formfield_overrides = {
-            models.DateField: {'widget': RiskDateWidget},
+            models.DateField: {'widget': widgets.RiskDateWidget},
     }
+
+class BookingPatientForm(forms.ModelForm):
+    sms_verification = forms.CharField(required=False,label='Send welcome SMS', \
+                                        widget=widgets.SmsVerificationWidget,
+                                        help_text='Send an SMS to verify the patients phone number')
+    
+    class Meta:
+        model = BookingPatient
 
 class BookingPatientAdmin(admin.ModelAdmin):
     
@@ -34,7 +42,7 @@ class BookingPatientAdmin(admin.ModelAdmin):
         VisitInlineAdmin, 
     ]
     
-    form = forms.ModelForm
+    form = BookingPatientForm
     list_display = ('te_id', 'surname', 'name', 'age', 'sex', 'treatment_cycle')
     list_display_links = ('te_id', 'surname', 'name')
     list_filter = ('sex', 'treatment_cycle', 'opt_status')
@@ -48,7 +56,9 @@ class BookingPatientAdmin(admin.ModelAdmin):
     
     fieldsets = (
         (None, {
-            'fields': ('active_msisdn', 'te_id', 'language', 'surname', 'name', 'sex', 'age', 'treatment_cycle', 'opt_status'),
+            'fields': ('active_msisdn', 'te_id', 'language', 'surname', 'name', \
+                        'sex', 'age', 'treatment_cycle', 'opt_status', \
+                        'sms_verification'),
         }),
         ('Advanced options', {
             'fields': ('last_clinic', 'risk_profile', 'date_of_birth'),

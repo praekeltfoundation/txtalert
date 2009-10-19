@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.admin import widgets
 from django.core.urlresolvers import reverse
+from django.utils.safestring import mark_safe
+from django.template import loader
 from txtalert import urls
 from bookingtool.cal import risk_on_date
 
@@ -27,4 +29,13 @@ class RiskDateWidget(widgets.AdminDateWidget):
         if value:
             self.attrs['class'] = self.attrs.get('class','') + ' ' + risk_on_date(value)
         return super(RiskDateWidget, self).render(name, value, attrs)
+
+
+class SmsVerificationWidget(widgets.AdminTextInputWidget):
+    class Media:
+        css = {'all': url_paths_for('css/sms-verification.css')}
+        js = url_paths_for('jquery/js/jquery.js', 'js/sms-verification.js')
     
+    def render(self, name, value, attrs=None):
+        input = super(SmsVerificationWidget, self).render(name, value, attrs)
+        return loader.render_to_string('sms_verification.html', locals())
