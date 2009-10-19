@@ -11,7 +11,9 @@ from django.core.urlresolvers import reverse
 from django.db.models.query import QuerySet
 from django.utils import simplejson
 from therapyedge.models import *
+from therapyedge.tests.helpers import TestingGateway
 from bookingtool.models import *
+from mobile.sms.models import OperaGateway
 from datetime import datetime, timedelta, date
 
 
@@ -79,7 +81,7 @@ class BookingPatientTestCase(TestCase):
         self.assertEquals(self.booking_patient.appointments.count(), 1)
 
 
-class ViewTestClass(TestCase):
+class CalendarTestCase(TestCase):
     
     fixtures = ['test_bookingtool_risks', 'test_therapyedge_risks']
     
@@ -123,3 +125,41 @@ class ViewTestClass(TestCase):
                                                 'year': datetime.now().year
                                         }),
             302)])
+
+
+class VerificationTestCase(TestCase):
+    def setUp(self):
+        
+        # monkey patching alert
+        def monkey_patched_sendSMS(_self, msisdns, message):
+            _self.queue[message] = msisdns
+            return _self.logAction(datetime.now(), datetime.now(), \
+                                            [(m, 'u') for m in msisdns], message)
+            
+        def monkey_patched_queue(_self):
+            if not hasattr(_self, '_queue'):
+                _self._queue = {}
+            return _self._queue
+        
+        
+        OperaGateway.queue = property(monkey_patched_queue)
+        OperaGateway.sendSMS = monkey_patched_sendSMS
+        
+        self.gateway = OperaGateway(method='send', service='123', password='bla', \
+                                        channel='123', name='test', \
+                                        url='http://testserver.com')
+        self.gateway.save()
+        self.client = Client()
+    
+    
+    def test_verification_sms(self):
+        msisdn = '27761234567'
+        response = self.client.post(reverse('verification-sms'), {
+            'msisdn': msisdn
+        })
+        self.assertEquals(response.status_code, 200)
+        # ugh sorry, hairy database schema
+        gateway = OperaGateway.objects.all()[0]
+        action = gateway.smssendactions.all()[0]
+        smslog = action.smslogs.all()[0]
+        self.assertTrue(smslog.contact.msisdn == msisdn)

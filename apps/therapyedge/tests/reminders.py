@@ -1,35 +1,9 @@
-import hashlib
 from django.test import TestCase
 from datetime import datetime, date, timedelta
 from therapyedge import reminders_i18n
 from therapyedge.models import *
+from therapyedge.tests.helpers import TestingGateway, random_string
 from mobile.sms.models import *
-
-def random_string(val=None):
-    if not val: val = datetime.now()
-    m = hashlib.sha1()
-    m.update(str(val))
-    return m.hexdigest()
-
-
-class TestingGateway(Gateway):
-    
-    class Meta:
-        proxy = True
-    
-    @property
-    def queue(self):
-        if not hasattr(self, '_queue'):
-            self._queue = {}
-        return self._queue
-    
-    def sendSMS(self, msisdns, message):
-        self.queue[message] = msisdns
-        return self.logAction(datetime.now(), datetime.now(), \
-                                        [(m, 'u') for m in msisdns], message)
-    
-
-
 
 class RemindersI18NTestCase(TestCase):
     
