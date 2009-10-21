@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/flatpages
+END
+admin.py
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/flatpages/admin.py
+END
+middleware.py
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/flatpages/middleware.py
+END
+views.py
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/flatpages/views.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/flatpages/__init__.py
+END
+models.py
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/flatpages/models.py
+END
+urls.py
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/flatpages/urls.py
+END

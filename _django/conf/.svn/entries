@@ -1,0 +1,66 @@
+8
+
+dir
+11638
+http://code.djangoproject.com/svn/django/tags/releases/1.0.2/django/conf
+http://code.djangoproject.com/svn
+
+
+
+2008-11-18T22:29:05.707262Z
+9492
+kmtracey
+has-props
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+bcc190cf-cafb-0310-a4f2-bffc1f526a37
+
+locale
+dir
+
+project_template
+dir
+
+urls
+dir
+
+__init__.py
+file
+
+
+
+
+2009-10-21T08:13:35.000000Z
+9234e3993c3cb85c7ee2fd7548efaf71
+2008-08-25T12:58:18.470997Z
+8538
+jacob
+has-props
+
+global_settings.py
+file
+
+
+
+
+2009-10-21T08:13:35.000000Z
+bc3b592d284ff2bb5bd519129ef3ba03
+2008-11-14T07:22:12.997848Z
+9426
+mtredinnick
+has-props
+
+app_template
+dir
+

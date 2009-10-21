@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/layermap/interstates
+END
+interstates.dbf
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/layermap/interstates/interstates.dbf
+END
+interstates.prj
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/layermap/interstates/interstates.prj
+END
+interstates.shx
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/layermap/interstates/interstates.shx
+END
+interstates.shp
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/layermap/interstates/interstates.shp
+END

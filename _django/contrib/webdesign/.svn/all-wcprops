@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/webdesign
+END
+lorem_ipsum.py
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/webdesign/lorem_ipsum.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/webdesign/__init__.py
+END
+tests.py
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/webdesign/tests.py
+END
+models.py
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/webdesign/models.py
+END

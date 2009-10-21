@@ -1,0 +1,47 @@
+8
+
+dir
+11638
+http://code.djangoproject.com/svn/django/tags/releases/1.0.2/django/contrib/gis/db
+http://code.djangoproject.com/svn
+
+
+
+2008-11-17T18:47:01.001125Z
+9485
+jbronn
+has-props
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+bcc190cf-cafb-0310-a4f2-bffc1f526a37
+
+models
+dir
+
+__init__.py
+file
+
+
+
+
+2009-10-21T08:13:53.000000Z
+d41d8cd98f00b204e9800998ecf8427e
+2008-08-05T18:13:06.236010Z
+8219
+jbronn
+has-props
+
+backend
+dir
+

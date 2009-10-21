@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/localflavor/es
+END
+es_regions.py
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/localflavor/es/es_regions.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/localflavor/es/__init__.py
+END
+es_provinces.py
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/localflavor/es/es_provinces.py
+END
+forms.py
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/localflavor/es/forms.py
+END

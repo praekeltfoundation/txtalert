@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/db/backend/mysql
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/db/backend/mysql/__init__.py
+END
+field.py
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/db/backend/mysql/field.py
+END
+creation.py
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/db/backend/mysql/creation.py
+END
+query.py
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/db/backend/mysql/query.py
+END

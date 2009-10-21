@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/layermap
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/layermap/__init__.py
+END
+tests.py
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/layermap/tests.py
+END
+models.py
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/layermap/models.py
+END

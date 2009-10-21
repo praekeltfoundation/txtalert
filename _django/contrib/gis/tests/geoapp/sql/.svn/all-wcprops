@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/geoapp/sql
+END
+tx.wkt
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/geoapp/sql/tx.wkt
+END
+ks.wkt
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/geoapp/sql/ks.wkt
+END
+state.mysql.sql
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/geoapp/sql/state.mysql.sql
+END
+co.wkt
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/geoapp/sql/co.wkt
+END
+country.mysql.sql
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/geoapp/sql/country.mysql.sql
+END
+state.postgresql_psycopg2.sql
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/geoapp/sql/state.postgresql_psycopg2.sql
+END
+country.postgresql_psycopg2.sql
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/geoapp/sql/country.postgresql_psycopg2.sql
+END
+city.mysql.sql
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/geoapp/sql/city.mysql.sql
+END
+city.oracle.sql
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/geoapp/sql/city.oracle.sql
+END
+nz.wkt
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/geoapp/sql/nz.wkt
+END
+city.postgresql_psycopg2.sql
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/geoapp/sql/city.postgresql_psycopg2.sql
+END

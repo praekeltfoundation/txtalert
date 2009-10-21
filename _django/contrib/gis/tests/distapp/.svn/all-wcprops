@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/distapp
+END
+data.py
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/distapp/data.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/distapp/__init__.py
+END
+tests.py
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/distapp/tests.py
+END
+models.py
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/9503/django/tags/releases/1.0.2/django/contrib/gis/tests/distapp/models.py
+END

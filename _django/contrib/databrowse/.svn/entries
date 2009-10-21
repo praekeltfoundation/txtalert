@@ -1,0 +1,99 @@
+8
+
+dir
+11638
+http://code.djangoproject.com/svn/django/tags/releases/1.0.2/django/contrib/databrowse
+http://code.djangoproject.com/svn
+
+
+
+2008-09-08T05:19:28.373904Z
+8984
+adrian
+has-props
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+bcc190cf-cafb-0310-a4f2-bffc1f526a37
+
+plugins
+dir
+
+datastructures.py
+file
+
+
+
+
+2009-10-21T08:14:41.000000Z
+a5675f33f2063cb0193a842f12321317
+2008-02-03T01:52:45.581562Z
+7061
+mtredinnick
+has-props
+
+views.py
+file
+
+
+
+
+2009-10-21T08:14:41.000000Z
+3635a872bf97c4bd2c35edc105f333e1
+2008-07-22T03:24:09.079677Z
+8046
+adrian
+has-props
+
+__init__.py
+file
+
+
+
+
+2009-10-21T08:14:41.000000Z
+074f5f504e649aff3b6f25a1c96ff3a8
+2007-08-12T12:49:01.338903Z
+5876
+mtredinnick
+has-props
+
+urls.py
+file
+
+
+
+
+2009-10-21T08:14:41.000000Z
+704ffdba52da0501ef8701d7e341936e
+2007-08-12T12:49:01.338903Z
+5876
+mtredinnick
+has-props
+
+templates
+dir
+
+sites.py
+file
+
+
+
+
+2009-10-21T08:14:41.000000Z
+b5f5deef7ea908dae82a524644658855
+2008-08-25T18:32:26.847160Z
+8547
+jacob
+has-props
+

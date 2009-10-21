@@ -1,0 +1,85 @@
+8
+
+dir
+11638
+http://code.djangoproject.com/svn/django/tags/releases/1.0.2/django/contrib/gis/db/backend
+http://code.djangoproject.com/svn
+
+
+
+2008-11-17T18:47:01.001125Z
+9485
+jbronn
+has-props
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+bcc190cf-cafb-0310-a4f2-bffc1f526a37
+
+adaptor.py
+file
+
+
+
+
+2009-10-21T08:13:53.000000Z
+4561c02d15758085f4213e3558785a2e
+2008-08-05T18:13:06.236010Z
+8219
+jbronn
+
+base.py
+file
+
+
+
+
+2009-10-21T08:13:53.000000Z
+35ae1c15e18ff170c91cc58379e95185
+2008-08-05T18:13:06.236010Z
+8219
+jbronn
+
+util.py
+file
+
+
+
+
+2009-10-21T08:13:53.000000Z
+763683ccdfa7e92f7688d94f265c9555
+2008-08-05T18:13:06.236010Z
+8219
+jbronn
+
+mysql
+dir
+
+oracle
+dir
+
+__init__.py
+file
+
+
+
+
+2009-10-21T08:13:53.000000Z
+4682bf96d85b86566403a4a0680fb199
+2008-08-05T18:13:06.236010Z
+8219
+jbronn
+
+postgis
+dir
+
