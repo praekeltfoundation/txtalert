@@ -3,3 +3,4 @@
 ./config.py
 log/*.log
 .DS_Store
+db/*.db

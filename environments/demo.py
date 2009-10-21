@@ -13,11 +13,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with TxtAlert.  If not, see <http://www.gnu.org/licenses/>.
 
+from os.path import join
+from defaults import *
 
 DEBUG = True
 
-DATABASE_ENGINE = 'postgresql_psycopg2'
-DATABASE_NAME = 'txtalert_dev'
+DATABASE_ENGINE = 'sqlite3'
+DATABASE_NAME = join(APP_ROOT, 'db', 'txtalert_demo.db')
 DATABASE_USER = ''
 DATABASE_PASSWORD = ''
 DATABASE_PORT = ''
