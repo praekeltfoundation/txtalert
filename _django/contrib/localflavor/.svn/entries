@@ -1,119 +1,0 @@
-8
-
-dir
-11638
-http://code.djangoproject.com/svn/django/tags/releases/1.0.2/django/contrib/localflavor
-http://code.djangoproject.com/svn
-
-
-
-2008-11-01T20:42:17.802652Z
-9322
-kmtracey
-has-props
-
-svn:special svn:externals svn:needs-lock
-
-
-
-
-
-
-
-
-
-
-
-bcc190cf-cafb-0310-a4f2-bffc1f526a37
-
-uk
-dir
-
-ro
-dir
-
-ca
-dir
-
-mx
-dir
-
-__init__.py
-file
-
-
-
-
-2009-10-21T08:14:49.000000Z
-d41d8cd98f00b204e9800998ecf8427e
-2007-08-12T12:49:01.338903Z
-5876
-mtredinnick
-has-props
-
-us
-dir
-
-de
-dir
-
-ch
-dir
-
-cl
-dir
-
-fi
-dir
-
-ar
-dir
-
-br
-dir
-
-pe
-dir
-
-at
-dir
-
-au
-dir
-
-in_
-dir
-
-fr
-dir
-
-es
-dir
-
-jp
-dir
-
-nl
-dir
-
-is_
-dir
-
-za
-dir
-
-pl
-dir
-
-it
-dir
-
-generic
-dir
-
-no
-dir
-
-sk
-dir
-

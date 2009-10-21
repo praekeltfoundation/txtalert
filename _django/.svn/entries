@@ -1,86 +1,0 @@
-8
-
-dir
-11638
-http://code.djangoproject.com/svn/django/tags/releases/1.0.2/django
-http://code.djangoproject.com/svn
-
-
-
-2008-11-19T05:27:25.808617Z
-9499
-ubernostrum
-has-props
-
-svn:special svn:externals svn:needs-lock
-
-
-
-
-
-
-
-
-
-
-
-bcc190cf-cafb-0310-a4f2-bffc1f526a37
-
-http
-dir
-
-test
-dir
-
-conf
-dir
-
-db
-dir
-
-forms
-dir
-
-__init__.py
-file
-
-
-
-
-2009-10-21T08:14:56.000000Z
-9aed23d0fab78d2806a31510e1644456
-2008-11-19T05:27:25.808617Z
-9499
-ubernostrum
-has-props
-
-core
-dir
-
-templatetags
-dir
-
-views
-dir
-
-shortcuts
-dir
-
-dispatch
-dir
-
-contrib
-dir
-
-utils
-dir
-
-bin
-dir
-
-template
-dir
-
-middleware
-dir
-
