@@ -3,12 +3,11 @@ from django.contrib.admin import widgets
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 from django.template import loader
-from txtalert import urls
 from bookingtool.cal import risk_on_date
 
 def url_path_for(path):
     """convert 'js/file.js' into a valid path for the current static route"""
-    return reverse("static", urlconf=urls, args=(path,)) 
+    return reverse("static", urlconf='txtalert.urls', args=(path,)) 
 
 def url_paths_for(*paths):
     return [url_path_for(path) for path in paths]
