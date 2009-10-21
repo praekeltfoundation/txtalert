@@ -72,7 +72,7 @@ class HttpRequest(object):
             current_uri = '%s://%s%s' % (self.is_secure() and 'https' or 'http',
                                          self.get_host(), self.path)
             location = urljoin(current_uri, location)
-        return location
+        return iri_to_uri(location)
 
     def is_secure(self):
         return os.environ.get("HTTPS") == "on"
@@ -189,7 +189,7 @@ class QueryDict(MultiValueDict):
         for key, value in dict.items(self):
             dict.__setitem__(result, copy.deepcopy(key, memo), copy.deepcopy(value, memo))
         return result
-
+    
     def setlist(self, key, list_):
         self._assert_mutable()
         key = str_to_unicode(key, self.encoding)
@@ -263,6 +263,9 @@ def parse_cookie(cookie):
         cookiedict[key] = c.get(key).value
     return cookiedict
 
+class BadHeaderError(ValueError):
+    pass
+
 class HttpResponse(object):
     """A basic HTTP response, with content and dictionary-accessed headers."""
 
@@ -303,12 +306,15 @@ class HttpResponse(object):
         for value in values:
             if isinstance(value, unicode):
                 try:
-                    yield value.encode('us-ascii')
+                    value = value.encode('us-ascii')
                 except UnicodeError, e:
                     e.reason += ', HTTP response headers must be in US-ASCII format'
                     raise
             else:
-                yield str(value)
+                value = str(value)
+            if '\n' in value or '\r' in value:
+                raise BadHeaderError("Header values can't contain newlines (got %r)" % (value))
+            yield value
 
     def __setitem__(self, header, value):
         header, value = self._convert_to_ascii(header, value)
@@ -398,14 +404,14 @@ class HttpResponseRedirect(HttpResponse):
 
     def __init__(self, redirect_to):
         HttpResponse.__init__(self)
-        self['Location'] = iri_to_uri(redirect_to)
+        self['Location'] = redirect_to
 
 class HttpResponsePermanentRedirect(HttpResponse):
     status_code = 301
 
     def __init__(self, redirect_to):
         HttpResponse.__init__(self)
-        self['Location'] = iri_to_uri(redirect_to)
+        self['Location'] = redirect_to
 
 class HttpResponseNotModified(HttpResponse):
     status_code = 304

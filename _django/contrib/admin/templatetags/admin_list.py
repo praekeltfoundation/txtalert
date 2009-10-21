@@ -22,7 +22,7 @@ def paginator_number(cl,i):
     elif i == cl.page_num:
         return mark_safe(u'<span class="this-page">%d</span> ' % (i+1))
     else:
-        return mark_safe(u'<a href="%s"%s>%d</a> ' % (cl.get_query_string({PAGE_VAR: i}), (i == cl.paginator.num_pages-1 and ' class="end"' or ''), i+1))
+        return mark_safe(u'<a href="%s"%s>%d</a> ' % (escape(cl.get_query_string({PAGE_VAR: i})), (i == cl.paginator.num_pages-1 and ' class="end"' or ''), i+1))
 paginator_number = register.simple_tag(paginator_number)
 
 def pagination(cl):
@@ -70,7 +70,7 @@ pagination = register.inclusion_tag('admin/pagination.html')(pagination)
 
 def result_headers(cl):
     lookup_opts = cl.lookup_opts
-    
+
     for i, field_name in enumerate(cl.list_display):
         attr = None
         try:
@@ -97,7 +97,7 @@ def result_headers(cl):
                             raise AttributeError, \
                                 "'%s' model or '%s' objects have no attribute '%s'" % \
                                     (lookup_opts.object_name, cl.model_admin.__class__, field_name)
-                
+
                 try:
                     header = attr.short_description
                 except AttributeError:
@@ -133,7 +133,7 @@ def _boolean_icon(field_val):
     BOOLEAN_MAPPING = {True: 'yes', False: 'no', None: 'unknown'}
     return mark_safe(u'<img src="%simg/admin/icon-%s.gif" alt="%s" />' % (settings.ADMIN_MEDIA_PREFIX, BOOLEAN_MAPPING[field_val], field_val))
 
-def items_for_result(cl, result):
+def items_for_result(cl, result, form):
     first = True
     pk = cl.lookup_opts.pk.attname
     for field_name in cl.list_display:
@@ -205,8 +205,8 @@ def items_for_result(cl, result):
                     result_repr = EMPTY_CHANGELIST_VALUE
             # Fields with choices are special: Use the representation
             # of the choice.
-            elif f.choices:
-                result_repr = dict(f.choices).get(field_val, EMPTY_CHANGELIST_VALUE)
+            elif f.flatchoices:
+                result_repr = dict(f.flatchoices).get(field_val, EMPTY_CHANGELIST_VALUE)
             else:
                 result_repr = escape(field_val)
         if force_unicode(result_repr) == '':
@@ -222,15 +222,30 @@ def items_for_result(cl, result):
                 attr = str(cl.to_field)
             else:
                 attr = pk
-            result_id = repr(force_unicode(getattr(result, attr)))[1:]
+            value = result.serializable_value(attr)
+            result_id = repr(force_unicode(value))[1:]
             yield mark_safe(u'<%s%s><a href="%s"%s>%s</a></%s>' % \
                 (table_tag, row_class, url, (cl.is_popup and ' onclick="opener.dismissRelatedLookupPopup(window, %s); return false;"' % result_id or ''), conditional_escape(result_repr), table_tag))
         else:
-            yield mark_safe(u'<td%s>%s</td>' % (row_class, conditional_escape(result_repr)))
+            # By default the fields come from ModelAdmin.list_editable, but if we pull
+            # the fields out of the form instead of list_editable custom admins
+            # can provide fields on a per request basis
+            if form and field_name in form.fields:
+                bf = form[field_name]
+                result_repr = mark_safe(force_unicode(bf.errors) + force_unicode(bf))
+            else:
+                result_repr = conditional_escape(result_repr)
+            yield mark_safe(u'<td%s>%s</td>' % (row_class, result_repr))
+    if form:
+        yield mark_safe(force_unicode(form[cl.model._meta.pk.name]))
 
 def results(cl):
-    for res in cl.result_list:
-        yield list(items_for_result(cl,res))
+    if cl.formset:
+        for res, form in zip(cl.result_list, cl.formset.forms):
+            yield list(items_for_result(cl, res, form))
+    else:
+        for res in cl.result_list:
+            yield list(items_for_result(cl, res, None))
 
 def result_list(cl):
     return {'cl': cl,
@@ -250,7 +265,7 @@ def date_hierarchy(cl):
         day_lookup = cl.params.get(day_field)
         year_month_format, month_day_format = get_partial_date_formats()
 
-        link = lambda d: mark_safe(cl.get_query_string(d, [field_generic]))
+        link = lambda d: cl.get_query_string(d, [field_generic])
 
         if year_lookup and month_lookup and day_lookup:
             day = datetime.date(int(year_lookup), int(month_lookup), int(day_lookup))
@@ -310,3 +325,12 @@ search_form = register.inclusion_tag('admin/search_form.html')(search_form)
 def admin_list_filter(cl, spec):
     return {'title': spec.title(), 'choices' : list(spec.choices(cl))}
 admin_list_filter = register.inclusion_tag('admin/filter.html')(admin_list_filter)
+
+def admin_actions(context):
+    """
+    Track the number of times the action field has been rendered on the page,
+    so we know which value to use.
+    """
+    context['action_index'] = context.get('action_index', -1) + 1
+    return context
+admin_actions = register.inclusion_tag("admin/actions.html", takes_context=True)(admin_actions)

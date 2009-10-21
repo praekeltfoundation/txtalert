@@ -1,5 +1,6 @@
 from django.db.models.manager import Manager
 from django.contrib.gis.db.models.query import GeoQuerySet
+from django.contrib.gis.db.models.sql.subqueries import insert_query
 
 class GeoManager(Manager):
     "Overrides Manager to return Geographic QuerySets."
@@ -18,6 +19,9 @@ class GeoManager(Manager):
     def centroid(self, *args, **kwargs):
         return self.get_query_set().centroid(*args, **kwargs)
 
+    def collect(self, *args, **kwargs):
+        return self.get_query_set().collect(*args, **kwargs)
+
     def difference(self, *args, **kwargs):
         return self.get_query_set().difference(*args, **kwargs)
 
@@ -29,6 +33,9 @@ class GeoManager(Manager):
 
     def extent(self, *args, **kwargs):
         return self.get_query_set().extent(*args, **kwargs)
+
+    def geojson(self, *args, **kwargs):
+        return self.get_query_set().geojson(*args, **kwargs)
 
     def gml(self, *args, **kwargs):
         return self.get_query_set().gml(*args, **kwargs)
@@ -63,6 +70,9 @@ class GeoManager(Manager):
     def scale(self, *args, **kwargs):
         return self.get_query_set().scale(*args, **kwargs)
 
+    def snap_to_grid(self, *args, **kwargs):
+        return self.get_query_set().snap_to_grid(*args, **kwargs)
+
     def svg(self, *args, **kwargs):
         return self.get_query_set().svg(*args, **kwargs)
 
@@ -80,3 +90,6 @@ class GeoManager(Manager):
 
     def unionagg(self, *args, **kwargs):
         return self.get_query_set().unionagg(*args, **kwargs)
+
+    def _insert(self, values, **kwargs):
+        return insert_query(self.model, values, **kwargs)

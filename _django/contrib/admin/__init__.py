@@ -1,13 +1,29 @@
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.admin.options import ModelAdmin, HORIZONTAL, VERTICAL
 from django.contrib.admin.options import StackedInline, TabularInline
 from django.contrib.admin.sites import AdminSite, site
+from django.utils.importlib import import_module
+
+# A flag to tell us if autodiscover is running.  autodiscover will set this to
+# True while running, and False when it finishes.
+LOADING = False
 
 def autodiscover():
     """
-    Auto-discover INSTALLED_APPS admin.py modules and fail silently when 
+    Auto-discover INSTALLED_APPS admin.py modules and fail silently when
     not present. This forces an import on them to register any admin bits they
     may want.
     """
+    # Bail out if autodiscover didn't finish loading from a previous call so
+    # that we avoid running autodiscover again when the URLconf is loaded by
+    # the exception handler to resolve the handler500 view.  This prevents an
+    # admin.py module with errors from re-registering models and raising a
+    # spurious AlreadyRegistered exception (see #8245).
+    global LOADING
+    if LOADING:
+        return
+    LOADING = True
+
     import imp
     from django.conf import settings
 
@@ -22,7 +38,7 @@ def autodiscover():
         # fails silently -- apps that do weird things with __path__ might
         # need to roll their own admin registration.
         try:
-            app_path = __import__(app, {}, {}, [app.split('.')[-1]]).__path__
+            app_path = import_module(app).__path__
         except AttributeError:
             continue
 
@@ -37,4 +53,6 @@ def autodiscover():
 
         # Step 3: import the app's admin file. If this has errors we want them
         # to bubble up.
-        __import__("%s.admin" % app)
+        import_module("%s.admin" % app)
+    # autodiscover was successful, reset loading flag.
+    LOADING = False

@@ -225,9 +225,6 @@ IGNORABLE_404_ENDS = ('mail.pl', 'mailform.pl', 'mail.cgi', 'mailform.cgi', 'fav
 # loudly.
 SECRET_KEY = ''
 
-# Path to the "jing" executable -- needed to validate XMLFields
-JING_PATH = "/usr/bin/jing"
-
 # Default file storage mechanism that holds media.
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
@@ -301,11 +298,11 @@ DEFAULT_INDEX_TABLESPACE = ''
 # this middleware classes will be applied in the order given, and in the
 # response phase the middleware will be applied in reverse order.
 MIDDLEWARE_CLASSES = (
+    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 #     'django.middleware.http.ConditionalGetMiddleware',
 #     'django.middleware.gzip.GZipMiddleware',
-    'django.middleware.common.CommonMiddleware',
 )
 
 ############

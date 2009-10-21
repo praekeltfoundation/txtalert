@@ -24,6 +24,8 @@ True
 False
 >>> u.is_active
 True
+>>> u.is_superuser
+False
 
 >>> a = AnonymousUser()
 >>> a.is_authenticated()
@@ -32,10 +34,21 @@ False
 False
 >>> a.is_active
 False
+>>> a.is_superuser
+False
 >>> a.groups.all()
 []
 >>> a.user_permissions.all()
 []
+
+# superuser tests.
+>>> super = User.objects.create_superuser('super', 'super@example.com', 'super')
+>>> super.is_superuser
+True
+>>> super.is_active
+True
+>>> super.is_staff
+True
 
 #
 # Tests for createsuperuser management command.
@@ -45,7 +58,7 @@ False
 #
 >>> from django.core.management import call_command
 
->>> call_command("createsuperuser", noinput=True, username="joe", email="joe@somewhere.org")
+>>> call_command("createsuperuser", interactive=False, username="joe", email="joe@somewhere.org")
 Superuser created successfully.
 
 >>> u = User.objects.get(username="joe")

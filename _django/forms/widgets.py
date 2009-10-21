@@ -23,7 +23,7 @@ from urlparse import urljoin
 __all__ = (
     'Media', 'MediaDefiningClass', 'Widget', 'TextInput', 'PasswordInput',
     'HiddenInput', 'MultipleHiddenInput',
-    'FileInput', 'DateTimeInput', 'TimeInput', 'Textarea', 'CheckboxInput',
+    'FileInput', 'DateInput', 'DateTimeInput', 'TimeInput', 'Textarea', 'CheckboxInput',
     'Select', 'NullBooleanSelect', 'SelectMultiple', 'RadioSelect',
     'CheckboxSelectMultiple', 'MultiWidget',
     'SplitDateTimeWidget',
@@ -75,7 +75,7 @@ class Media(StrAndUnicode):
     def __getitem__(self, name):
         "Returns a Media object that only contains media of the given type"
         if name in MEDIA_TYPES:
-            return Media(**{name: getattr(self, '_' + name)})
+            return Media(**{str(name): getattr(self, '_' + name)})
         raise KeyError('Unknown media type "%s"' % name)
 
     def add_js(self, data):
@@ -275,16 +275,40 @@ class FileInput(Input):
 class Textarea(Widget):
     def __init__(self, attrs=None):
         # The 'rows' and 'cols' attributes are required for HTML correctness.
-        self.attrs = {'cols': '40', 'rows': '10'}
+        default_attrs = {'cols': '40', 'rows': '10'}
         if attrs:
-            self.attrs.update(attrs)
+            default_attrs.update(attrs)
+        super(Textarea, self).__init__(default_attrs)
 
     def render(self, name, value, attrs=None):
         if value is None: value = ''
-        value = force_unicode(value)
         final_attrs = self.build_attrs(attrs, name=name)
         return mark_safe(u'<textarea%s>%s</textarea>' % (flatatt(final_attrs),
                 conditional_escape(force_unicode(value))))
+
+class DateInput(Input):
+    input_type = 'text'
+    format = '%Y-%m-%d'     # '2006-10-25'
+
+    def __init__(self, attrs=None, format=None):
+        super(DateInput, self).__init__(attrs)
+        if format:
+            self.format = format
+
+    def _format_value(self, value):
+        if value is None:
+            return ''
+        elif hasattr(value, 'strftime'):
+            value = datetime_safe.new_date(value)
+            return value.strftime(self.format)
+        return value
+
+    def render(self, name, value, attrs=None):
+        value = self._format_value(value)
+        return super(DateInput, self).render(name, value, attrs)
+
+    def _has_changed(self, initial, data):
+        return super(DateInput, self)._has_changed(self._format_value(initial), data)
 
 class DateTimeInput(Input):
     input_type = 'text'
@@ -295,23 +319,43 @@ class DateTimeInput(Input):
         if format:
             self.format = format
 
-    def render(self, name, value, attrs=None):
+    def _format_value(self, value):
         if value is None:
-            value = ''
+            return ''
         elif hasattr(value, 'strftime'):
             value = datetime_safe.new_datetime(value)
-            value = value.strftime(self.format)
+            return value.strftime(self.format)
+        return value
+
+    def render(self, name, value, attrs=None):
+        value = self._format_value(value)
         return super(DateTimeInput, self).render(name, value, attrs)
+
+    def _has_changed(self, initial, data):
+        return super(DateTimeInput, self)._has_changed(self._format_value(initial), data)
 
 class TimeInput(Input):
     input_type = 'text'
+    format = '%H:%M:%S'     # '14:30:59'
+
+    def __init__(self, attrs=None, format=None):
+        super(TimeInput, self).__init__(attrs)
+        if format:
+            self.format = format
+
+    def _format_value(self, value):
+        if value is None:
+            return ''
+        elif hasattr(value, 'strftime'):
+            return value.strftime(self.format)
+        return value
 
     def render(self, name, value, attrs=None):
-        if value is None:
-            value = ''
-        elif isinstance(value, time):
-            value = value.replace(microsecond=0)
+        value = self._format_value(value)
         return super(TimeInput, self).render(name, value, attrs)
+
+    def _has_changed(self, initial, data):
+        return super(TimeInput, self)._has_changed(self._format_value(initial), data)
 
 class CheckboxInput(Widget):
     def __init__(self, attrs=None, check_test=bool):
@@ -400,7 +444,12 @@ class NullBooleanSelect(Select):
 
     def value_from_datadict(self, data, files, name):
         value = data.get(name, None)
-        return {u'2': True, u'3': False, True: True, False: False}.get(value, None)
+        return {u'2': True,
+                True: True,
+                'True': True,
+                u'3': False,
+                'False': False,
+                False: False}.get(value, None)
 
     def _has_changed(self, initial, data):
         # Sometimes data or initial could be None or u'' which should be the
@@ -655,8 +704,16 @@ class SplitDateTimeWidget(MultiWidget):
     """
     A Widget that splits datetime input into two <input type="text"> boxes.
     """
-    def __init__(self, attrs=None):
-        widgets = (TextInput(attrs=attrs), TextInput(attrs=attrs))
+    date_format = DateInput.format
+    time_format = TimeInput.format
+
+    def __init__(self, attrs=None, date_format=None, time_format=None):
+        if date_format:
+            self.date_format = date_format
+        if time_format:
+            self.time_format = time_format
+        widgets = (DateInput(attrs=attrs, format=self.date_format),
+                   TimeInput(attrs=attrs, format=self.time_format))
         super(SplitDateTimeWidget, self).__init__(widgets, attrs)
 
     def decompress(self, value):
@@ -671,4 +728,3 @@ class SplitHiddenDateTimeWidget(SplitDateTimeWidget):
     def __init__(self, attrs=None):
         widgets = (HiddenInput(attrs=attrs), HiddenInput(attrs=attrs))
         super(SplitDateTimeWidget, self).__init__(widgets, attrs)
-

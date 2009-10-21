@@ -1,5 +1,4 @@
 from django.conf.urls.defaults import *
-from django.conf import settings
 
 urlpatterns = patterns('django.contrib.comments.views',
     url(r'^post/$',          'comments.post_comment',       name='comments-post-comment'),
@@ -14,6 +13,6 @@ urlpatterns = patterns('django.contrib.comments.views',
 )
 
 urlpatterns += patterns('',
-    url(r'^cr/(\d+)/(\w+)/$', 'django.views.defaults.shortcut', name='comments-url-redirect'),
+    url(r'^cr/(\d+)/(.+)/$', 'django.views.defaults.shortcut', name='comments-url-redirect'),
 )
 

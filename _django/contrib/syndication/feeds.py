@@ -23,13 +23,14 @@ class Feed(object):
     item_pubdate = None
     item_enclosure_url = None
     feed_type = feedgenerator.DefaultFeed
+    feed_url = None
     title_template = None
     description_template = None
 
     def __init__(self, slug, request):
         self.slug = slug
         self.request = request
-        self.feed_url = request.path
+        self.feed_url = self.feed_url or request.path
         self.title_template_name = self.title_template or ('feeds/%s_title.html' % slug)
         self.description_template_name = self.description_template or ('feeds/%s_description.html' % slug)
 
@@ -144,7 +145,7 @@ class Feed(object):
                 author_email = author_link = None
 
             pubdate = self.__get_dynamic_attr('item_pubdate', item)
-            if pubdate:
+            if pubdate and not pubdate.tzinfo:
                 now = datetime.now()
                 utcnow = datetime.utcnow()
 

@@ -10,10 +10,11 @@ except ImportError:
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.uploadedfile import TemporaryUploadedFile, InMemoryUploadedFile
+from django.utils import importlib
 
 __all__ = ['UploadFileException','StopUpload', 'SkipFile', 'FileUploadHandler',
            'TemporaryFileUploadHandler', 'MemoryFileUploadHandler',
-           'load_handler']
+           'load_handler', 'StopFutureHandlers']
 
 class UploadFileException(Exception):
     """
@@ -44,7 +45,7 @@ class SkipFile(UploadFileException):
     This exception is raised by an upload handler that wants to skip a given file.
     """
     pass
-    
+
 class StopFutureHandlers(UploadFileException):
     """
     Upload handers that have handled a file and do not want future handlers to
@@ -151,7 +152,7 @@ class MemoryFileUploadHandler(FileUploadHandler):
         Use the content_length to signal whether or not this handler should be in use.
         """
         # Check the content-length header to see if we should
-        # If the the post is too large, we cannot use the Memory handler.
+        # If the post is too large, we cannot use the Memory handler.
         if content_length > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
             self.activated = False
         else:
@@ -179,6 +180,7 @@ class MemoryFileUploadHandler(FileUploadHandler):
         if not self.activated:
             return
 
+        self.file.seek(0)
         return InMemoryUploadedFile(
             file = self.file,
             field_name = self.field_name,
@@ -201,7 +203,7 @@ def load_handler(path, *args, **kwargs):
     i = path.rfind('.')
     module, attr = path[:i], path[i+1:]
     try:
-        mod = __import__(module, {}, {}, [attr])
+        mod = importlib.import_module(module)
     except ImportError, e:
         raise ImproperlyConfigured('Error importing upload handler module %s: "%s"' % (module, e))
     except ValueError, e:

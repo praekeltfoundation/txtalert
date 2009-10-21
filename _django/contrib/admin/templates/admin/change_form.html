@@ -6,7 +6,7 @@
 {{ media }}
 {% endblock %}
 
-{% block stylesheet %}{% admin_media_prefix %}css/forms.css{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />{% endblock %}
 
 {% block coltype %}{% if ordered_objects %}colMS{% else %}colM{% endif %}{% endblock %}
 
@@ -54,7 +54,7 @@
 
 {% submit_row %}
 
-{% if add %}
+{% if adminform and add %}
    <script type="text/javascript">document.getElementById("{{ adminform.first_field.auto_id }}").focus();</script>
 {% endif %}
 

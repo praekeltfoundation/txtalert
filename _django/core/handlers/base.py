@@ -3,6 +3,7 @@ import sys
 from django import http
 from django.core import signals
 from django.utils.encoding import force_unicode
+from django.utils.importlib import import_module
 
 class BaseHandler(object):
     # Changes that are always applied to a response (in this order).
@@ -24,10 +25,11 @@ class BaseHandler(object):
         """
         from django.conf import settings
         from django.core import exceptions
-        self._request_middleware = []
         self._view_middleware = []
         self._response_middleware = []
         self._exception_middleware = []
+
+        request_middleware = []
         for middleware_path in settings.MIDDLEWARE_CLASSES:
             try:
                 dot = middleware_path.rindex('.')
@@ -35,7 +37,7 @@ class BaseHandler(object):
                 raise exceptions.ImproperlyConfigured, '%s isn\'t a middleware module' % middleware_path
             mw_module, mw_classname = middleware_path[:dot], middleware_path[dot+1:]
             try:
-                mod = __import__(mw_module, {}, {}, [''])
+                mod = import_module(mw_module)
             except ImportError, e:
                 raise exceptions.ImproperlyConfigured, 'Error importing middleware %s: "%s"' % (mw_module, e)
             try:
@@ -49,13 +51,17 @@ class BaseHandler(object):
                 continue
 
             if hasattr(mw_instance, 'process_request'):
-                self._request_middleware.append(mw_instance.process_request)
+                request_middleware.append(mw_instance.process_request)
             if hasattr(mw_instance, 'process_view'):
                 self._view_middleware.append(mw_instance.process_view)
             if hasattr(mw_instance, 'process_response'):
                 self._response_middleware.insert(0, mw_instance.process_response)
             if hasattr(mw_instance, 'process_exception'):
                 self._exception_middleware.insert(0, mw_instance.process_exception)
+
+        # We only assign to this when initialization is complete as it is used
+        # as a flag for initialization being complete.
+        self._request_middleware = request_middleware
 
     def get_response(self, request):
         "Returns an HttpResponse object for the given HttpRequest"

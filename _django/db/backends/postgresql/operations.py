@@ -2,8 +2,6 @@ import re
 
 from django.db.backends import BaseDatabaseOperations
 
-server_version_re = re.compile(r'PostgreSQL (\d{1,2})\.(\d{1,2})\.?(\d{1,2})?')
-
 # This DatabaseOperations class lives in here instead of base.py because it's
 # used by both the 'postgresql' and 'postgresql_psycopg2' backends.
 
@@ -14,19 +12,19 @@ class DatabaseOperations(BaseDatabaseOperations):
     def _get_postgres_version(self):
         if self._postgres_version is None:
             from django.db import connection
+            from django.db.backends.postgresql.version import get_version
             cursor = connection.cursor()
-            cursor.execute("SELECT version()")
-            version_string = cursor.fetchone()[0]
-            m = server_version_re.match(version_string)
-            if not m:
-                raise Exception('Unable to determine PostgreSQL version from version() function string: %r' % version_string)
-            self._postgres_version = [int(val) for val in m.groups() if val]
+            self._postgres_version = get_version(cursor)
         return self._postgres_version
     postgres_version = property(_get_postgres_version)
 
     def date_extract_sql(self, lookup_type, field_name):
         # http://www.postgresql.org/docs/8.0/static/functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT
-        return "EXTRACT('%s' FROM %s)" % (lookup_type, field_name)
+        if lookup_type == 'week_day':
+            # For consistency across backends, we return Sunday=1, Saturday=7.
+            return "EXTRACT('dow' FROM %s) + 1" % field_name
+        else:
+            return "EXTRACT('%s' FROM %s)" % (lookup_type, field_name)
 
     def date_trunc_sql(self, lookup_type, field_name):
         # http://www.postgresql.org/docs/8.0/static/functions-datetime.html#FUNCTIONS-DATETIME-TRUNC
@@ -68,7 +66,7 @@ class DatabaseOperations(BaseDatabaseOperations):
 
     def sql_flush(self, style, tables, sequences):
         if tables:
-            if self.postgres_version[0] >= 8 and self.postgres_version[1] >= 1:
+            if self.postgres_version[0:2] >= (8,1):
                 # Postgres 8.1+ can do 'TRUNCATE x, y, z...;'. In fact, it *has to*
                 # in order to be able to truncate tables referenced by a foreign
                 # key in any other table. The result is a single SQL TRUNCATE
@@ -123,14 +121,15 @@ class DatabaseOperations(BaseDatabaseOperations):
                         style.SQL_TABLE(qn(model._meta.db_table))))
                     break # Only one AutoField is allowed per model, so don't bother continuing.
             for f in model._meta.many_to_many:
-                output.append("%s setval('%s', coalesce(max(%s), 1), max(%s) %s null) %s %s;" % \
-                    (style.SQL_KEYWORD('SELECT'),
-                    style.SQL_FIELD(qn('%s_id_seq' % f.m2m_db_table())),
-                    style.SQL_FIELD(qn('id')),
-                    style.SQL_FIELD(qn('id')),
-                    style.SQL_KEYWORD('IS NOT'),
-                    style.SQL_KEYWORD('FROM'),
-                    style.SQL_TABLE(qn(f.m2m_db_table()))))
+                if not f.rel.through:
+                    output.append("%s setval('%s', coalesce(max(%s), 1), max(%s) %s null) %s %s;" % \
+                        (style.SQL_KEYWORD('SELECT'),
+                        style.SQL_FIELD(qn('%s_id_seq' % f.m2m_db_table())),
+                        style.SQL_FIELD(qn('id')),
+                        style.SQL_FIELD(qn('id')),
+                        style.SQL_KEYWORD('IS NOT'),
+                        style.SQL_KEYWORD('FROM'),
+                        style.SQL_TABLE(qn(f.m2m_db_table()))))
         return output
 
     def savepoint_create_sql(self, sid):
@@ -144,3 +143,22 @@ class DatabaseOperations(BaseDatabaseOperations):
 
     def prep_for_iexact_query(self, x):
         return x
+
+    def check_aggregate_support(self, aggregate):
+        """Check that the backend fully supports the provided aggregate.
+
+        The population and sample statistics (STDDEV_POP, STDDEV_SAMP,
+        VAR_POP, VAR_SAMP) were first implemented in Postgres 8.2.
+
+        The implementation of population statistics (STDDEV_POP and VAR_POP)
+        under Postgres 8.2 - 8.2.4 is known to be faulty. Raise
+        NotImplementedError if this is the database in use.
+        """
+        if aggregate.sql_function in ('STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP', 'VAR_SAMP'):
+            if self.postgres_version[0:2] < (8,2):
+                raise NotImplementedError('PostgreSQL does not support %s prior to version 8.2. Please upgrade your version of PostgreSQL.' % aggregate.sql_function)
+
+        if aggregate.sql_function in ('STDDEV_POP', 'VAR_POP'):
+            if self.postgres_version[0:2] == (8,2):
+                if self.postgres_version[2] is None or self.postgres_version[2] <= 4:
+                    raise NotImplementedError('PostgreSQL 8.2 to 8.2.4 is known to have a faulty implementation of %s. Please upgrade your version of PostgreSQL.' % aggregate.sql_function)

@@ -19,6 +19,7 @@ from cgi import parse_qsl
 from django.conf import settings
 from django.core import signals
 from django.core.cache.backends.base import InvalidCacheBackendError
+from django.utils import importlib
 
 # Name for use in settings file --> name of module in "backends" directory.
 # Any backend scheme that is not in this dictionary is treated as a Python
@@ -31,7 +32,12 @@ BACKENDS = {
     'dummy': 'dummy',
 }
 
-def get_cache(backend_uri):
+def parse_backend_uri(backend_uri):
+    """
+    Converts the "backend_uri" into a cache scheme ('db', 'memcached', etc), a
+    host and any extra params that are required for the backend. Returns a
+    (scheme, host, params) tuple.
+    """
     if backend_uri.find(':') == -1:
         raise InvalidCacheBackendError, "Backend URI must start with scheme://"
     scheme, rest = backend_uri.split(':', 1)
@@ -48,10 +54,15 @@ def get_cache(backend_uri):
     if host.endswith('/'):
         host = host[:-1]
 
+    return scheme, host, params
+
+def get_cache(backend_uri):
+    scheme, host, params = parse_backend_uri(backend_uri)
     if scheme in BACKENDS:
-        module = __import__('django.core.cache.backends.%s' % BACKENDS[scheme], {}, {}, [''])
+        name = 'django.core.cache.backends.%s' % BACKENDS[scheme]
     else:
-        module = __import__(scheme, {}, {}, [''])
+        name = scheme
+    module = importlib.import_module(name)
     return getattr(module, 'CacheClass')(host, params)
 
 cache = get_cache(settings.CACHE_BACKEND)

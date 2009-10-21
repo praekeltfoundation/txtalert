@@ -11,11 +11,12 @@ NamedTemporaryFile uses the O_TEMPORARY flag, and thus cannot be reopened [1].
 
 import os
 import tempfile
+from django.core.files.utils import FileProxyMixin
 
 __all__ = ('NamedTemporaryFile', 'gettempdir',)
 
 if os.name == 'nt':
-    class TemporaryFile(object):
+    class TemporaryFile(FileProxyMixin):
         """
         Temporary file object constructor that works in Windows and supports
         reopening of the temporary file in windows.
@@ -47,13 +48,6 @@ if os.name == 'nt':
 
         def __del__(self):
             self.close()
-
-        def read(self, *args):          return self.file.read(*args)
-        def seek(self, offset):         return self.file.seek(offset)
-        def write(self, s):             return self.file.write(s)
-        def __iter__(self):             return iter(self.file)
-        def readlines(self, size=None): return self.file.readlines(size)
-        def xreadlines(self):           return self.file.xreadlines()
 
     NamedTemporaryFile = TemporaryFile
 else:

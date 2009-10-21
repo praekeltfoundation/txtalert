@@ -73,7 +73,7 @@ class BaseCommand(object):
        output and, if the command is intended to produce a block of
        SQL statements, will be wrapped in ``BEGIN`` and ``COMMIT``.
 
-    4. If ``handle()`` raised a ``ComandError``, ``execute()`` will
+    4. If ``handle()`` raised a ``CommandError``, ``execute()`` will
        instead print an error message to ``stderr``.
 
     Thus, the ``handle()`` method is typically the starting point for
@@ -121,6 +121,9 @@ class BaseCommand(object):
     """
     # Metadata about this command.
     option_list = (
+        make_option('-v', '--verbosity', action='store', dest='verbosity', default='1',
+            type='choice', choices=['0', '1', '2'],
+            help='Verbosity level; 0=minimal output, 1=normal output, 2=all output'),
         make_option('--settings',
             help='The Python path to a settings module, e.g. "myproject.settings.main". If this isn\'t provided, the DJANGO_SETTINGS_MODULE environment variable will be used.'),
         make_option('--pythonpath',
@@ -209,7 +212,7 @@ class BaseCommand(object):
                 from django.utils import translation
                 translation.activate('en-us')
             except ImportError, e:
-                # If settings should be available, but aren't, 
+                # If settings should be available, but aren't,
                 # raise the error and quit.
                 sys.stderr.write(self.style.ERROR(str('Error: %s\n' % e)))
                 sys.exit(1)
@@ -395,7 +398,9 @@ def copy_helper(style, app_or_project, name, directory, other_name=''):
             if subdir.startswith('.'):
                 del subdirs[i]
         for f in files:
-            if f.endswith('.pyc'):
+            if not f.endswith('.py'):
+                # Ignore .pyc, .pyo, .py.class etc, as they cause various
+                # breakages.
                 continue
             path_old = os.path.join(d, f)
             path_new = os.path.join(top_dir, relative_dir, f.replace('%s_name' % app_or_project, name))

@@ -10,9 +10,10 @@ except NameError:
 
 import django.db.models.manager     # Imported to register signal handler.
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, FieldError
-from django.db.models.fields import AutoField
+from django.db.models.fields import AutoField, FieldDoesNotExist
 from django.db.models.fields.related import OneToOneRel, ManyToOneRel, OneToOneField
-from django.db.models.query import delete_objects, Q, CollectedObjects
+from django.db.models.query import delete_objects, Q
+from django.db.models.query_utils import CollectedObjects, DeferredAttribute
 from django.db.models.options import Options
 from django.db import connection, transaction, DatabaseError
 from django.db.models import signals
@@ -67,8 +68,19 @@ class ModelBase(type):
                 if not hasattr(meta, 'get_latest_by'):
                     new_class._meta.get_latest_by = base_meta.get_latest_by
 
+        is_proxy = new_class._meta.proxy
+
         if getattr(new_class, '_default_manager', None):
-            new_class._default_manager = None
+            if not is_proxy:
+                # Multi-table inheritance doesn't inherit default manager from
+                # parents.
+                new_class._default_manager = None
+                new_class._base_manager = None
+            else:
+                # Proxy classes do inherit parent's default manager, if none is
+                # set explicitly.
+                new_class._default_manager = new_class._default_manager._copy_to_model(new_class)
+                new_class._base_manager = new_class._base_manager._copy_to_model(new_class)
 
         # Bail out early if we have already created this class.
         m = get_model(new_class._meta.app_label, name, False)
@@ -79,61 +91,89 @@ class ModelBase(type):
         for obj_name, obj in attrs.items():
             new_class.add_to_class(obj_name, obj)
 
+        # All the fields of any type declared on this model
+        new_fields = new_class._meta.local_fields + \
+                     new_class._meta.local_many_to_many + \
+                     new_class._meta.virtual_fields
+        field_names = set([f.name for f in new_fields])
+
+        # Basic setup for proxy models.
+        if is_proxy:
+            base = None
+            for parent in [cls for cls in parents if hasattr(cls, '_meta')]:
+                if parent._meta.abstract:
+                    if parent._meta.fields:
+                        raise TypeError("Abstract base class containing model fields not permitted for proxy model '%s'." % name)
+                    else:
+                        continue
+                if base is not None:
+                    raise TypeError("Proxy model '%s' has more than one non-abstract model base class." % name)
+                else:
+                    base = parent
+            if base is None:
+                    raise TypeError("Proxy model '%s' has no non-abstract model base class." % name)
+            if (new_class._meta.local_fields or
+                    new_class._meta.local_many_to_many):
+                raise FieldError("Proxy model '%s' contains model fields."
+                        % name)
+            while base._meta.proxy:
+                base = base._meta.proxy_for_model
+            new_class._meta.setup_proxy(base)
+
         # Do the appropriate setup for any model parents.
         o2o_map = dict([(f.rel.to, f) for f in new_class._meta.local_fields
                 if isinstance(f, OneToOneField)])
+
         for base in parents:
+            original_base = base
             if not hasattr(base, '_meta'):
                 # Things without _meta aren't functional models, so they're
                 # uninteresting parents.
                 continue
 
-            # All the fields of any type declared on this model
-            new_fields = new_class._meta.local_fields + \
-                         new_class._meta.local_many_to_many + \
-                         new_class._meta.virtual_fields
-            field_names = set([f.name for f in new_fields])
-
+            parent_fields = base._meta.local_fields + base._meta.local_many_to_many
+            # Check for clashes between locally declared fields and those
+            # on the base classes (we cannot handle shadowed fields at the
+            # moment).
+            for field in parent_fields:
+                if field.name in field_names:
+                    raise FieldError('Local field %r in class %r clashes '
+                                     'with field of similar name from '
+                                     'base class %r' %
+                                        (field.name, name, base.__name__))
             if not base._meta.abstract:
                 # Concrete classes...
+                while base._meta.proxy:
+                    # Skip over a proxy class to the "real" base it proxies.
+                    base = base._meta.proxy_for_model
                 if base in o2o_map:
                     field = o2o_map[base]
-                    field.primary_key = True
-                    new_class._meta.setup_pk(field)
-                else:
+                elif not is_proxy:
                     attr_name = '%s_ptr' % base._meta.module_name
                     field = OneToOneField(base, name=attr_name,
                             auto_created=True, parent_link=True)
                     new_class.add_to_class(attr_name, field)
+                else:
+                    field = None
                 new_class._meta.parents[base] = field
-
             else:
                 # .. and abstract ones.
-
-                # Check for clashes between locally declared fields and those
-                # on the ABC.
-                parent_fields = base._meta.local_fields + base._meta.local_many_to_many
                 for field in parent_fields:
-                    if field.name in field_names:
-                        raise FieldError('Local field %r in class %r clashes '\
-                                         'with field of similar name from '\
-                                         'abstract base class %r' % \
-                                            (field.name, name, base.__name__))
                     new_class.add_to_class(field.name, copy.deepcopy(field))
 
                 # Pass any non-abstract parent classes onto child.
                 new_class._meta.parents.update(base._meta.parents)
 
             # Inherit managers from the abstract base classes.
-            base_managers = base._meta.abstract_managers
-            base_managers.sort()
-            for _, mgr_name, manager in base_managers:
-                val = getattr(new_class, mgr_name, None)
-                if not val or val is manager:
-                    new_manager = manager._copy_to_model(new_class)
-                    new_class.add_to_class(mgr_name, new_manager)
+            new_class.copy_managers(base._meta.abstract_managers)
 
-            # Inherit virtual fields (like GenericForeignKey) from the parent class
+            # Proxy models inherit the non-abstract managers from their base,
+            # unless they have redefined any of them.
+            if is_proxy:
+                new_class.copy_managers(original_base._meta.concrete_managers)
+
+            # Inherit virtual fields (like GenericForeignKey) from the parent
+            # class
             for field in base._meta.virtual_fields:
                 if base._meta.abstract and field.name in field_names:
                     raise FieldError('Local field %r in class %r clashes '\
@@ -158,6 +198,15 @@ class ModelBase(type):
         # should only be one class for each model, so we always return the
         # registered version.
         return get_model(new_class._meta.app_label, name, False)
+
+    def copy_managers(cls, base_managers):
+        # This is in-place sorting of an Options attribute, but that's fine.
+        base_managers.sort()
+        for _, mgr_name, manager in base_managers:
+            val = getattr(cls, mgr_name, None)
+            if not val or val is manager:
+                new_manager = manager._copy_to_model(cls)
+                cls.add_to_class(mgr_name, new_manager)
 
     def add_to_class(cls, name, value):
         if hasattr(value, 'contribute_to_class'):
@@ -190,6 +239,7 @@ class ModelBase(type):
 
 class Model(object):
     __metaclass__ = ModelBase
+    _deferred = False
 
     def __init__(self, *args, **kwargs):
         signals.pre_init.send(sender=self.__class__, args=args, kwargs=kwargs)
@@ -224,12 +274,20 @@ class Model(object):
         # keywords, or default.
 
         for field in fields_iter:
-            rel_obj = None
+            is_related_object = False
+            # This slightly odd construct is so that we can access any
+            # data-descriptor object (DeferredAttribute) without triggering its
+            # __get__ method.
+            if (field.attname not in kwargs and
+                    isinstance(self.__class__.__dict__.get(field.attname), DeferredAttribute)):
+                # This field will be populated on request.
+                continue
             if kwargs:
                 if isinstance(field.rel, ManyToOneRel):
                     try:
                         # Assume object instance was passed in.
                         rel_obj = kwargs.pop(field.name)
+                        is_related_object = True
                     except KeyError:
                         try:
                             # Object instance wasn't passed in -- must be an ID.
@@ -245,11 +303,11 @@ class Model(object):
                     val = kwargs.pop(field.attname, field.get_default())
             else:
                 val = field.get_default()
-            # If we got passed a related instance, set it using the field.name
-            # instead of field.attname (e.g. "user" instead of "user_id") so
-            # that the object gets properly cached (and type checked) by the
-            # RelatedObjectDescriptor.
-            if rel_obj:
+            if is_related_object:
+                # If we are passed a related instance, set it using the
+                # field.name instead of field.attname (e.g. "user" instead of
+                # "user_id") so that the object gets properly cached (and type
+                # checked) by the RelatedObjectDescriptor.
                 setattr(self, field.name, rel_obj)
             else:
                 setattr(self, field.attname, val)
@@ -286,6 +344,30 @@ class Model(object):
     def __hash__(self):
         return hash(self._get_pk_val())
 
+    def __reduce__(self):
+        """
+        Provide pickling support. Normally, this just dispatches to Python's
+        standard handling. However, for models with deferred field loading, we
+        need to do things manually, as they're dynamically created classes and
+        only module-level classes can be pickled by the default path.
+        """
+        data = self.__dict__
+        if not self._deferred:
+            return (self.__class__, (), data)
+        defers = []
+        pk_val = None
+        for field in self._meta.fields:
+            if isinstance(self.__class__.__dict__.get(field.attname),
+                    DeferredAttribute):
+                defers.append(field.attname)
+                if pk_val is None:
+                    # The pk_val and model values are the same for all
+                    # DeferredAttribute classes, so we only need to do this
+                    # once.
+                    obj = self.__class__.__dict__[field.attname]
+                    model = obj.model_ref()
+        return (model_unpickle, (model, defers), data)
+
     def _get_pk_val(self, meta=None):
         if not meta:
             meta = self._meta
@@ -295,6 +377,23 @@ class Model(object):
         return setattr(self, self._meta.pk.attname, value)
 
     pk = property(_get_pk_val, _set_pk_val)
+
+    def serializable_value(self, field_name):
+        """
+        Returns the value of the field name for this instance. If the field is
+        a foreign key, returns the id value, instead of the object. If there's
+        no Field object with this name on the model, the model attribute's
+        value is returned directly.
+
+        Used to serialize a field's value (in the serializer, or form output,
+        for example). Normally, you would just access the attribute directly
+        and not use this method.
+        """
+        try:
+            field = self._meta.get_field_by_name(field_name)[0]
+        except FieldDoesNotExist:
+            return getattr(self, field_name)
+        return getattr(self, field.attname)
 
     def save(self, force_insert=False, force_update=False):
         """
@@ -312,85 +411,98 @@ class Model(object):
 
     save.alters_data = True
 
-    def save_base(self, raw=False, cls=None, force_insert=False,
-            force_update=False):
+    def save_base(self, raw=False, cls=None, origin=None,
+            force_insert=False, force_update=False):
         """
         Does the heavy-lifting involved in saving. Subclasses shouldn't need to
         override this method. It's separate from save() in order to hide the
         need for overrides of save() to pass around internal-only parameters
-        ('raw' and 'cls').
+        ('raw', 'cls', and 'origin').
         """
         assert not (force_insert and force_update)
-        if not cls:
+        if cls is None:
             cls = self.__class__
-            meta = self._meta
-            signal = True
-            signals.pre_save.send(sender=self.__class__, instance=self, raw=raw)
+            meta = cls._meta
+            if not meta.proxy:
+                origin = cls
         else:
             meta = cls._meta
-            signal = False
+
+        if origin:
+            signals.pre_save.send(sender=origin, instance=self, raw=raw)
 
         # If we are in a raw save, save the object exactly as presented.
         # That means that we don't try to be smart about saving attributes
         # that might have come from the parent class - we just save the
         # attributes we have been given to the class we have been given.
-        if not raw:
+        # We also go through this process to defer the save of proxy objects
+        # to their actual underlying model.
+        if not raw or meta.proxy:
+            if meta.proxy:
+                org = cls
+            else:
+                org = None
             for parent, field in meta.parents.items():
                 # At this point, parent's primary key field may be unknown
                 # (for example, from administration form which doesn't fill
                 # this field). If so, fill it.
-                if getattr(self, parent._meta.pk.attname) is None and getattr(self, field.attname) is not None:
+                if field and getattr(self, parent._meta.pk.attname) is None and getattr(self, field.attname) is not None:
                     setattr(self, parent._meta.pk.attname, getattr(self, field.attname))
 
-                self.save_base(raw, parent)
-                setattr(self, field.attname, self._get_pk_val(parent._meta))
+                self.save_base(cls=parent, origin=org)
 
-        non_pks = [f for f in meta.local_fields if not f.primary_key]
+                if field:
+                    setattr(self, field.attname, self._get_pk_val(parent._meta))
+            if meta.proxy:
+                return
 
-        # First, try an UPDATE. If that doesn't update anything, do an INSERT.
-        pk_val = self._get_pk_val(meta)
-        pk_set = pk_val is not None
-        record_exists = True
-        manager = cls._default_manager
-        if pk_set:
-            # Determine whether a record with the primary key already exists.
-            if (force_update or (not force_insert and
-                    manager.filter(pk=pk_val).extra(select={'a': 1}).values('a').order_by())):
-                # It does already exist, so do an UPDATE.
-                if force_update or non_pks:
-                    values = [(f, None, f.get_db_prep_save(raw and getattr(self, f.attname) or f.pre_save(self, False))) for f in non_pks]
-                    rows = manager.filter(pk=pk_val)._update(values)
-                    if force_update and not rows:
-                        raise DatabaseError("Forced update did not affect any rows.")
-            else:
+        if not meta.proxy:
+            non_pks = [f for f in meta.local_fields if not f.primary_key]
+
+            # First, try an UPDATE. If that doesn't update anything, do an INSERT.
+            pk_val = self._get_pk_val(meta)
+            pk_set = pk_val is not None
+            record_exists = True
+            manager = cls._base_manager
+            if pk_set:
+                # Determine whether a record with the primary key already exists.
+                if (force_update or (not force_insert and
+                        manager.filter(pk=pk_val).extra(select={'a': 1}).values('a').order_by())):
+                    # It does already exist, so do an UPDATE.
+                    if force_update or non_pks:
+                        values = [(f, None, (raw and getattr(self, f.attname) or f.pre_save(self, False))) for f in non_pks]
+                        rows = manager.filter(pk=pk_val)._update(values)
+                        if force_update and not rows:
+                            raise DatabaseError("Forced update did not affect any rows.")
+                else:
+                    record_exists = False
+            if not pk_set or not record_exists:
+                if not pk_set:
+                    if force_update:
+                        raise ValueError("Cannot force an update in save() with no primary key.")
+                    values = [(f, f.get_db_prep_save(raw and getattr(self, f.attname) or f.pre_save(self, True))) for f in meta.local_fields if not isinstance(f, AutoField)]
+                else:
+                    values = [(f, f.get_db_prep_save(raw and getattr(self, f.attname) or f.pre_save(self, True))) for f in meta.local_fields]
+
+                if meta.order_with_respect_to:
+                    field = meta.order_with_respect_to
+                    values.append((meta.get_field_by_name('_order')[0], manager.filter(**{field.name: getattr(self, field.attname)}).count()))
                 record_exists = False
-        if not pk_set or not record_exists:
-            if not pk_set:
-                if force_update:
-                    raise ValueError("Cannot force an update in save() with no primary key.")
-                values = [(f, f.get_db_prep_save(raw and getattr(self, f.attname) or f.pre_save(self, True))) for f in meta.local_fields if not isinstance(f, AutoField)]
-            else:
-                values = [(f, f.get_db_prep_save(raw and getattr(self, f.attname) or f.pre_save(self, True))) for f in meta.local_fields]
 
-            if meta.order_with_respect_to:
-                field = meta.order_with_respect_to
-                values.append((meta.get_field_by_name('_order')[0], manager.filter(**{field.name: getattr(self, field.attname)}).count()))
-            record_exists = False
+                update_pk = bool(meta.has_auto_field and not pk_set)
+                if values:
+                    # Create a new record.
+                    result = manager._insert(values, return_id=update_pk)
+                else:
+                    # Create a new record with defaults for everything.
+                    result = manager._insert([(meta.pk, connection.ops.pk_default_value())], return_id=update_pk, raw_values=True)
 
-            update_pk = bool(meta.has_auto_field and not pk_set)
-            if values:
-                # Create a new record.
-                result = manager._insert(values, return_id=update_pk)
-            else:
-                # Create a new record with defaults for everything.
-                result = manager._insert([(meta.pk, connection.ops.pk_default_value())], return_id=update_pk, raw_values=True)
+                if update_pk:
+                    setattr(self, meta.pk.attname, result)
+            transaction.commit_unless_managed()
 
-            if update_pk:
-                setattr(self, meta.pk.attname, result)
-        transaction.commit_unless_managed()
-
-        if signal:
-            signals.post_save.send(sender=self.__class__, instance=self,
+        if origin:
+            signals.post_save.send(sender=origin, instance=self,
                 created=(not record_exists), raw=raw)
 
     save_base.alters_data = True
@@ -418,14 +530,24 @@ class Model(object):
                 else:
                     sub_obj._collect_sub_objects(seen_objs, self.__class__, related.field.null)
             else:
-                for sub_obj in getattr(self, rel_opts_name).all():
+                # To make sure we can access all elements, we can't use the
+                # normal manager on the related object. So we work directly
+                # with the descriptor object.
+                for cls in self.__class__.mro():
+                    if rel_opts_name in cls.__dict__:
+                        rel_descriptor = cls.__dict__[rel_opts_name]
+                        break
+                else:
+                    raise AssertionError("Should never get here.")
+                delete_qs = rel_descriptor.delete_manager(self).all()
+                for sub_obj in delete_qs:
                     sub_obj._collect_sub_objects(seen_objs, self.__class__, related.field.null)
 
         # Handle any ancestors (for the model-inheritance case). We do this by
         # traversing to the most remote parent classes -- those with no parents
         # themselves -- and then adding those instances to the collection. That
         # will include all the child instances down to "self".
-        parent_stack = self._meta.parents.values()
+        parent_stack = [p for p in self._meta.parents.values() if p is not None]
         while parent_stack:
             link = parent_stack.pop()
             parent_obj = getattr(self, link.name)
@@ -481,6 +603,8 @@ class Model(object):
             setattr(self, cachename, obj)
         return getattr(self, cachename)
 
+    def prepare_database_save(self, unused):
+        return self.pk
 
 
 ############################################
@@ -521,6 +645,15 @@ def get_absolute_url(opts, func, self, *args, **kwargs):
 
 class Empty(object):
     pass
+
+def model_unpickle(model, attrs):
+    """
+    Used to unpickle Model subclasses with deferred fields.
+    """
+    from django.db.models.query_utils import deferred_class_factory
+    cls = deferred_class_factory(model, attrs)
+    return cls.__new__(cls)
+model_unpickle.__safe_for_unpickle__ = True
 
 if sys.version_info < (2, 5):
     # Prior to Python 2.5, Exception was an old-style class

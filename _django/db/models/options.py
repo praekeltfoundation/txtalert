@@ -21,7 +21,7 @@ get_verbose_name = lambda class_name: re.sub('(((?<=[a-z])[A-Z])|([A-Z](?![A-Z]|
 DEFAULT_NAMES = ('verbose_name', 'db_table', 'ordering',
                  'unique_together', 'permissions', 'get_latest_by',
                  'order_with_respect_to', 'app_label', 'db_tablespace',
-                 'abstract')
+                 'abstract', 'managed', 'proxy')
 
 class Options(object):
     def __init__(self, meta, app_label=None):
@@ -41,13 +41,17 @@ class Options(object):
         self.meta = meta
         self.pk = None
         self.has_auto_field, self.auto_field = False, None
-        self.one_to_one_field = None
         self.abstract = False
+        self.managed = True
+        self.proxy = False
+        self.proxy_for_model = None
         self.parents = SortedDict()
         self.duplicate_targets = {}
-        # Managers that have been inherited from abstract base classes. These
-        # are passed onto any children.
+
+        # To handle various inheritance situations, we need to track where
+        # managers came from (concrete or abstract base classes).
         self.abstract_managers = []
+        self.concrete_managers = []
 
     def contribute_to_class(self, cls, name):
         from django.db import connection
@@ -163,6 +167,15 @@ class Options(object):
         if not self.pk and field.primary_key:
             self.pk = field
             field.serialize = False
+
+    def setup_proxy(self, target):
+        """
+        Does the internal setup so that the current model is a proxy for
+        "target".
+        """
+        self.pk = target._meta.pk
+        self.proxy_for_model = target
+        self.db_table = target._meta.db_table
 
     def __repr__(self):
         return '<Options for %s>' % self.object_name
@@ -436,6 +449,26 @@ class Options(object):
             result.update(parent._meta.get_parent_list())
         return result
 
+    def get_ancestor_link(self, ancestor):
+        """
+        Returns the field on the current model which points to the given
+        "ancestor". This is possible an indirect link (a pointer to a parent
+        model, which points, eventually, to the ancestor). Used when
+        constructing table joins for model inheritance.
+
+        Returns None if the model isn't an ancestor of this one.
+        """
+        if ancestor in self.parents:
+            return self.parents[ancestor]
+        for parent in self.parents:
+            # Tries to get a link field from the immediate parent
+            parent_link = parent._meta.get_ancestor_link(ancestor)
+            if parent_link:
+                # In case of a proxied model, the first link
+                # of the chain to the ancestor is that parent
+                # links
+                return self.parents[parent] or parent_link
+
     def get_ordered_objects(self):
         "Returns a list of Options objects that are ordered with respect to this object."
         if not hasattr(self, '_ordered_objects'):
@@ -448,3 +481,10 @@ class Options(object):
             #        objects.append(opts)
             self._ordered_objects = objects
         return self._ordered_objects
+
+    def pk_index(self):
+        """
+        Returns the index of the primary key field in the self.fields list.
+        """
+        return self.fields.index(self.pk)
+

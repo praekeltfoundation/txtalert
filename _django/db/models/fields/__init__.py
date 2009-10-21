@@ -193,10 +193,18 @@ class Field(object):
 
     def get_db_prep_lookup(self, lookup_type, value):
         "Returns field's value prepared for database lookup."
-        if hasattr(value, 'as_sql'):
-            sql, params = value.as_sql()
+        if hasattr(value, 'as_sql') or hasattr(value, '_as_sql'):
+            # If the value has a relabel_aliases method, it will need to
+            # be invoked before the final SQL is evaluated
+            if hasattr(value, 'relabel_aliases'):
+                return value
+            if hasattr(value, 'as_sql'):
+                sql, params = value.as_sql()
+            else:
+                sql, params = value._as_sql()
             return QueryWrapper(('(%s)' % sql), params)
-        if lookup_type in ('regex', 'iregex', 'month', 'day', 'search'):
+
+        if lookup_type in ('regex', 'iregex', 'month', 'day', 'week_day', 'search'):
             return [value]
         elif lookup_type in ('exact', 'gt', 'gte', 'lt', 'lte'):
             return [self.get_db_prep_value(value)]
@@ -309,7 +317,7 @@ class Field(object):
             if callable(self.default):
                 defaults['show_hidden_initial'] = True
         if self.choices:
-            # Fields with choices get special treatment. 
+            # Fields with choices get special treatment.
             include_blank = self.blank or not (self.has_default() or 'initial' in kwargs)
             defaults['choices'] = self.get_choices(include_blank=include_blank)
             defaults['coerce'] = self.to_python
@@ -362,6 +370,7 @@ class AutoField(Field):
         return None
 
 class BooleanField(Field):
+    empty_strings_allowed = False
     def __init__(self, *args, **kwargs):
         kwargs['blank'] = True
         if 'default' not in kwargs and not kwargs.get('null'):
@@ -393,7 +402,13 @@ class BooleanField(Field):
         return bool(value)
 
     def formfield(self, **kwargs):
-        defaults = {'form_class': forms.BooleanField}
+        # Unlike most fields, BooleanField figures out include_blank from
+        # self.null instead of self.blank.
+        if self.choices:
+            include_blank = self.null or not (self.has_default() or 'initial' in kwargs)
+            defaults = {'choices': self.get_choices(include_blank=include_blank)}
+        else:
+            defaults = {'form_class': forms.BooleanField}
         defaults.update(kwargs)
         return super(BooleanField, self).formfield(**defaults)
 
@@ -485,10 +500,10 @@ class DateField(Field):
                 curry(cls._get_next_or_previous_by_FIELD, field=self, is_next=False))
 
     def get_db_prep_lookup(self, lookup_type, value):
-        # For "__month" and "__day" lookups, convert the value to a string so
-        # the database backend always sees a consistent type.
-        if lookup_type in ('month', 'day'):
-            return [force_unicode(value)]
+        # For "__month", "__day", and "__week_day" lookups, convert the value
+        # to an int so the database backend always sees a consistent type.
+        if lookup_type in ('month', 'day', 'week_day'):
+            return [int(value)]
         return super(DateField, self).get_db_prep_lookup(lookup_type, value)
 
     def get_db_prep_value(self, value):
@@ -605,9 +620,12 @@ class DecimalField(Field):
         from django.db.backends import util
         return util.format_number(value, self.max_digits, self.decimal_places)
 
-    def get_db_prep_value(self, value):
+    def get_db_prep_save(self, value):
         return connection.ops.value_to_db_decimal(self.to_python(value),
                 self.max_digits, self.decimal_places)
+
+    def get_db_prep_value(self, value):
+        return self.to_python(value)
 
     def formfield(self, **kwargs):
         defaults = {
@@ -657,6 +675,15 @@ class FloatField(Field):
 
     def get_internal_type(self):
         return "FloatField"
+
+    def to_python(self, value):
+        if value is None:
+            return value
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            raise exceptions.ValidationError(
+                _("This value must be a float."))
 
     def formfield(self, **kwargs):
         defaults = {'form_class': forms.FloatField}
@@ -804,6 +831,11 @@ class TimeField(Field):
             return None
         if isinstance(value, datetime.time):
             return value
+        if isinstance(value, datetime.datetime):
+            # Not usually a good idea to pass in a datetime here (it loses
+            # information), but this can be a side-effect of interacting with a
+            # database backend (e.g. Oracle), so we'll be accommodating.
+            return value.time
 
         # Attempt to parse a datetime:
         value = smart_str(value)

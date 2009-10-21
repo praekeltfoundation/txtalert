@@ -117,7 +117,7 @@ class SortedDict(dict):
         return iter(self.keyOrder)
 
     def values(self):
-        return [super(SortedDict, self).__getitem__(k) for k in self.keyOrder]
+        return map(super(SortedDict, self).__getitem__, self.keyOrder)
 
     def itervalues(self):
         for key in self.keyOrder:
@@ -222,7 +222,18 @@ class MultiValueDict(dict):
             dict.__setitem__(result, copy.deepcopy(key, memo),
                              copy.deepcopy(value, memo))
         return result
-
+    
+    def __getstate__(self):
+        obj_dict = self.__dict__.copy()
+        obj_dict['_data'] = dict([(k, self.getlist(k)) for k in self])
+        return obj_dict
+    
+    def __setstate__(self, obj_dict):
+        data = obj_dict.pop('_data', {})
+        for k, v in data.items():
+            self.setlist(k, v)
+        self.__dict__.update(obj_dict)
+        
     def get(self, key, default=None):
         """
         Returns the last data value for the passed key. If key doesn't exist
@@ -283,10 +294,19 @@ class MultiValueDict(dict):
         """Returns a list of (key, list) pairs."""
         return super(MultiValueDict, self).items()
 
+    def iterlists(self):
+        """Yields (key, list) pairs."""
+        return super(MultiValueDict, self).iteritems()
+
     def values(self):
         """Returns a list of the last value on every key list."""
         return [self[key] for key in self.keys()]
-
+        
+    def itervalues(self):
+        """Yield the last value on every key list."""
+        for key in self.iterkeys():
+            yield self[key]
+    
     def copy(self):
         """Returns a copy of this object."""
         return self.__deepcopy__()

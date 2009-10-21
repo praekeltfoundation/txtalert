@@ -28,12 +28,12 @@ class GeoModelAdmin(ModelAdmin):
     scale_text = True
     layerswitcher = True
     scrollable = True
-    admin_media_prefix = settings.ADMIN_MEDIA_PREFIX
     map_width = 600
     map_height = 400
     map_srid = 4326
     map_template = 'gis/admin/openlayers.html'
-    openlayers_url = 'http://openlayers.org/api/2.6/OpenLayers.js'
+    openlayers_url = 'http://openlayers.org/api/2.8/OpenLayers.js'
+    point_zoom = num_zoom - 6
     wms_url = 'http://labs.metacarta.com/wms/vmap0'
     wms_layer = 'basic'
     wms_name = 'OpenLayers WMS'
@@ -54,6 +54,7 @@ class GeoModelAdmin(ModelAdmin):
         for viewing/editing GeometryFields.
         """
         if isinstance(db_field, models.GeometryField):
+            request = kwargs.pop('request', None)
             # Setting the widget with the newly defined widget.
             kwargs['widget'] = self.get_map_widget(db_field)
             return db_field.formfield(**kwargs)
@@ -66,30 +67,29 @@ class GeoModelAdmin(ModelAdmin):
         in the `widget` attribute) using the settings from the attributes set 
         in this class.
         """
-        is_collection = db_field._geom in ('MULTIPOINT', 'MULTILINESTRING', 'MULTIPOLYGON', 'GEOMETRYCOLLECTION')
+        is_collection = db_field.geom_type in ('MULTIPOINT', 'MULTILINESTRING', 'MULTIPOLYGON', 'GEOMETRYCOLLECTION')
         if is_collection:
-            if db_field._geom == 'GEOMETRYCOLLECTION': collection_type = 'Any'
-            else: collection_type = OGRGeomType(db_field._geom.replace('MULTI', ''))
+            if db_field.geom_type == 'GEOMETRYCOLLECTION': collection_type = 'Any'
+            else: collection_type = OGRGeomType(db_field.geom_type.replace('MULTI', ''))
         else:
             collection_type = 'None'
 
         class OLMap(self.widget):
             template = self.map_template
-            geom_type = db_field._geom
-            params = {'admin_media_prefix' : self.admin_media_prefix,
-                      'default_lon' : self.default_lon,
+            geom_type = db_field.geom_type
+            params = {'default_lon' : self.default_lon,
                       'default_lat' : self.default_lat,
                       'default_zoom' : self.default_zoom,
                       'display_wkt' : self.debug or self.display_wkt,
-                      'geom_type' : OGRGeomType(db_field._geom),
+                      'geom_type' : OGRGeomType(db_field.geom_type),
                       'field_name' : db_field.name,
                       'is_collection' : is_collection,
                       'scrollable' : self.scrollable,
                       'layerswitcher' : self.layerswitcher,
                       'collection_type' : collection_type,
-                      'is_linestring' : db_field._geom in ('LINESTRING', 'MULTILINESTRING'),
-                      'is_polygon' : db_field._geom in ('POLYGON', 'MULTIPOLYGON'),
-                      'is_point' : db_field._geom in ('POINT', 'MULTIPOINT'),
+                      'is_linestring' : db_field.geom_type in ('LINESTRING', 'MULTILINESTRING'),
+                      'is_polygon' : db_field.geom_type in ('POLYGON', 'MULTIPOLYGON'),
+                      'is_point' : db_field.geom_type in ('POINT', 'MULTIPOINT'),
                       'num_zoom' : self.num_zoom,
                       'max_zoom' : self.max_zoom,
                       'min_zoom' : self.min_zoom,
@@ -101,6 +101,7 @@ class GeoModelAdmin(ModelAdmin):
                       'scale_text' : self.scale_text,
                       'map_width' : self.map_width,
                       'map_height' : self.map_height,
+                      'point_zoom' : self.point_zoom,
                       'srid' : self.map_srid,
                       'display_srid' : self.display_srid,
                       'wms_url' : self.wms_url,
@@ -125,4 +126,5 @@ if gdal.HAS_GDAL:
         map_srid = 900913
         max_extent = '-20037508,-20037508,20037508,20037508'
         max_resolution = 156543.0339
+        point_zoom = num_zoom - 6
         units = 'm'

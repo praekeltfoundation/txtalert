@@ -11,12 +11,13 @@ Usage:
 >>>
 """
 
+import re
+import time
+import calendar
 from django.utils.dates import MONTHS, MONTHS_3, MONTHS_AP, WEEKDAYS, WEEKDAYS_ABBR
 from django.utils.tzinfo import LocalTimezone
 from django.utils.translation import ugettext as _
 from django.utils.encoding import force_unicode
-from calendar import isleap, monthrange
-import re, time
 
 re_formatchars = re.compile(r'(?<!\\)([aAbBdDfFgGhHiIjlLmMnNOPrsStTUwWyYzZ])')
 re_escaped = re.compile(r'\\(.)')
@@ -131,7 +132,7 @@ class DateFormat(TimeFormat):
 
     def I(self):
         "'1' if Daylight Savings Time, '0' otherwise."
-        if self.timezone.dst(self.data):
+        if self.timezone and self.timezone.dst(self.data):
             return u'1'
         else:
             return u'0'
@@ -146,7 +147,7 @@ class DateFormat(TimeFormat):
 
     def L(self):
         "Boolean for whether it is a leap year; i.e. True or False"
-        return isleap(self.data.year)
+        return calendar.isleap(self.data.year)
 
     def m(self):
         "Month; i.e. '01' to '12'"
@@ -188,19 +189,21 @@ class DateFormat(TimeFormat):
 
     def t(self):
         "Number of days in the given month; i.e. '28' to '31'"
-        return u'%02d' % monthrange(self.data.year, self.data.month)[1]
+        return u'%02d' % calendar.monthrange(self.data.year, self.data.month)[1]
 
     def T(self):
         "Time zone of this machine; e.g. 'EST' or 'MDT'"
-        name = self.timezone.tzname(self.data)
+        name = self.timezone and self.timezone.tzname(self.data) or None
         if name is None:
             name = self.format('O')
         return unicode(name)
 
     def U(self):
         "Seconds since the Unix epoch (January 1 1970 00:00:00 GMT)"
-        off = self.timezone.utcoffset(self.data)
-        return int(time.mktime(self.data.timetuple())) + off.seconds * 60
+        if getattr(self.data, 'tzinfo', None):
+            return int(calendar.timegm(self.data.utctimetuple()))
+        else:
+            return int(time.mktime(self.data.timetuple()))
 
     def w(self):
         "Day of the week, numeric, i.e. '0' (Sunday) to '6' (Saturday)"
@@ -214,12 +217,12 @@ class DateFormat(TimeFormat):
         weekday = self.data.weekday() + 1
         day_of_year = self.z()
         if day_of_year <= (8 - jan1_weekday) and jan1_weekday > 4:
-            if jan1_weekday == 5 or (jan1_weekday == 6 and isleap(self.data.year-1)):
+            if jan1_weekday == 5 or (jan1_weekday == 6 and calendar.isleap(self.data.year-1)):
                 week_number = 53
             else:
                 week_number = 52
         else:
-            if isleap(self.data.year):
+            if calendar.isleap(self.data.year):
                 i = 366
             else:
                 i = 365
@@ -253,6 +256,8 @@ class DateFormat(TimeFormat):
         timezones west of UTC is always negative, and for those east of UTC is
         always positive.
         """
+        if not self.timezone:
+            return 0
         offset = self.timezone.utcoffset(self.data)
         # Only days can be negative, so negative offsets have days=-1 and
         # seconds positive. Positive offsets have days=0

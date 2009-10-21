@@ -50,12 +50,14 @@ u'<html></html>'
 """
 import re
 from inspect import getargspec
+
 from django.conf import settings
 from django.template.context import Context, RequestContext, ContextPopException
+from django.utils.importlib import import_module
 from django.utils.itercompat import is_iterable
 from django.utils.functional import curry, Promise
-from django.utils.text import smart_split
-from django.utils.encoding import smart_unicode, force_unicode
+from django.utils.text import smart_split, unescape_string_literal
+from django.utils.encoding import smart_unicode, force_unicode, smart_str
 from django.utils.translation import ugettext as _
 from django.utils.safestring import SafeData, EscapeData, mark_safe, mark_for_escaping
 from django.utils.html import escape
@@ -443,33 +445,45 @@ class TokenParser(object):
             self.pointer = i
             return s
 
+# This only matches constant *strings* (things in quotes or marked for
+# translation). Numbers are treated as variables for implementation reasons
+# (so that they retain their type when passed to filters).
+constant_string = r"""
+(?:%(i18n_open)s%(strdq)s%(i18n_close)s|
+%(i18n_open)s%(strsq)s%(i18n_close)s|
+%(strdq)s|
+%(strsq)s)
+""" % {
+    'strdq': r'"[^"\\]*(?:\\.[^"\\]*)*"', # double-quoted string
+    'strsq': r"'[^'\\]*(?:\\.[^'\\]*)*'", # single-quoted string
+    'i18n_open' : re.escape("_("),
+    'i18n_close' : re.escape(")"),
+    }
+constant_string = constant_string.replace("\n", "")
+
 filter_raw_string = r"""
-^%(i18n_open)s"(?P<i18n_constant>%(str)s)"%(i18n_close)s|
-^"(?P<constant>%(str)s)"|
-^(?P<var>[%(var_chars)s]+)|
+^(?P<constant>%(constant)s)|
+^(?P<var>[%(var_chars)s]+|%(num)s)|
  (?:%(filter_sep)s
      (?P<filter_name>\w+)
          (?:%(arg_sep)s
              (?:
-              %(i18n_open)s"(?P<i18n_arg>%(str)s)"%(i18n_close)s|
-              "(?P<constant_arg>%(str)s)"|
-              (?P<var_arg>[%(var_chars)s]+)
+              (?P<constant_arg>%(constant)s)|
+              (?P<var_arg>[%(var_chars)s]+|%(num)s)
              )
          )?
  )""" % {
-    'str': r"""[^"\\]*(?:\\.[^"\\]*)*""",
+    'constant': constant_string,
+    'num': r'[-+\.]?\d[\d\.e]*',
     'var_chars': "\w\." ,
     'filter_sep': re.escape(FILTER_SEPARATOR),
     'arg_sep': re.escape(FILTER_ARGUMENT_SEPARATOR),
-    'i18n_open' : re.escape("_("),
-    'i18n_close' : re.escape(")"),
   }
 
-filter_raw_string = filter_raw_string.replace("\n", "").replace(" ", "")
-filter_re = re.compile(filter_raw_string, re.UNICODE)
+filter_re = re.compile(filter_raw_string, re.UNICODE|re.VERBOSE)
 
 class FilterExpression(object):
-    """
+    r"""
     Parses a variable token and its optional filters (all as a single string),
     and return a list of tuples of the filter name and arguments.
     Sample:
@@ -487,65 +501,64 @@ class FilterExpression(object):
     def __init__(self, token, parser):
         self.token = token
         matches = filter_re.finditer(token)
-        var = None
+        var_obj = None
         filters = []
         upto = 0
         for match in matches:
             start = match.start()
             if upto != start:
                 raise TemplateSyntaxError("Could not parse some characters: %s|%s|%s"  % \
-                                           (token[:upto], token[upto:start], token[start:]))
-            if var == None:
-                var, constant, i18n_constant = match.group("var", "constant", "i18n_constant")
-                if i18n_constant is not None:
-                    # Don't pass the empty string to gettext, because the empty
-                    # string translates to meta information.
-                    if i18n_constant == "":
-                        var = '""'
-                    else:
-                        var = '"%s"' %  _(i18n_constant.replace(r'\"', '"'))
-                elif constant is not None:
-                    var = '"%s"' % constant.replace(r'\"', '"')
-                upto = match.end()
-                if var == None:
-                    raise TemplateSyntaxError("Could not find variable at start of %s" % token)
+                        (token[:upto], token[upto:start], token[start:]))
+            if var_obj is None:
+                var, constant = match.group("var", "constant")
+                if constant:
+                    try:
+                        var_obj = Variable(constant).resolve({})
+                    except VariableDoesNotExist:
+                        var_obj = None
+                elif var is None:
+                    raise TemplateSyntaxError("Could not find variable at start of %s." % token)
                 elif var.find(VARIABLE_ATTRIBUTE_SEPARATOR + '_') > -1 or var[0] == '_':
                     raise TemplateSyntaxError("Variables and attributes may not begin with underscores: '%s'" % var)
+                else:
+                    var_obj = Variable(var)
             else:
                 filter_name = match.group("filter_name")
                 args = []
-                constant_arg, i18n_arg, var_arg = match.group("constant_arg", "i18n_arg", "var_arg")
-                if i18n_arg:
-                    args.append((False, _(i18n_arg.replace(r'\"', '"'))))
-                elif constant_arg is not None:
-                    args.append((False, constant_arg.replace(r'\"', '"')))
+                constant_arg, var_arg = match.group("constant_arg", "var_arg")
+                if constant_arg:
+                    args.append((False, Variable(constant_arg).resolve({})))
                 elif var_arg:
                     args.append((True, Variable(var_arg)))
                 filter_func = parser.find_filter(filter_name)
                 self.args_check(filter_name,filter_func, args)
                 filters.append( (filter_func,args))
-                upto = match.end()
+            upto = match.end()
         if upto != len(token):
             raise TemplateSyntaxError("Could not parse the remainder: '%s' from '%s'" % (token[upto:], token))
+
         self.filters = filters
-        self.var = Variable(var)
+        self.var = var_obj
 
     def resolve(self, context, ignore_failures=False):
-        try:
-            obj = self.var.resolve(context)
-        except VariableDoesNotExist:
-            if ignore_failures:
-                obj = None
-            else:
-                if settings.TEMPLATE_STRING_IF_INVALID:
-                    global invalid_var_format_string
-                    if invalid_var_format_string is None:
-                        invalid_var_format_string = '%s' in settings.TEMPLATE_STRING_IF_INVALID
-                    if invalid_var_format_string:
-                        return settings.TEMPLATE_STRING_IF_INVALID % self.var
-                    return settings.TEMPLATE_STRING_IF_INVALID
+        if isinstance(self.var, Variable):
+            try:
+                obj = self.var.resolve(context)
+            except VariableDoesNotExist:
+                if ignore_failures:
+                    obj = None
                 else:
-                    obj = settings.TEMPLATE_STRING_IF_INVALID
+                    if settings.TEMPLATE_STRING_IF_INVALID:
+                        global invalid_var_format_string
+                        if invalid_var_format_string is None:
+                            invalid_var_format_string = '%s' in settings.TEMPLATE_STRING_IF_INVALID
+                        if invalid_var_format_string:
+                            return settings.TEMPLATE_STRING_IF_INVALID % self.var
+                        return settings.TEMPLATE_STRING_IF_INVALID
+                    else:
+                        obj = settings.TEMPLATE_STRING_IF_INVALID
+        else:
+            obj = self.var
         for func, args in self.filters:
             arg_vals = []
             for lookup, arg in args:
@@ -610,7 +623,7 @@ def resolve_variable(path, context):
     return Variable(path).resolve(context)
 
 class Variable(object):
-    """
+    r"""
     A template variable, resolvable against a given context. The variable may be
     a hard-coded string (if it begins and ends with single or double quote
     marks)::
@@ -624,8 +637,6 @@ class Variable(object):
         >>> c = AClass()
         >>> c.article = AClass()
         >>> c.article.section = u'News'
-        >>> Variable('article.section').resolve(c)
-        u'News'
 
     (The example assumes VARIABLE_ATTRIBUTE_SEPARATOR is '.')
     """
@@ -662,9 +673,9 @@ class Variable(object):
                 var = var[2:-1]
             # If it's wrapped with quotes (single or double), then
             # we're also dealing with a literal.
-            if var[0] in "\"'" and var[0] == var[-1]:
-                self.literal = mark_safe(var[1:-1])
-            else:
+            try:
+                self.literal = mark_safe(unescape_string_literal(var))
+            except ValueError:
                 # Otherwise we'll set self.lookups so that resolve() knows we're
                 # dealing with a bonafide variable
                 self.lookups = tuple(var.split(VARIABLE_ATTRIBUTE_SEPARATOR))
@@ -785,10 +796,23 @@ class TextNode(Node):
         self.s = s
 
     def __repr__(self):
-        return "<Text Node: '%s'>" % self.s[:25]
+        return "<Text Node: '%s'>" % smart_str(self.s[:25], 'ascii',
+                errors='replace')
 
     def render(self, context):
         return self.s
+    
+def _render_value_in_context(value, context):
+    """
+    Converts any value to a string to become part of a rendered template. This
+    means escaping, if required, and conversion to a unicode object. If value
+    is a string, it is expected to have already been translated.
+    """
+    value = force_unicode(value)
+    if (context.autoescape and not isinstance(value, SafeData)) or isinstance(value, EscapeData):
+        return escape(value)
+    else:
+        return value
 
 class VariableNode(Node):
     def __init__(self, filter_expression):
@@ -799,15 +823,12 @@ class VariableNode(Node):
 
     def render(self, context):
         try:
-            output = force_unicode(self.filter_expression.resolve(context))
+            output = self.filter_expression.resolve(context)
         except UnicodeDecodeError:
             # Unicode conversion can fail sometimes for reasons out of our
             # control (e.g. exception rendering). In that case, we fail quietly.
             return ''
-        if (context.autoescape and not isinstance(output, SafeData)) or isinstance(output, EscapeData):
-            return force_unicode(escape(output))
-        else:
-            return force_unicode(output)
+        return _render_value_in_context(output, context)
 
 def generic_tag_compiler(params, defaults, name, node_class, parser, token):
     "Returns a template.Node subclass."
@@ -934,7 +955,7 @@ def get_library(module_name):
     lib = libraries.get(module_name, None)
     if not lib:
         try:
-            mod = __import__(module_name, {}, {}, [''])
+            mod = import_module(module_name)
         except ImportError, e:
             raise InvalidTemplateLibrary("Could not load template library from %s, %s" % (module_name, e))
         try:

@@ -5,7 +5,7 @@ except NameError:
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
-from django.forms.models import BaseModelForm, BaseModelFormSet, fields_for_model
+from django.forms.models import BaseModelForm, BaseModelFormSet, fields_for_model, _get_foreign_key
 from django.contrib.admin.options import flatten_fieldsets, BaseModelAdmin
 from django.contrib.admin.options import HORIZONTAL, VERTICAL
 
@@ -36,6 +36,8 @@ def validate(cls, model):
                         except models.FieldDoesNotExist:
                             raise ImproperlyConfigured("%s.list_display[%d], %r is not a callable or an attribute of %r or found in the model %r."
                                 % (cls.__name__, idx, field, cls.__name__, model._meta.object_name))
+                    else:
+                        # getattr(model, field) could be an X_RelatedObjectsDescriptor
                         f = fetch_attr(cls, model, opts, "list_display[%d]" % idx, field)
                         if isinstance(f, models.ManyToManyField):
                             raise ImproperlyConfigured("'%s.list_display[%d]', '%s' is a ManyToManyField which is not supported."
@@ -61,6 +63,34 @@ def validate(cls, model):
     if hasattr(cls, 'list_per_page') and not isinstance(cls.list_per_page, int):
         raise ImproperlyConfigured("'%s.list_per_page' should be a integer."
                 % cls.__name__)
+
+    # list_editable
+    if hasattr(cls, 'list_editable') and cls.list_editable:
+        check_isseq(cls, 'list_editable', cls.list_editable)
+        for idx, field_name in enumerate(cls.list_editable):
+            try:
+                field = opts.get_field_by_name(field_name)[0]
+            except models.FieldDoesNotExist:
+                raise ImproperlyConfigured("'%s.list_editable[%d]' refers to a "
+                    "field, '%s', not defined on %s."
+                    % (cls.__name__, idx, field_name, model.__name__))
+            if field_name not in cls.list_display:
+                raise ImproperlyConfigured("'%s.list_editable[%d]' refers to "
+                    "'%s' which is not defined in 'list_display'."
+                    % (cls.__name__, idx, field_name))
+            if field_name in cls.list_display_links:
+                raise ImproperlyConfigured("'%s' cannot be in both '%s.list_editable'"
+                    " and '%s.list_display_links'"
+                    % (field_name, cls.__name__, cls.__name__))
+            if not cls.list_display_links and cls.list_display[0] in cls.list_editable:
+                raise ImproperlyConfigured("'%s.list_editable[%d]' refers to"
+                    " the first field in list_display, '%s', which can't be"
+                    " used unless list_display_links is set."
+                    % (cls.__name__, idx, cls.list_display[0]))
+            if not field.editable:
+                raise ImproperlyConfigured("'%s.list_editable[%d]' refers to a "
+                    "field, '%s', which isn't editable through the admin."
+                    % (cls.__name__, idx, field_name))
 
     # search_fields = ()
     if hasattr(cls, 'search_fields'):
@@ -101,6 +131,7 @@ def validate(cls, model):
             raise ImproperlyConfigured("'%s.%s' should be a boolean."
                     % (cls.__name__, attr))
 
+
     # inlines = []
     if hasattr(cls, 'inlines'):
         check_isseq(cls, 'inlines', cls.inlines)
@@ -115,9 +146,9 @@ def validate(cls, model):
                 raise ImproperlyConfigured("'%s.inlines[%d].model' does not "
                         "inherit from models.Model." % (cls.__name__, idx))
             validate_base(inline, inline.model)
-            validate_inline(inline)
+            validate_inline(inline, cls, model)
 
-def validate_inline(cls):
+def validate_inline(cls, parent, parent_model):
     # model is already verified to exist and be a Model
     if cls.fk_name: # default value is None
         f = get_field(cls, cls.model, cls.model._meta, 'fk_name', cls.fk_name)
@@ -135,6 +166,14 @@ def validate_inline(cls):
     if hasattr(cls, 'formset') and not issubclass(cls.formset, BaseModelFormSet):
         raise ImproperlyConfigured("'%s.formset' does not inherit from "
                 "BaseModelFormSet." % cls.__name__)
+
+    # exclude
+    if hasattr(cls, 'exclude') and cls.exclude:
+        fk = _get_foreign_key(parent_model, cls.model, can_fail=True)
+        if fk and fk.name in cls.exclude:
+            raise ImproperlyConfigured("%s cannot exclude the field "
+                    "'%s' - this is the foreign key to the parent model "
+                    "%s." % (cls.__name__, fk.name, parent_model.__name__))
 
 def validate_base(cls, model):
     opts = model._meta

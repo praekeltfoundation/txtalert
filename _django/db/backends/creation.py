@@ -25,6 +25,13 @@ class BaseDatabaseCreation(object):
     def __init__(self, connection):
         self.connection = connection
 
+    def _digest(self, *args):
+        """
+        Generates a 32-bit digest of a set of arguments that can be used to
+        shorten identifying names.
+        """
+        return '%x' % (abs(hash(args)) % 4294967296L)  # 2**32
+
     def sql_create_model(self, model, style, known_models=set()):
         """
         Returns the SQL required to create a single model, as a tuple of:
@@ -33,6 +40,8 @@ class BaseDatabaseCreation(object):
         from django.db import models
 
         opts = model._meta
+        if not opts.managed or opts.proxy:
+            return [], {}
         final_output = []
         table_output = []
         pending_references = {}
@@ -47,7 +56,8 @@ class BaseDatabaseCreation(object):
             # Make the definition (e.g. 'foo VARCHAR(30)') for this field.
             field_output = [style.SQL_FIELD(qn(f.column)),
                 style.SQL_COLTYPE(col_type)]
-            field_output.append(style.SQL_KEYWORD('%sNULL' % (not f.null and 'NOT ' or '')))
+            if not f.null:
+                field_output.append(style.SQL_KEYWORD('NOT NULL'))
             if f.primary_key:
                 field_output.append(style.SQL_KEYWORD('PRIMARY KEY'))
             elif f.unique:
@@ -65,8 +75,7 @@ class BaseDatabaseCreation(object):
             table_output.append(' '.join(field_output))
         if opts.order_with_respect_to:
             table_output.append(style.SQL_FIELD(qn('_order')) + ' ' + \
-                style.SQL_COLTYPE(models.IntegerField().db_type()) + ' ' + \
-                style.SQL_KEYWORD('NULL'))
+                style.SQL_COLTYPE(models.IntegerField().db_type()))
         for field_constraints in opts.unique_together:
             table_output.append(style.SQL_KEYWORD('UNIQUE') + ' (%s)' % \
                 ", ".join([style.SQL_FIELD(qn(opts.get_field(f).column)) for f in field_constraints]))
@@ -112,6 +121,8 @@ class BaseDatabaseCreation(object):
         "Returns any ALTER TABLE statements to add constraints after the fact."
         from django.db.backends.util import truncate_name
 
+        if not model._meta.managed or model._meta.proxy:
+            return []
         qn = self.connection.ops.quote_name
         final_output = []
         opts = model._meta
@@ -124,9 +135,9 @@ class BaseDatabaseCreation(object):
                 col = opts.get_field(f.rel.field_name).column
                 # For MySQL, r_name must be unique in the first 64 characters.
                 # So we are careful with character usage here.
-                r_name = '%s_refs_%s_%x' % (r_col, col, abs(hash((r_table, table))))
+                r_name = '%s_refs_%s_%s' % (r_col, col, self._digest(r_table, table))
                 final_output.append(style.SQL_KEYWORD('ALTER TABLE') + ' %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s;' % \
-                    (qn(r_table), truncate_name(r_name, self.connection.ops.max_name_length()),
+                    (qn(r_table), qn(truncate_name(r_name, self.connection.ops.max_name_length())),
                     qn(r_col), qn(table), qn(col),
                     self.connection.ops.deferrable_sql()))
             del pending_references[model]
@@ -136,7 +147,8 @@ class BaseDatabaseCreation(object):
         "Return the CREATE TABLE statments for all the many-to-many tables defined on a model"
         output = []
         for f in model._meta.local_many_to_many:
-            output.extend(self.sql_for_many_to_many_field(model, f, style))
+            if model._meta.managed or f.rel.to._meta.managed:
+                output.extend(self.sql_for_many_to_many_field(model, f, style))
         return output
 
     def sql_for_many_to_many_field(self, model, f, style):
@@ -182,11 +194,10 @@ class BaseDatabaseCreation(object):
             output.append('\n'.join(table_output))
 
             for r_table, r_col, table, col in deferred:
-                r_name = '%s_refs_%s_%x' % (r_col, col,
-                        abs(hash((r_table, table))))
+                r_name = '%s_refs_%s_%s' % (r_col, col, self._digest(r_table, table))
                 output.append(style.SQL_KEYWORD('ALTER TABLE') + ' %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s;' %
                 (qn(r_table),
-                truncate_name(r_name, self.connection.ops.max_name_length()),
+                qn(truncate_name(r_name, self.connection.ops.max_name_length())),
                 qn(r_col), qn(table), qn(col),
                 self.connection.ops.deferrable_sql()))
 
@@ -225,6 +236,8 @@ class BaseDatabaseCreation(object):
 
     def sql_indexes_for_model(self, model, style):
         "Returns the CREATE INDEX SQL statements for a single model"
+        if not model._meta.managed or model._meta.proxy:
+            return []
         output = []
         for f in model._meta.local_fields:
             output.extend(self.sql_indexes_for_field(model, f, style))
@@ -255,6 +268,8 @@ class BaseDatabaseCreation(object):
 
     def sql_destroy_model(self, model, references_to_delete, style):
         "Return the DROP TABLE and restraint dropping statements for a single model"
+        if not model._meta.managed or model._meta.proxy:
+            return []
         # Drop the table now
         qn = self.connection.ops.quote_name
         output = ['%s %s;' % (style.SQL_KEYWORD('DROP TABLE'),
@@ -271,6 +286,8 @@ class BaseDatabaseCreation(object):
     def sql_remove_table_constraints(self, model, references_to_delete, style):
         from django.db.backends.util import truncate_name
 
+        if not model._meta.managed or model._meta.proxy:
+            return []
         output = []
         qn = self.connection.ops.quote_name
         for rel_class, f in references_to_delete[model]:
@@ -278,7 +295,7 @@ class BaseDatabaseCreation(object):
             col = f.column
             r_table = model._meta.db_table
             r_col = model._meta.get_field(f.rel.field_name).column
-            r_name = '%s_refs_%s_%x' % (col, r_col, abs(hash((table, r_table))))
+            r_name = '%s_refs_%s_%s' % (col, r_col, self._digest(table, r_table))
             output.append('%s %s %s %s;' % \
                 (style.SQL_KEYWORD('ALTER TABLE'),
                 style.SQL_TABLE(qn(table)),
@@ -311,11 +328,16 @@ class BaseDatabaseCreation(object):
 
         self.connection.close()
         settings.DATABASE_NAME = test_database_name
+        self.connection.settings_dict["DATABASE_NAME"] = test_database_name
+        can_rollback = self._rollback_works()
+        settings.DATABASE_SUPPORTS_TRANSACTIONS = can_rollback
+        self.connection.settings_dict["DATABASE_SUPPORTS_TRANSACTIONS"] = can_rollback
 
         call_command('syncdb', verbosity=verbosity, interactive=False)
 
         if settings.CACHE_BACKEND.startswith('db://'):
-            cache_name = settings.CACHE_BACKEND[len('db://'):]
+            from django.core.cache import parse_backend_uri
+            _, cache_name, _ = parse_backend_uri(settings.CACHE_BACKEND)
             call_command('createcachetable', cache_name)
 
         # Get a cursor (even though we don't need one yet). This has
@@ -363,6 +385,18 @@ class BaseDatabaseCreation(object):
 
         return test_database_name
 
+    def _rollback_works(self):
+        cursor = self.connection.cursor()
+        cursor.execute('CREATE TABLE ROLLBACK_TEST (X INT)')
+        self.connection._commit()
+        cursor.execute('INSERT INTO ROLLBACK_TEST (X) VALUES (8)')
+        self.connection._rollback()
+        cursor.execute('SELECT COUNT(X) FROM ROLLBACK_TEST')
+        count, = cursor.fetchone()
+        cursor.execute('DROP TABLE ROLLBACK_TEST')
+        self.connection._commit()
+        return count == 0
+
     def destroy_test_db(self, old_database_name, verbosity=1):
         """
         Destroy a test database, prompting the user for confirmation if the
@@ -373,6 +407,7 @@ class BaseDatabaseCreation(object):
         self.connection.close()
         test_database_name = settings.DATABASE_NAME
         settings.DATABASE_NAME = old_database_name
+        self.connection.settings_dict["DATABASE_NAME"] = old_database_name
 
         self._destroy_test_db(test_database_name, verbosity)
 

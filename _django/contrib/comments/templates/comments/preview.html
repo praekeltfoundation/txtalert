@@ -6,6 +6,7 @@
 {% block content %}
   {% load comments %}
   <form action="{% comment_form_target %}" method="post">
+    {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
     {% if form.errors %}
     <h1>{% blocktrans count form.errors|length as counter %}Please correct the error below{% plural %}Please correct the errors below{% endblocktrans %}</h1>
     {% else %}
@@ -19,10 +20,10 @@
       {% if field.is_hidden %}
         {{ field }}
       {% else %}
+        {% if field.errors %}{{ field.errors }}{% endif %}
         <p
           {% if field.errors %} class="error"{% endif %}
           {% ifequal field.name "honeypot" %} style="display:none;"{% endifequal %}>
-          {% if field.errors %}{{ field.errors }}{% endif %}
           {{ field.label_tag }} {{ field }}
         </p>
       {% endif %}

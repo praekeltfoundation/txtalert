@@ -1,3 +1,4 @@
+import re
 from django.db.backends import BaseDatabaseIntrospection
 
 # This light wrapper "fakes" a dictionary interface, because some SQLite data
@@ -55,7 +56,53 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
                  info['null_ok']) for info in self._table_info(cursor, table_name)]
 
     def get_relations(self, cursor, table_name):
-        raise NotImplementedError
+        """
+        Returns a dictionary of {field_index: (field_index_other_table, other_table)}
+        representing all relationships to the given table. Indexes are 0-based.
+        """
+
+        # Dictionary of relations to return
+        relations = {}
+
+        # Schema for this table
+        cursor.execute("SELECT sql FROM sqlite_master WHERE tbl_name = %s", [table_name])
+        results = cursor.fetchone()[0].strip()
+        results = results[results.index('(')+1:results.rindex(')')]
+
+        # Walk through and look for references to other tables. SQLite doesn't
+        # really have enforced references, but since it echoes out the SQL used
+        # to create the table we can look for REFERENCES statements used there.
+        for field_index, field_desc in enumerate(results.split(',')):
+            field_desc = field_desc.strip()
+            if field_desc.startswith("UNIQUE"):
+                continue
+
+            m = re.search('references (.*) \(["|](.*)["|]\)', field_desc, re.I)
+            if not m:
+                continue
+
+            table, column = [s.strip('"') for s in m.groups()]
+
+            cursor.execute("SELECT sql FROM sqlite_master WHERE tbl_name = %s", [table])
+            result = cursor.fetchone()
+            if not result:
+                continue
+            other_table_results = result[0].strip()
+            li, ri = other_table_results.index('('), other_table_results.rindex(')')
+            other_table_results = other_table_results[li+1:ri]
+
+
+            for other_index, other_desc in enumerate(other_table_results.split(',')):
+                other_desc = other_desc.strip()
+                if other_desc.startswith('UNIQUE'):
+                    continue
+
+                name = other_desc.split(' ', 1)[0].strip('"')
+                if name == column:
+                    relations[field_index] = (other_index, table)
+                    break
+
+        return relations
 
     def get_indexes(self, cursor, table_name):
         """

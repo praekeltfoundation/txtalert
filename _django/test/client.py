@@ -1,6 +1,8 @@
 import urllib
+from urlparse import urlparse, urlunparse, urlsplit
 import sys
 import os
+import re
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -11,17 +13,20 @@ from django.contrib.auth import authenticate, login
 from django.core.handlers.base import BaseHandler
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.signals import got_request_exception
-from django.http import SimpleCookie, HttpRequest
+from django.http import SimpleCookie, HttpRequest, QueryDict
 from django.template import TemplateDoesNotExist
 from django.test import signals
 from django.utils.functional import curry
 from django.utils.encoding import smart_str
 from django.utils.http import urlencode
+from django.utils.importlib import import_module
 from django.utils.itercompat import is_iterable
+from django.db import transaction, close_connection
+from django.test.utils import ContextList
 
 BOUNDARY = 'BoUnDaRyStRiNg'
 MULTIPART_CONTENT = 'multipart/form-data; boundary=%s' % BOUNDARY
-
+CONTENT_TYPE_RE = re.compile('.*; charset=([\w\d-]+);?')
 
 class FakePayload(object):
     """
@@ -68,7 +73,9 @@ class ClientHandler(BaseHandler):
                 response = middleware_method(request, response)
             response = self.apply_response_fixes(request, response)
         finally:
+            signals.request_finished.disconnect(close_connection)
             signals.request_finished.send(sender=self.__class__)
+            signals.request_finished.connect(close_connection)
 
         return response
 
@@ -76,8 +83,8 @@ def store_rendered_templates(store, signal, sender, template, context, **kwargs)
     """
     Stores templates and contexts that are rendered.
     """
-    store.setdefault('template',[]).append(template)
-    store.setdefault('context',[]).append(context)
+    store.setdefault('template', []).append(template)
+    store.setdefault('context', ContextList()).append(context)
 
 def encode_multipart(boundary, data):
     """
@@ -171,7 +178,7 @@ class Client(object):
         Obtains the current session variables.
         """
         if 'django.contrib.sessions' in settings.INSTALLED_APPS:
-            engine = __import__(settings.SESSION_ENGINE, {}, {}, [''])
+            engine = import_module(settings.SESSION_ENGINE)
             cookie = self.cookies.get(settings.SESSION_COOKIE_NAME, None)
             if cookie:
                 return engine.SessionStore(cookie.value)
@@ -189,6 +196,7 @@ class Client(object):
             'HTTP_COOKIE':      self.cookies,
             'PATH_INFO':         '/',
             'QUERY_STRING':      '',
+            'REMOTE_ADDR':       '127.0.0.1',
             'REQUEST_METHOD':    'GET',
             'SCRIPT_NAME':       '',
             'SERVER_NAME':       'testserver',
@@ -256,40 +264,137 @@ class Client(object):
 
         return response
 
-    def get(self, path, data={}, **extra):
+    def get(self, path, data={}, follow=False, **extra):
         """
         Requests a response from the server using GET.
         """
+        parsed = urlparse(path)
         r = {
             'CONTENT_TYPE':    'text/html; charset=utf-8',
-            'PATH_INFO':       urllib.unquote(path),
-            'QUERY_STRING':    urlencode(data, doseq=True),
+            'PATH_INFO':       urllib.unquote(parsed[2]),
+            'QUERY_STRING':    urlencode(data, doseq=True) or parsed[4],
             'REQUEST_METHOD': 'GET',
             'wsgi.input':      FakePayload('')
         }
         r.update(extra)
 
-        return self.request(**r)
+        response = self.request(**r)
+        if follow:
+            response = self._handle_redirects(response)
+        return response
 
-    def post(self, path, data={}, content_type=MULTIPART_CONTENT, **extra):
+    def post(self, path, data={}, content_type=MULTIPART_CONTENT,
+             follow=False, **extra):
         """
         Requests a response from the server using POST.
         """
         if content_type is MULTIPART_CONTENT:
             post_data = encode_multipart(BOUNDARY, data)
         else:
-            post_data = data
+            # Encode the content so that the byte representation is correct.
+            match = CONTENT_TYPE_RE.match(content_type)
+            if match:
+                charset = match.group(1)
+            else:
+                charset = settings.DEFAULT_CHARSET
+            post_data = smart_str(data, encoding=charset)
 
+        parsed = urlparse(path)
         r = {
             'CONTENT_LENGTH': len(post_data),
             'CONTENT_TYPE':   content_type,
-            'PATH_INFO':      urllib.unquote(path),
+            'PATH_INFO':      urllib.unquote(parsed[2]),
+            'QUERY_STRING':   parsed[4],
             'REQUEST_METHOD': 'POST',
             'wsgi.input':     FakePayload(post_data),
         }
         r.update(extra)
 
-        return self.request(**r)
+        response = self.request(**r)
+        if follow:
+            response = self._handle_redirects(response)
+        return response
+
+    def head(self, path, data={}, follow=False, **extra):
+        """
+        Request a response from the server using HEAD.
+        """
+        parsed = urlparse(path)
+        r = {
+            'CONTENT_TYPE':    'text/html; charset=utf-8',
+            'PATH_INFO':       urllib.unquote(parsed[2]),
+            'QUERY_STRING':    urlencode(data, doseq=True) or parsed[4],
+            'REQUEST_METHOD': 'HEAD',
+            'wsgi.input':      FakePayload('')
+        }
+        r.update(extra)
+
+        response = self.request(**r)
+        if follow:
+            response = self._handle_redirects(response)
+        return response
+
+    def options(self, path, data={}, follow=False, **extra):
+        """
+        Request a response from the server using OPTIONS.
+        """
+        parsed = urlparse(path)
+        r = {
+            'PATH_INFO':       urllib.unquote(parsed[2]),
+            'QUERY_STRING':    urlencode(data, doseq=True) or parsed[4],
+            'REQUEST_METHOD': 'OPTIONS',
+            'wsgi.input':      FakePayload('')
+        }
+        r.update(extra)
+
+        response = self.request(**r)
+        if follow:
+            response = self._handle_redirects(response)
+        return response
+
+    def put(self, path, data={}, content_type=MULTIPART_CONTENT,
+            follow=False, **extra):
+        """
+        Send a resource to the server using PUT.
+        """
+        if content_type is MULTIPART_CONTENT:
+            post_data = encode_multipart(BOUNDARY, data)
+        else:
+            post_data = data
+
+        parsed = urlparse(path)
+        r = {
+            'CONTENT_LENGTH': len(post_data),
+            'CONTENT_TYPE':   content_type,
+            'PATH_INFO':      urllib.unquote(parsed[2]),
+            'QUERY_STRING':   urlencode(data, doseq=True) or parsed[4],
+            'REQUEST_METHOD': 'PUT',
+            'wsgi.input':     FakePayload(post_data),
+        }
+        r.update(extra)
+
+        response = self.request(**r)
+        if follow:
+            response = self._handle_redirects(response)
+        return response
+
+    def delete(self, path, data={}, follow=False, **extra):
+        """
+        Send a DELETE request to the server.
+        """
+        parsed = urlparse(path)
+        r = {
+            'PATH_INFO':       urllib.unquote(parsed[2]),
+            'QUERY_STRING':    urlencode(data, doseq=True) or parsed[4],
+            'REQUEST_METHOD': 'DELETE',
+            'wsgi.input':      FakePayload('')
+        }
+        r.update(extra)
+
+        response = self.request(**r)
+        if follow:
+            response = self._handle_redirects(response)
+        return response
 
     def login(self, **credentials):
         """
@@ -302,7 +407,7 @@ class Client(object):
         user = authenticate(**credentials)
         if user and user.is_active \
                 and 'django.contrib.sessions' in settings.INSTALLED_APPS:
-            engine = __import__(settings.SESSION_ENGINE, {}, {}, [''])
+            engine = import_module(settings.SESSION_ENGINE)
 
             # Create a fake request to store login details.
             request = HttpRequest()
@@ -333,10 +438,36 @@ class Client(object):
 
     def logout(self):
         """
-        Removes the authenticated user's cookies.
+        Removes the authenticated user's cookies and session object.
 
         Causes the authenticated user to be logged out.
         """
-        session = __import__(settings.SESSION_ENGINE, {}, {}, ['']).SessionStore()
-        session.delete(session_key=self.cookies[settings.SESSION_COOKIE_NAME].value)
+        session = import_module(settings.SESSION_ENGINE).SessionStore()
+        session_cookie = self.cookies.get(settings.SESSION_COOKIE_NAME)
+        if session_cookie:
+            session.delete(session_key=session_cookie.value)
         self.cookies = SimpleCookie()
+
+    def _handle_redirects(self, response):
+        "Follows any redirects by requesting responses from the server using GET."
+
+        response.redirect_chain = []
+        while response.status_code in (301, 302, 303, 307):
+            url = response['Location']
+            scheme, netloc, path, query, fragment = urlsplit(url)
+
+            redirect_chain = response.redirect_chain
+            redirect_chain.append((url, response.status_code))
+
+            # The test client doesn't handle external links,
+            # but since the situation is simulated in test_client,
+            # we fake things here by ignoring the netloc portion of the
+            # redirected URL.
+            response = self.get(path, QueryDict(query), follow=False)
+            response.redirect_chain = redirect_chain
+
+            # Prevent loops
+            if response.redirect_chain[-1] in response.redirect_chain[0:-1]:
+                break
+        return response
+
