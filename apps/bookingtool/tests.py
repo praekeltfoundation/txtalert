@@ -117,14 +117,12 @@ class CalendarTestCase(TestCase):
             self.assertEquals(json, {"risk": risk})
     
     def test_redirect_for_today(self):
-        response = self.client.get(reverse('calendar-today'), follow=True)
-        self.assertEquals(response.redirect_chain, [
-            ("http://testserver%s" % reverse('calendar-date', \
+        response = self.client.get(reverse('calendar-today'))
+        self.assertRedirects(response, "http://testserver%s" % reverse('calendar-date', \
                                             kwargs={
                                                 'month': datetime.now().month,
                                                 'year': datetime.now().year
-                                        }),
-            302)])
+                                        }), status_code=302)
 
 
 class VerificationTestCase(TestCase):
