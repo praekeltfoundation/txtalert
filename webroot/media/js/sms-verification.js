@@ -32,9 +32,11 @@ BookingTool.Verification = {
 	
 	update_active_msisdn: function() {
 		selected_index = $('#id_active_msisdn').val();
-		selected_child = $('#id_active_msisdn').children()[selected_index];
-		new_msisdn = $(selected_child).text();
-		$('#id_' + BookingTool.Verification.NAME).attr('value',new_msisdn);
+		if(selected_index) {
+			selected_child = $('#id_active_msisdn').children()[selected_index];
+			new_msisdn = $(selected_child).text();
+			$('#id_' + BookingTool.Verification.NAME).attr('value',new_msisdn);
+		}
 	},
 	
 	send_sms: function() {
