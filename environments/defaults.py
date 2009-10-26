@@ -100,6 +100,7 @@ INSTALLED_APPS = (
     'mobile.sms',
     'therapyedge',
     'bookingtool',
+    'opera',
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.sessions',
