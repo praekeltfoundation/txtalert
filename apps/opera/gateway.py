@@ -30,13 +30,14 @@ class Gateway(object):
         
         proxy_response = self.proxy.EAPIGateway.SendSMS(struct)
         
-        return SendSMS.objects.create(numbers=struct['Numbers'], \
-                                        smstexts=simplejson.dumps(struct['SMSTexts']), \
+        return [SendSMS.objects.create(number=number, \
+                                        smstext=smstext, \
                                         delivery=struct['Delivery'], \
                                         expiry=struct['Expiry'], \
                                         priority=struct['Priority'], \
                                         receipt=struct['Receipt'], \
                                         identifier=proxy_response['Identifier'])
+            for (number, smstext) in zip(numbers, smstexts)]
     
     def status_for(self, identifier):
         return SendSMS.objects.filter(identifier=identifier)
