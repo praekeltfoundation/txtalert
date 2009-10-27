@@ -75,9 +75,11 @@ class OperaTestCase(TestCase):
             self.gateway.use_identifier(receipt.reference)
             self.gateway.send_sms([receipt.msisdn], ['testing %s' % receipt.reference])
         
+        # mimick POSTed receipt from Opera
         response = self.client.post(reverse('sms-receipt'), raw_xml_post.strip(), \
                                     content_type='text/xml')
         
+        # check database state
         for receipt in receipts:
             send_sms = SendSMS.objects.get(number=receipt.msisdn, identifier=receipt.reference)
             self.assertEquals(send_sms.delivery_timestamp.strftime(SendSMS.TIMESTAMP_FORMAT), receipt.timestamp)
