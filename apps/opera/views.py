@@ -1,8 +1,9 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotAllowed
 from collections import namedtuple
 import xml.etree.ElementTree as ET
 from opera.models import SendSMS
 from datetime import datetime
+import logging
 
 def element_to_dict(element):
     """
@@ -56,14 +57,17 @@ def receipt(request):
     
     """
     if request.POST:
+        logging.debug(request.raw_post_data)
         tree = ET.fromstring(request.raw_post_data)
         for receipt in map(element_to_namedtuple, tree.findall('receipt')):
-            sms_sent = SendSMS.objects.get(identifier=receipt.reference, \
-                                                        number=receipt.msisdn)
-            sms_sent.status = receipt.status
-            sms_sent.delivery_timestamp = datetime.strptime(receipt.timestamp, \
-                                                            SendSMS.TIMESTAMP_FORMAT)
-            sms_sent.save()
+            try:
+                sms_sent = SendSMS.objects.get(identifier=receipt.reference, \
+                                                            number=receipt.msisdn)
+                sms_sent.status = receipt.status
+                sms_sent.delivery_timestamp = datetime.strptime(receipt.timestamp, \
+                                                                SendSMS.TIMESTAMP_FORMAT)
+                sms_sent.save()
+            except SendSMS.DoesNotExist, error:
+                logging.error(error)
     else:
-        print 'called without POST'
-    return HttpResponse('ok!')
+        return HttpResponseNotAllowed('Use POST')
