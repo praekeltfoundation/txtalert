@@ -1,13 +1,19 @@
 from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseNotFound
 from django.utils import simplejson
+from django.core import serializers
 import xml.etree.ElementTree as ET
 from opera.models import SendSMS
 from opera.utils import element_to_namedtuple
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 
 
 def process_receipts(receipts):
+    """Deal with the list of receipt objects, find & updated associated SendSMSs 
+    or mark them as failed.
+    
+    Returns a tuple of two lists, successful receipts & failed receipts.
+    """
     success, fail = [], []
     for receipt in receipts:
         try:
@@ -23,7 +29,6 @@ def process_receipts(receipts):
             fail.append(receipt._asdict())
     return success, fail
 
-# Create your views here.
 def receipt(request):
     """Process a POSTed XML receipt from Opera, this is what it looks like:
     
@@ -60,3 +65,17 @@ def receipt(request):
         }), content_type='text/json')
     else:
         return HttpResponseNotAllowed(['POST'])
+
+
+def statistics(request, format):
+    """Present SendSMS statistics over an HTTP API. Format can be any serializer
+    that Django supports out of the box
+    """
+    since = request.GET.get('since', None)
+    if since:
+        since = datetime.strptime(since, SendSMS.TIMESTAMP_FORMAT)
+    else:
+        since = datetime.now() - timedelta(days=1)
+    sent_smss = SendSMS.objects.filter(delivery__gte=since)
+    return HttpResponse(serializers.serialize(format, sent_smss), \
+                        content_type='text/%s' % format)

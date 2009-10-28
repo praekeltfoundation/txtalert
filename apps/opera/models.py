@@ -56,7 +56,7 @@ class SendSMS(models.Model):
     priority = models.CharField(max_length=80, choices=PRIORITY_CHOICES)
     receipt = models.CharField(max_length=1, choices=RECEIPT_CHOICES)
     identifier = models.CharField(blank=False, max_length=8)
-    status = models.CharField(max_length=1, choices=RECEIPT_STATUS_CHOICES)
+    status = models.CharField(max_length=1, default='v', choices=RECEIPT_STATUS_CHOICES)
     delivery_timestamp = models.DateTimeField(null=True)
     
     def __unicode__(self):
