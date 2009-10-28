@@ -79,6 +79,18 @@ class OperaTestCase(TestCase):
         response = self.client.post(reverse('sms-receipt'), raw_xml_post.strip(), \
                                     content_type='text/xml')
         
+        # it should return a JSON response
+        self.assertEquals(response['Content-Type'], 'text/json')
+        
+        # test the json response
+        from django.utils import simplejson
+        data = simplejson.loads(response.content)
+        self.assertTrue(data.keys(), ['fail','success'])
+        # all should've succeeded
+        self.assertEquals(len(data['success']), 2)
+        # we should get the dict back representing the receipt
+        self.assertEquals([r._asdict() for r in receipts], data['success'])
+        
         # check database state
         for receipt in receipts:
             send_sms = SendSMS.objects.get(number=receipt.msisdn, identifier=receipt.reference)
