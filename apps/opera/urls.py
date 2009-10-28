@@ -6,5 +6,5 @@ urlpatterns = patterns('',
     # the URL posted in Dragon's General Configuration area.
     (r'receipt$', views.receipt, {}, 'sms-receipt'), 
     (r'receipt/$', views.receipt, {}, 'sms-receipt'),
-    (r'statistics\.(?P<format>json|xml)$', views.statistics, {}, 'sms-api'),
+    (r'statistics\.(?P<format>json|xml|python|yaml)$', views.statistics, {}, 'sms-api'),
 )

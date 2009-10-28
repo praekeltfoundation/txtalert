@@ -77,5 +77,8 @@ def statistics(request, format):
     else:
         since = datetime.now() - timedelta(days=1)
     sent_smss = SendSMS.objects.filter(delivery__gte=since)
-    return HttpResponse(serializers.serialize(format, sent_smss), \
-                        content_type='text/%s' % format)
+    serialized_data = serializers.serialize(format, sent_smss, fields=(
+        'number', 'identifier', 'status', 'delivery', 'expiry', 
+        'delivery_timestamp', 'status'
+    ))
+    return HttpResponse(serialized_data, content_type='text/%s' % format)

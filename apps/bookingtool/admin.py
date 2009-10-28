@@ -23,7 +23,7 @@ from therapyedge.models import Visit
 
 class VisitInlineAdmin(admin.TabularInline):
     model =  Visit
-    
+    exclude = ('te_visit_id',)
     formfield_overrides = {
             models.DateField: {'widget': widgets.RiskDateWidget},
     }

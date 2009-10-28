@@ -18,7 +18,12 @@ BookingTool.Calendar = {
 			// add the calendar links
 			$(this).after('<a href="#" id="risk-calendar-' + idx + '">' +
 							'<img src="/media/img/admin/icon_calendar.gif">' + 
+						'</a>' + 
+						'&nbsp;<a href="#" id="risk-suggestion-' + idx + '">' +
+								'Suggest a date' + 
 						'</a>');
+			// add the suggest a date link
+			$(this).after('');
 		});
 		
 		// apply change event listeners to all
@@ -51,6 +56,15 @@ BookingTool.Calendar = {
 				// stop bubbling
 				return false;
 			});
+		});
+		
+		// collect the suggest a date links
+		suggest_links = $('a[id^=risk-suggestion]');
+		suggest_links.click(function() {
+			calendar_id = parseInt($(this).attr("id").split("risk-suggestion-")[1], 10);
+			input = BookingTool.Calendar.calendars[calendar_id].input;
+			// $.get('/bookingtool/suggest.js', {'patient_id'})
+			return false;
 		});
 		
 		// hide all calendars when clicking anything outside
