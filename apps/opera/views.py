@@ -1,51 +1,21 @@
 from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseNotFound
 from django.utils import simplejson
-from collections import namedtuple
 import xml.etree.ElementTree as ET
 from opera.models import SendSMS
+from opera.utils import element_to_namedtuple
 from datetime import datetime
 import logging
 
-def element_to_dict(element):
-    """
-    turn <data><el>1</el></data> into {el: 1}. Not recursive!
-    
-    >>> data = ET.fromstring("<data><el>1</el></data>")
-    >>> element_to_dict(data)
-    {'el': '1'}
-    >>>
-    
-    """
-    return dict([(child.tag, child.text) for child in element.getchildren()])
-
-def element_to_namedtuple(element):
-    """
-    Turn an ElementTree element into an object with named params. Not recursive!
-    
-    >>> data = ET.fromstring("<data><el>1</el></data>")
-    >>> element_to_namedtuple(data)
-    data(el='1')
-    
-    """
-    d = element_to_dict(element)
-    klass = namedtuple(element.tag, d.keys())
-    return klass._make(d.values())
-
-
-
-def process_one_receipt(receipt):
-    sms_sent = SendSMS.objects.get(identifier=receipt.reference, \
-                                                        number=receipt.msisdn)
-    sms_sent.status = receipt.status
-    sms_sent.delivery_timestamp = datetime.strptime(receipt.timestamp, \
-                                                    SendSMS.TIMESTAMP_FORMAT)
-    return sms_sent
 
 def process_receipts(receipts):
     success, fail = [], []
     for receipt in receipts:
         try:
-            sms_sent = process_one_receipt(receipt)
+            sms_sent = SendSMS.objects.get(identifier=receipt.reference, \
+                                                                number=receipt.msisdn)
+            sms_sent.status = receipt.status
+            sms_sent.delivery_timestamp = datetime.strptime(receipt.timestamp, \
+                                                            SendSMS.TIMESTAMP_FORMAT)
             sms_sent.save()
             success.append(receipt._asdict())
         except SendSMS.DoesNotExist, error:

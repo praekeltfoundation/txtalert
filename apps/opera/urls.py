@@ -2,6 +2,8 @@ from django.conf.urls.defaults import *
 from opera import views
 
 urlpatterns = patterns('',
-    (r'receipt$', views.receipt, {}, 'sms-receipt'),
+    # Intentional url without trailing slash as Opera seems to chop it off
+    # the URL posted in Dragon's General Configuration area.
+    (r'receipt$', views.receipt, {}, 'sms-receipt'), 
     (r'receipt/$', views.receipt, {}, 'sms-receipt'),
     )
