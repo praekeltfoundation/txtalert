@@ -123,7 +123,26 @@ class CalendarTestCase(TestCase):
                                                 'month': datetime.now().month,
                                                 'year': datetime.now().year
                                         }), status_code=302)
-
+    
+    def test_date_suggestion(self):
+        bp = BookingPatient.objects.all()[0]
+        response = self.client.get(reverse('calendar-suggest'), {
+            'patient_id': bp.id
+        })
+        self.assertEquals(response['Content-Type'], 'text/json')
+        data = simplejson.loads(response.content)
+        self.assertEquals(data['suggestion'], '2009-11-2')
+    
+    def test_date_suggestion_with_treatment_cycle_override(self):
+        bp = BookingPatient.objects.all()[0]
+        response = self.client.get(reverse('calendar-suggest'), {
+            'patient_id': bp.id,
+            'treatment_cycle': 3
+        })
+        self.assertEquals(response['Content-Type'], 'text/json')
+        data = simplejson.loads(response.content)
+        self.assertEquals(data['suggestion'], '2010-1-2')
+    
 
 class VerificationTestCase(TestCase):
     def setUp(self):
@@ -161,3 +180,4 @@ class VerificationTestCase(TestCase):
         action = gateway.smssendactions.all()[0]
         smslog = action.smslogs.all()[0]
         self.assertTrue(smslog.contact.msisdn == msisdn)
+    

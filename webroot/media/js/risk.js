@@ -64,7 +64,8 @@ BookingTool.Calendar = {
 			calendar_id = parseInt($(this).attr("id").split("risk-suggestion-")[1], 10);
 			input = $(BookingTool.Calendar.calendars[calendar_id].input);
 			$.get('/bookingtool/calendar/suggest.js', {
-					'patient_id': BookingTool.Calendar.get_patient_id()
+					'patient_id': BookingTool.Calendar.get_patient_id(),
+					'treatment_cycle': BookingTool.Calendar.get_selected_treatment_cycle()
 				}, function(data, txtStatus) {
 					input.attr('value', data.suggestion);
 				}, 'json');
@@ -73,6 +74,10 @@ BookingTool.Calendar = {
 		
 		// hide all calendars when clicking anything outside
 		$(window).click(BookingTool.Calendar.hide_all_calendars);
+	},
+	
+	get_selected_treatment_cycle: function() {
+		return $('input[name=treatment_cycle]:checked').val();
 	},
 	
 	get_patient_id: function() {
