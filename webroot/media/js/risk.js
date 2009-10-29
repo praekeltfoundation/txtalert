@@ -62,12 +62,13 @@ BookingTool.Calendar = {
 		suggest_links = $('a[id^=risk-suggestion]');
 		suggest_links.click(function() {
 			calendar_id = parseInt($(this).attr("id").split("risk-suggestion-")[1], 10);
-			input = $(BookingTool.Calendar.calendars[calendar_id].input);
+			input = BookingTool.Calendar.calendars[calendar_id].input;
 			$.get('/bookingtool/calendar/suggest.js', {
 					'patient_id': BookingTool.Calendar.get_patient_id(),
 					'treatment_cycle': BookingTool.Calendar.get_selected_treatment_cycle()
 				}, function(data, txtStatus) {
-					input.attr('value', data.suggestion);
+					$(input).attr('value', data.suggestion);
+					BookingTool.Calendar.check_risk_for_field($(input));
 				}, 'json');
 			return false;
 		});
