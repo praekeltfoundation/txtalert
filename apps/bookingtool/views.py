@@ -9,7 +9,21 @@ from django.utils.safestring import mark_safe
 from therapyedge.models import Visit
 from mobile.sms.models import OperaGateway
 from cal import *
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+from bookingtool.models import BookingPatient
+
+
+def suggest(request):
+    if 'patient_id' in request.GET:
+        bp = BookingPatient.objects.get(pk=request.GET['patient_id'])
+        last_visit = bp.visits.latest('date')
+        # take last visit & calculate treatment_cycle amount of months forward
+        suggestion = last_visit.date + timedelta(bp.treatment_cycle * 365 / 12)
+        return HttpResponse(dumps({
+            'suggestion': "%s-%s-%s" % (suggestion.year, suggestion.month, suggestion.day)
+        }))
+    else:
+        raise Http404
 
 def risk(request):
     if 'date' in request.GET:

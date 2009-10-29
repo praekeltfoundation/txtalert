@@ -29,7 +29,7 @@ BookingTool.Calendar = {
 		// apply change event listeners to all
 		inputs.change(function(event) {
 			// input element is piggy backed in event.target
-			check_risk_for_field($(event.target));
+			BookingTool.Calendar.check_risk_for_field($(event.target));
 		});
 		
 		// collect the containers
@@ -62,13 +62,26 @@ BookingTool.Calendar = {
 		suggest_links = $('a[id^=risk-suggestion]');
 		suggest_links.click(function() {
 			calendar_id = parseInt($(this).attr("id").split("risk-suggestion-")[1], 10);
-			input = BookingTool.Calendar.calendars[calendar_id].input;
-			// $.get('/bookingtool/suggest.js', {'patient_id'})
+			input = $(BookingTool.Calendar.calendars[calendar_id].input);
+			$.get('/bookingtool/calendar/suggest.js', {
+					'patient_id': BookingTool.Calendar.get_patient_id()
+				}, function(data, txtStatus) {
+					input.attr('value', data.suggestion);
+				}, 'json');
 			return false;
 		});
 		
 		// hide all calendars when clicking anything outside
 		$(window).click(BookingTool.Calendar.hide_all_calendars);
+	},
+	
+	get_patient_id: function() {
+		// get the patient's id from a URL that looks like this
+		// http://localhost:8000/admin/bookingtool/bookingpatient/3/#
+		parts = window.location.href.split('/');
+		bookingpatient_position = parts.indexOf('bookingpatient');
+		// the patient id comes right after the 'bookingpatient' part
+		return parts[bookingpatient_position + 1];
 	},
 	
 	calendars: [],
