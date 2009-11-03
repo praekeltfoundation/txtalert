@@ -29,7 +29,6 @@ RECEIPT_STATUS_CHOICES = (
     ('A', 'Billing unknown'), # network operator or aggregator failed to acknowledge a billing attempt, so the billing operation may have taken place but probably has not. The customer should not be re-billed without checking with them to see if the network operator has billed them.
 )
 
-# Create your models here.
 class SendSMS(models.Model):
     """A local storage of SMS's sent via the SendSMS API, need to keep 
     track of these to be able to process the receipts we receive back from

@@ -69,8 +69,7 @@ def receipt(request):
 
 
 def statistics(request, format):
-    """Present SendSMS statistics over an HTTP API. Format can be any serializer
-    that Django supports out of the box
+    """Present SendSMS statistics over an HTTP API. 
     """
     since = request.GET.get('since', None)
     if since:
@@ -78,5 +77,5 @@ def statistics(request, format):
     else:
         since = datetime.now() - timedelta(days=1)
     sent_smss = SendSMS.objects.filter(delivery__gte=since)
-    return HttpResponse(mark_safe(SendSMSResource().dump(sent_smss)), \
-                            content_type='text/%s' % format)
+    return HttpResponse(SendSMSResource(sent_smss).publish(format), \
+                                        content_type='text/%s' % format)
