@@ -7,4 +7,5 @@ urlpatterns = patterns('',
     (r'receipt$', views.receipt, {}, 'sms-receipt'), 
     (r'receipt/$', views.receipt, {}, 'sms-receipt'),
     (r'statistics\.(?P<format>json|xml)$', views.statistics, {}, 'sms-statistics'),
+    (r'send\.(?P<format>json|xml)$', views.send, {}, 'sms-send'),
 )

@@ -61,6 +61,7 @@ class SendSMS(models.Model):
     class Meta:
         permissions = (
             ('can_view_statistics', 'Can view SMS statistics'),
+            ('can_send_sms', 'Can send an SMS'),
         )
     
     def __unicode__(self):

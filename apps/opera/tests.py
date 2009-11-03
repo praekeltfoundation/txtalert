@@ -31,6 +31,12 @@ class OperaTestCase(TestCase):
     
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.create_user(username='user', \
+                                                email='user@domain.com', \
+                                                password='password')
+        self.user.save()
+        
+        
         self.gateway = Gateway('http://testserver/', 'service_id', 'password', \
                                 'channel', verbose=True)
         # specify the proxy's EAPIGateway, which is what Opera uses internally
@@ -109,15 +115,19 @@ class OperaTestCase(TestCase):
         response = self.client.get(reverse('sms-statistics',kwargs={"format":"json"}))
         self.assertEquals(response.status_code, 401)
         
-        # add the user with the right permissions
-        u = User.objects.create_user(username='user', email='user@domain.com', \
-                                        password='password')
-        u.save()
-        
-        u.user_permissions.add(Permission.objects.get(codename='can_view_statistics'))
+        self.user.user_permissions.add(Permission.objects.get(codename='can_view_statistics'))
         
         response = self.client.get(reverse('sms-statistics',kwargs={'format':'json'}), \
                                     HTTP_AUTHORIZATION=basic_auth_string('user','password'))
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'text/json')
-        
+    
+    def test_send_sms_json_response(self):
+        self.user.user_permissions.add(Permission.objects.get(codename='can_send_sms'))
+        response = self.client.post(reverse('sms-send', kwargs={'format':'json'}), \
+                                    {
+                                        'numbers': '27764493806',
+                                        'smstexts': 'hello'
+                                    }, \
+                                    HTTP_AUTHORIZATION=basic_auth_string('user', 'password'))
+        self.assertEquals(response.status_code, 200)

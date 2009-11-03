@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_GET
 import xml.etree.ElementTree as ET
+from opera.gateway import gateway
 from opera.models import SendSMS
 from opera.utils import element_to_namedtuple
 from opera.resource import SendSMSResource
@@ -69,6 +70,13 @@ def receipt(request):
         'fail': fail
     }), content_type='text/json')
 
+
+@require_POST
+@has_perm_or_basicauth('opera.can_send_sms')
+def send(request, format):
+    sent_smss = gateway.send_sms(request.POST.getlist('numbers'),request.POST.getlist('smstexts'))
+    return HttpResponse(SendSMSResource(sent_smss).publish('json'), \
+                        content_type='text/json')
 
 @require_GET
 @has_perm_or_basicauth('opera.can_view_statistics')
