@@ -1,9 +1,10 @@
 from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseNotFound
 from django.utils import simplejson
-from django.core import serializers
+from django.utils.safestring import mark_safe
 import xml.etree.ElementTree as ET
 from opera.models import SendSMS
 from opera.utils import element_to_namedtuple
+from opera.resource import SendSMSResource
 from datetime import datetime, timedelta
 import logging
 
@@ -77,8 +78,5 @@ def statistics(request, format):
     else:
         since = datetime.now() - timedelta(days=1)
     sent_smss = SendSMS.objects.filter(delivery__gte=since)
-    serialized_data = serializers.serialize(format, sent_smss, fields=(
-        'number', 'identifier', 'status', 'delivery', 'expiry', 
-        'delivery_timestamp', 'status'
-    ))
-    return HttpResponse(serialized_data, content_type='text/%s' % format)
+    return HttpResponse(mark_safe(SendSMSResource().dump(sent_smss)), \
+                            content_type='text/%s' % format)
