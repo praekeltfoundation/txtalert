@@ -58,6 +58,11 @@ class SendSMS(models.Model):
     status = models.CharField(max_length=1, default='v', choices=RECEIPT_STATUS_CHOICES)
     delivery_timestamp = models.DateTimeField(null=True)
     
+    class Meta:
+        permissions = (
+            ('can_view_statistics', 'Can view SMS statistics'),
+        )
+    
     def __unicode__(self):
         return u"SendSMS %s - %s" % (self.identifier, self.number)
     
