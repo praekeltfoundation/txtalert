@@ -73,7 +73,6 @@ def receipt(request):
 @require_GET
 @has_perm_or_basicauth('opera.can_view_statistics')
 def statistics(request, format):
-    print request.user
     """Present SendSMS statistics over an HTTP API. Unless the since parameter
     is provided assume we want the data for this day.
     """

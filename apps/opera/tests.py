@@ -1,11 +1,18 @@
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User, Permission
+from django.contrib.contenttypes.models import ContentType
 from opera.views import element_to_namedtuple
 import xml.etree.ElementTree as ET
 from opera.gateway import Gateway
 from opera.models import SendSMS
 from datetime import datetime
+import base64
+
+def basic_auth_string(username, password):
+    b64 = base64.encodestring('%s:%s' % (username, password)).strip()
+    return 'Basic %s' % b64
 
 class OperaTestingGateway(object):
     """Dummy gateway we used to monkey patch the real RPC gateway so we can write
@@ -21,6 +28,7 @@ class OperaTestingGateway(object):
 
 class OperaTestCase(TestCase):
     """Testing the opera gateway interactions"""
+    
     def setUp(self):
         self.client = Client()
         self.gateway = Gateway('http://testserver/', 'service_id', 'password', \
@@ -96,4 +104,20 @@ class OperaTestCase(TestCase):
             send_sms = SendSMS.objects.get(number=receipt.msisdn, identifier=receipt.reference)
             self.assertEquals(send_sms.delivery_timestamp.strftime(SendSMS.TIMESTAMP_FORMAT), receipt.timestamp)
             self.assertEquals(send_sms.status, 'D')
+    
+    def test_json_statistics_auth(self):
+        response = self.client.get(reverse('sms-statistics',kwargs={"format":"json"}))
+        self.assertEquals(response.status_code, 401)
+        
+        # add the user with the right permissions
+        u = User.objects.create_user(username='user', email='user@domain.com', \
+                                        password='password')
+        u.save()
+        
+        u.user_permissions.add(Permission.objects.get(codename='can_view_statistics'))
+        
+        response = self.client.get(reverse('sms-statistics',kwargs={'format':'json'}), \
+                                    HTTP_AUTHORIZATION=basic_auth_string('user','password'))
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response['Content-Type'], 'text/json')
         
