@@ -50,9 +50,12 @@ def receipt(request):
 def send(request, format):
     numbers = request.POST.getlist('number')
     smstext = request.POST.get('smstext')
-    sent_smss = gateway.send_sms(numbers, (smstext,) * len(numbers))
-    return HttpResponse(SendSMSResource(sent_smss).publish(format), \
+    if len(smstext) <= 160:
+        sent_smss = gateway.send_sms(numbers, (smstext,) * len(numbers))
+        return HttpResponse(SendSMSResource(sent_smss).publish(format), \
                                                 content_type='text/%s' % format)
+    else:
+        return HttpResponseBadRequest("Too many characters")
 
 @has_perm_or_basicauth('opera.can_view_statistics')
 @require_GET

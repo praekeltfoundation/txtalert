@@ -112,7 +112,7 @@ class OperaTestCase(TestCase):
     
     def test_json_statistics_auth(self):
         response = self.client.get(reverse('sms-statistics',kwargs={"format":"json"}))
-        self.assertEquals(response.status_code, 401)
+        self.assertEquals(response.status_code, 401) # Http Basic Auth
         
         self.user.user_permissions.add(Permission.objects.get(codename='can_view_statistics'))
         
@@ -158,3 +158,15 @@ class OperaTestCase(TestCase):
         self.assertTrue(len(data),2)
         for receipt in data:
             self.assertEquals(receipt['identifier'], 'b' * 8)
+    
+    def test_send_too_large_sms(self):
+        self.user.user_permissions.add(Permission.objects.get(codename='can_send_sms'))
+        gateway.use_identifier('c' * 8)
+        
+        response = self.client.post(reverse('sms-send', kwargs={'format':'json'}), \
+                                    {
+                                        'number': '27123456789',
+                                        'smstext': 'a' * 161 # 1 char too large
+                                    }, \
+                                    HTTP_AUTHORIZATION=basic_auth_string('user','password'))
+        self.assertEquals(response.status_code, 400) # HttpResponseBadRequest
