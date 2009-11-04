@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.utils import simplejson
 from django.views.decorators.http import require_POST, require_GET
 from opera.gateway import gateway
@@ -46,13 +46,13 @@ def receipt(request):
 
 @has_perm_or_basicauth('opera.can_send_sms')
 @require_POST
-@require_POST_parameters('numbers','smstexts')
+@require_POST_parameters('number','smstext')
 def send(request, format):
-    numbers = request.POST.get('numbers').split(',')
-    smstexts = request.POST.get('smstexts').split(',')
-    sent_smss = gateway.send_sms(numbers, smstexts)
-    return HttpResponse(SendSMSResource(sent_smss).publish('json'), \
-                                                        content_type='text/json')
+    numbers = request.POST.getlist('number')
+    smstext = request.POST.get('smstext')
+    sent_smss = gateway.send_sms(numbers, (smstext,) * len(numbers))
+    return HttpResponse(SendSMSResource(sent_smss).publish(format), \
+                                                content_type='text/%s' % format)
 
 @has_perm_or_basicauth('opera.can_view_statistics')
 @require_GET

@@ -129,8 +129,8 @@ class OperaTestCase(TestCase):
         gateway.use_identifier('a' * 8)
         response = self.client.post(reverse('sms-send', kwargs={'format':'json'}), \
                                     {
-                                        'numbers': '27764493806',
-                                        'smstexts': 'hello'
+                                        'number': '27123456789',
+                                        'smstext': 'hello'
                                     }, \
                                     HTTP_AUTHORIZATION=basic_auth_string('user', 'password'))
         self.assertEquals(response.status_code, 200)
@@ -140,4 +140,21 @@ class OperaTestCase(TestCase):
         self.assertTrue(len(data),1)
         receipt = data[0]
         self.assertEquals(receipt['identifier'], 'a' * 8)
+    
+    def test_send_multiple_sms_response(self):
+        self.user.user_permissions.add(Permission.objects.get(codename='can_send_sms'))
+        gateway.use_identifier('b' * 8)
+        response = self.client.post(reverse('sms-send', kwargs={'format':'json'}), \
+                                    {
+                                        'number': '27123456789',
+                                        'number': '27123456781',
+                                        'smstext': 'bla bla bla'
+                                    }, \
+                                    HTTP_AUTHORIZATION=basic_auth_string('user','password'))
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response['Content-Type'], 'text/json')
         
+        data = simplejson.loads(response.content)
+        self.assertTrue(len(data),2)
+        for receipt in data:
+            self.assertEquals(receipt['identifier'], 'b' * 8)

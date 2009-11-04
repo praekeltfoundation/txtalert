@@ -53,9 +53,11 @@ class Resource(object):
 
 class SendSMSResource(Resource):
     
+    # fields being exposed via JSON or XML
     fields = ('identifier', 'delivery', 'expiry', 'delivery_timestamp', \
-                 'status', 'status_display')
+                 'status', 'status_display', 'number')
     
+    # the root element if the exposing format so requires it, XML for example
     root = "send-sms"
     
     def status_display(self, instance):
