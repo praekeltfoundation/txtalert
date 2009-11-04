@@ -3,7 +3,9 @@ from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
-from opera.views import element_to_namedtuple
+from django.utils import simplejson
+from opera.utils import element_to_namedtuple
+from opera.gateway import gateway
 import xml.etree.ElementTree as ET
 from opera.gateway import Gateway
 from opera.models import SendSMS
@@ -36,23 +38,20 @@ class OperaTestCase(TestCase):
                                                 password='password')
         self.user.save()
         
-        
-        self.gateway = Gateway('http://testserver/', 'service_id', 'password', \
-                                'channel', verbose=True)
         # specify the proxy's EAPIGateway, which is what Opera uses internally
-        setattr(self.gateway.proxy, 'EAPIGateway', OperaTestingGateway())
+        setattr(gateway.proxy, 'EAPIGateway', OperaTestingGateway())
         
         # add a helper function to set the identifier
         def use_identifier(identifier):
-            self.gateway.proxy.EAPIGateway.use_identifier(identifier)
-        setattr(self.gateway, 'use_identifier', use_identifier)
+            gateway.proxy.EAPIGateway.use_identifier(identifier)
+        setattr(gateway, 'use_identifier', use_identifier)
     
     def test_send_sms(self):
         """we've hijacked the EAPIGateway and tell it what to return as the 
         identifier. The SendSMS object should store that identifier after 
         communicating with the RPC gateway"""
-        self.gateway.use_identifier('12345678')
-        [send_sms,] = self.gateway.send_sms(['27764493806'],['testing'])
+        gateway.use_identifier('12345678')
+        [send_sms,] = gateway.send_sms(['27764493806'],['testing'])
         self.assertEqual(send_sms.identifier, '12345678')
     
     def test_receipt_processing(self):
@@ -86,8 +85,8 @@ class OperaTestCase(TestCase):
         receipts = map(element_to_namedtuple, tree.findall('receipt'))
         
         for receipt in receipts:
-            self.gateway.use_identifier(receipt.reference)
-            self.gateway.send_sms([receipt.msisdn], ['testing %s' % receipt.reference])
+            gateway.use_identifier(receipt.reference)
+            gateway.send_sms([receipt.msisdn], ['testing %s' % receipt.reference])
         
         # mimick POSTed receipt from Opera
         response = self.client.post(reverse('sms-receipt'), raw_xml_post.strip(), \
@@ -118,12 +117,16 @@ class OperaTestCase(TestCase):
         self.user.user_permissions.add(Permission.objects.get(codename='can_view_statistics'))
         
         response = self.client.get(reverse('sms-statistics',kwargs={'format':'json'}), \
+                                    {
+                                        "since": datetime.now().strftime(SendSMS.TIMESTAMP_FORMAT)
+                                    },
                                     HTTP_AUTHORIZATION=basic_auth_string('user','password'))
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'text/json')
     
     def test_send_sms_json_response(self):
         self.user.user_permissions.add(Permission.objects.get(codename='can_send_sms'))
+        gateway.use_identifier('a' * 8)
         response = self.client.post(reverse('sms-send', kwargs={'format':'json'}), \
                                     {
                                         'numbers': '27764493806',
@@ -131,3 +134,10 @@ class OperaTestCase(TestCase):
                                     }, \
                                     HTTP_AUTHORIZATION=basic_auth_string('user', 'password'))
         self.assertEquals(response.status_code, 200)
+        self.assertEquals(response['Content-Type'], 'text/json')
+        
+        data = simplejson.loads(response.content)
+        self.assertTrue(len(data),1)
+        receipt = data[0]
+        self.assertEquals(receipt['identifier'], 'a' * 8)
+        
