@@ -2,7 +2,7 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadReque
 from django.utils import simplejson
 from django.views.decorators.http import require_POST, require_GET
 from opera.gateway import gateway
-from opera.models import SendSMS
+from opera.models import SendSMS, PleaseCallMe
 from opera.utils import (process_receipts_xml, require_POST_parameters, 
                             require_GET_parameters)
 from opera.resource import SendSMSResource
@@ -57,6 +57,7 @@ def send(request, format):
     else:
         return HttpResponseBadRequest("Too many characters")
 
+
 @has_perm_or_basicauth('opera.can_view_statistics')
 @require_GET
 @require_GET_parameters('since', reveal=True)
@@ -68,3 +69,16 @@ def statistics(request, format):
     sent_smss = SendSMS.objects.filter(delivery__gte=since)
     return HttpResponse(SendSMSResource(sent_smss).publish(format), \
                                         content_type='text/%s' % format)
+
+
+@require_GET
+@require_GET_parameters('number', 'sms_id')
+def pcm(request):
+    """Receive a please call me message from somewhere, probably FrontlineSMS"""
+    sms_id = request.GET.get('sms_id')
+    number = request.GET.get('number')
+    message = request.GET.get('message', '')
+    
+    pcm = PleaseCallMe.objects.create(sms_id=sms_id, number=number, \
+                                                                message=message)
+    return HttpResponse('Your PCM has been received')

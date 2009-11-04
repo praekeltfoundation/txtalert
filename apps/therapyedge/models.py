@@ -18,7 +18,6 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Group
 
-
 VISIT_STATUS_CHOICES = (
     ('m', 'Missed'),
     ('r', 'Rescheduled'),
@@ -207,6 +206,7 @@ class PleaseCallMe(models.Model):
         ('rm', 'Reschedule missed appointment'),
         ('rf', 'Reschedule future appointment'),
         ('ca', 'Confirm appointment'),
+        ('vm', 'Voicemail'),
         ('ot', 'Other (fill in notes)'),
     )
 
@@ -229,3 +229,11 @@ class PleaseCallMe(models.Model):
             patient = Patient.objects.get(id=self.msisdn.contacts.all()[0].id)
             self.clinic = patient.get_last_clinic()
         super(PleaseCallMe, self).save(*args, **kwargs)
+
+# signals
+from django.db.models.signals import post_save
+from therapyedge.signals import track_please_call_me
+from opera.models import PleaseCallMe as OperaPleaseCallMe
+
+post_save.connect(track_please_call_me, sender=OperaPleaseCallMe)
+
