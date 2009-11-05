@@ -85,7 +85,7 @@ def send(gateway, message, *args, **kwargs):
     if kwargs.has_key('visits'):
         msisdns = [v.patient.active_msisdn.msisdn for v in kwargs['visits']]
     elif kwargs.has_key('events'):
-        msisdns = [e.visit.patient.active_msisdns.msisdn for e in kwargs['events']]
+        msisdns = [e.visit.patient.active_msisdn.msisdn for e in kwargs['events']]
     if len(msisdns) > 0:
         action = gateway.sendSMS(msisdns, message)
         return action.smslogs.count()
