@@ -63,9 +63,9 @@ BookingTool.Calendar = {
 		suggest_links.click(function() {
 			calendar_id = parseInt($(this).attr("id").split("risk-suggestion-")[1], 10);
 			input = BookingTool.Calendar.calendars[calendar_id].input;
-			
 			// default to -1 if parseInt returns NaN
-			patient_id = parseInt(BookingTool.Calendar.get_patient_id(),10) || -1;
+			pid = BookingTool.Calendar.get_patient_id();
+			patient_id = parseInt(pid,10) || -1;
 			treatment_cycle = parseInt(BookingTool.Calendar.get_selected_treatment_cycle(), 10);
 			
 			$.get('/bookingtool/calendar/suggest.js', {
@@ -90,7 +90,8 @@ BookingTool.Calendar = {
 		// get the patient's id from a URL that looks like this
 		// http://localhost:8000/admin/bookingtool/bookingpatient/3/#
 		parts = window.location.href.split('/');
-		bookingpatient_position = parts.indexOf('bookingpatient');
+		bookingpatient_position = jQuery.inArray('bookingpatient', parts);
+		
 		// the patient id comes right after the 'bookingpatient' part
 		return parts[bookingpatient_position + 1];
 	},
@@ -109,11 +110,11 @@ BookingTool.Calendar = {
 		id = $(img).parent().attr('id');
 		calendar_id = parseInt(id.split("risk-calendar-")[1], 10);
 		
-		container = BookingTool.Calendar.calendars[calendar_id].container;
-		container.html('<p><img src="/static/images/risk.loading.gif"> Loading calendar </p>');
+		_container = BookingTool.Calendar.calendars[calendar_id].container;
+		_container.html('<p><img src="/static/images/risk.loading.gif"> Loading calendar </p>');
 		// position loading message
-		BookingTool.Calendar.position_container(container, img);
-		container.show();
+		BookingTool.Calendar.position_container(_container, img);
+		_container.show();
 		
 		// get input value
 		input = BookingTool.Calendar.calendars[calendar_id].input;
@@ -125,7 +126,7 @@ BookingTool.Calendar = {
 		}
 		
 		// load the calendar over ajax
-		BookingTool.Calendar.load_calendar(calendar_id, container, path);
+		BookingTool.Calendar.load_calendar(calendar_id, _container, path);
 	},
 	
 	load_calendar: function(calendar_id, container, path) {

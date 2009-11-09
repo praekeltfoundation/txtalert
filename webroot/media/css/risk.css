@@ -17,6 +17,11 @@
     color: red;
 }
 
+/* SCREW IE */
+.risk-calendar {
+    width: 300px;
+}
+
 .risk-calendar td {
     padding-top: 5px !important;
     text-align: center;
