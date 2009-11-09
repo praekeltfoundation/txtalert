@@ -15,11 +15,19 @@ from bookingtool.models import BookingPatient
 
 def suggest(request):
     if 'patient_id' in request.GET:
-        bp = BookingPatient.objects.get(pk=request.GET['patient_id'])
-        treatment_cycle = int(request.GET.get('treatment_cycle',None) or bp.treatment_cycle)
-        last_visit = bp.visits.latest('date')
-        # take last visit & calculate treatment_cycle amount of months forward
-        suggestion = last_visit.date + timedelta(treatment_cycle * 365 / 12)
+        patient_id = request.GET['patient_id']
+        # patient id == -1 for patients that haven't been created yet, unknown id
+        if patient_id == '-1':
+            # default to monthly for now
+            treatment_cycle = int(request.GET.get('treatment_cycle',1))
+            suggestion = datetime.now() + timedelta(treatment_cycle * 365 / 12)
+        else:
+            bp = BookingPatient.objects.get(pk=request.GET['patient_id'])
+            treatment_cycle = int(request.GET.get('treatment_cycle',None) or bp.treatment_cycle)
+            last_visit = bp.visits.latest('date')
+            # take last visit & calculate treatment_cycle amount of months forward
+            suggestion = last_visit.date + timedelta(treatment_cycle * 365 / 12)
+        
         return HttpResponse(dumps({
             'suggestion': "%s-%s-%s" % (suggestion.year, suggestion.month, suggestion.day)
         }), content_type='text/json')

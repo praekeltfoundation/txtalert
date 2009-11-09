@@ -63,9 +63,14 @@ BookingTool.Calendar = {
 		suggest_links.click(function() {
 			calendar_id = parseInt($(this).attr("id").split("risk-suggestion-")[1], 10);
 			input = BookingTool.Calendar.calendars[calendar_id].input;
+			
+			// default to -1 if parseInt returns NaN
+			patient_id = parseInt(BookingTool.Calendar.get_patient_id(),10) || -1;
+			treatment_cycle = parseInt(BookingTool.Calendar.get_selected_treatment_cycle(), 10);
+			
 			$.get('/bookingtool/calendar/suggest.js', {
-					'patient_id': BookingTool.Calendar.get_patient_id(),
-					'treatment_cycle': BookingTool.Calendar.get_selected_treatment_cycle()
+					'patient_id': patient_id,
+					'treatment_cycle': treatment_cycle
 				}, function(data, txtStatus) {
 					$(input).attr('value', data.suggestion);
 					BookingTool.Calendar.check_risk_for_field($(input));

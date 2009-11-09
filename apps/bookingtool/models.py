@@ -23,7 +23,7 @@ class BookingPatient(Patient):
     surname = models.CharField('Surname', blank=True, max_length=80)
     date_of_birth = models.DateField('Date of Birth', blank=True, null=True, auto_now_add=False)
     opt_status = models.CharField(blank=True, max_length=20, choices=OPT_STATUSES)
-    treatment_cycle = models.IntegerField(blank=False, null=True, choices=TREATMENT_CYCLES)
+    treatment_cycle = models.IntegerField(blank=False, null=True, choices=TREATMENT_CYCLES, default=1)
     
     @property
     def appointments(self):
