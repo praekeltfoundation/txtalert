@@ -4,12 +4,14 @@ from opera.gateway import gateway
 from datetime import datetime
 from django.db.models import Q
 
-def track_please_call_me(sender, **kwargs):
+def track_please_call_me_handler(sender, **kwargs):
+    return track_please_call_me(kwargs['instance'])
+
+def track_please_call_me(opera_pcm):
     """Track a number we receive from a PCM back to a specific contact. This is
     tricky because MSISDNs in txtAlert are involved in all sorts of ManyToMany 
     relationships."""
-    instance = kwargs['instance']
-    msisdn, _ = MSISDN.objects.get_or_create(msisdn=instance.number)
+    msisdn, _ = MSISDN.objects.get_or_create(msisdn=opera_pcm.number)
     contacts = Contact.objects.filter(active_msisdn=msisdn) or \
                 msisdn.contacts.all()
     if contacts.count() == 1:
@@ -32,11 +34,15 @@ def track_please_call_me(sender, **kwargs):
         raise Exception, "More than one contact found for MSISDN: %s" % msisdn
 
 
-def calculate_risk_profile(sender, **kwargs):
+def calculate_risk_profile_handler(sender, **kwargs):
+    return calculate_risk_profile(kwargs['instance'])
+
+def calculate_risk_profile(visit):
     """Calculate the risk profile of the patient after the latest visit has been
     saved to the database. This MUST be a post_save signal handler otherwise 
     the calculation will always be one visit short."""
-    visit = kwargs['instance']
+    # FIXME, the main argument should be the Patient not the Visit, this method
+    #        is being too clever
     patient = visit.patient
     if patient.visits.count() == 0:
         patient.last_clinic = visit.clinic

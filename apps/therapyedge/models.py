@@ -17,6 +17,7 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Group
+from dirtyfields import DirtyFieldsMixin
 
 VISIT_STATUS_CHOICES = (
     ('m', 'Missed'),
@@ -88,7 +89,7 @@ class Clinic(models.Model):
     
 
 
-class Patient(Contact):
+class Patient(DirtyFieldsMixin, Contact):
     SEX_CHOICES = (
         ('m', 'male'),
         ('f', 'female'),
@@ -224,9 +225,9 @@ class PleaseCallMe(models.Model):
         super(PleaseCallMe, self).save(*args, **kwargs)
 
 # signals
-from django.db.models.signals import post_save
-from therapyedge.signals import track_please_call_me, calculate_risk_profile
+from django.db.models.signals import post_save, pre_save
+from therapyedge.signals import track_please_call_me_handler, calculate_risk_profile_handler
 from opera.models import PleaseCallMe as OperaPleaseCallMe
 
-post_save.connect(track_please_call_me, sender=OperaPleaseCallMe)
-post_save.connect(calculate_risk_profile, sender=Visit)
+post_save.connect(track_please_call_me_handler, sender=OperaPleaseCallMe)
+post_save.connect(calculate_risk_profile_handler, sender=Visit)
