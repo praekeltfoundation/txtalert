@@ -5,7 +5,7 @@ from opera.gateway import gateway
 from opera.models import SendSMS, PleaseCallMe
 from opera.utils import (process_receipts_xml, require_POST_parameters, 
                             require_GET_parameters)
-from opera.resource import SendSMSResource
+from opera.resource import SendSMSResource, PleaseCallMeResource
 from opera.auth import has_perm_or_basicauth
 from datetime import datetime, timedelta
 import logging
@@ -47,7 +47,7 @@ def receipt(request):
 @has_perm_or_basicauth('opera.can_send_sms')
 @require_POST
 @require_POST_parameters('number','smstext')
-def send(request, format):
+def send_sms(request, format):
     numbers = request.POST.getlist('number')
     smstext = request.POST.get('smstext')
     if len(smstext) <= 160:
@@ -61,7 +61,7 @@ def send(request, format):
 @has_perm_or_basicauth('opera.can_view_statistics')
 @require_GET
 @require_GET_parameters('since', reveal=True)
-def statistics(request, format):
+def send_sms_statistics(request, format):
     """Present SendSMS statistics over an HTTP API."""
     since = datetime.strptime(request.GET['since'], SendSMS.TIMESTAMP_FORMAT)
     sent_smss = SendSMS.objects.filter(delivery__gte=since)
@@ -85,9 +85,9 @@ def pcm(request):
 @has_perm_or_basicauth('opera.can_view_statistics')
 @require_GET
 @require_GET_parameters('since', reveal=True)
-def statistics(request, format):
+def pcm_statistics(request, format):
     """Present PCM statistics over an HTTP API. """
     since = datetime.strptime(request.GET['since'], SendSMS.TIMESTAMP_FORMAT)
-    pcms = PleaseCallMe.objects.filter(delivery__gte=since)
+    pcms = PleaseCallMe.objects.filter(created_at__gte=since)
     return HttpResponse(PleaseCallMeResource(pcms).publish(format), \
                                         content_type='text/%s' % format)
