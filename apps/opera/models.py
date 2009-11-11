@@ -60,8 +60,8 @@ class SendSMS(models.Model):
     
     class Meta:
         permissions = (
-            ('can_view_statistics', 'Can view SMS statistics'),
-            ('can_send_sms', 'Can send an SMS'),
+            ('can_view_sms_statistics', 'Can view SMS statistics'),
+            ('can_send_sms', 'Can send SMSs'),
         )
     
     def __unicode__(self):
@@ -83,6 +83,9 @@ class PleaseCallMe(models.Model):
     class Meta:
         ordering = ['created_at']
         verbose_name, verbose_name_plural = "Please Call Me", "'Please Call Me's"
+        permissions = (
+            ('can_view_pcm_statistics', 'Can view PCM statistics'),
+        )
 
     def __unicode__(self):
         return u"PleaseCallMe: %s" % self.number

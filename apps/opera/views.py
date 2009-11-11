@@ -58,7 +58,7 @@ def send_sms(request, format):
         return HttpResponseBadRequest("Too many characters")
 
 
-@has_perm_or_basicauth('opera.can_view_statistics')
+@has_perm_or_basicauth('opera.can_view_sms_statistics')
 @require_GET
 @require_GET_parameters('since', reveal=True)
 def send_sms_statistics(request, format):
@@ -82,7 +82,7 @@ def pcm(request):
     return HttpResponse('Your PCM has been received')
 
 
-@has_perm_or_basicauth('opera.can_view_statistics')
+@has_perm_or_basicauth('opera.can_view_pcm_statistics')
 @require_GET
 @require_GET_parameters('since', reveal=True)
 def pcm_statistics(request, format):

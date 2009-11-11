@@ -1,3 +1,4 @@
+from opera.models import SendSMS, PleaseCallMe
 from simpleresource import Resource
 
 class SendSMSResource(Resource):
@@ -7,7 +8,7 @@ class SendSMSResource(Resource):
                  'status', 'status_display', 'number')
     
     # the root element if the exposing format so requires it, XML for example
-    root = "send-sms"
+    model = SendSMS
     
     def status_display(self, instance):
         return instance.get_status_display()
@@ -16,5 +17,4 @@ class SendSMSResource(Resource):
 class PleaseCallMeResource(Resource):
     """Resource for exposing PleaseCallMe's over HTTP"""
     fields = ('sms_id', 'number', 'created_at')
-    root = 'please-call-me'
-    
+    model = PleaseCallMe
