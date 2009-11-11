@@ -126,7 +126,7 @@ class ContactFilter(models.Model):
 
 
 class Contact(models.Model):
-    msisdn = models.CharField('MSISDN', max_length=32)
+    msisdn = models.CharField('MSISDN', max_length=32, unique=True)
 
     class Meta:
         verbose_name = 'Contact'
