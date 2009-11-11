@@ -48,7 +48,7 @@ class SendSMS(models.Model):
         ('N', 'No'),
     )
     
-    number = models.TextField()
+    number = models.CharField(max_length=12)
     smstext = models.TextField()
     delivery = models.DateTimeField()
     expiry = models.DateTimeField()
@@ -60,8 +60,8 @@ class SendSMS(models.Model):
     
     class Meta:
         permissions = (
-            ('can_view_statistics', 'Can view SMS statistics'),
-            ('can_send_sms', 'Can send an SMS'),
+            ('can_view_sms_statistics', 'Can view SMS statistics'),
+            ('can_send_sms', 'Can send SMSs'),
         )
     
     def __unicode__(self):
@@ -72,3 +72,25 @@ class SendSMS(models.Model):
         return ('SendSMS', [self.id])
     
 
+
+class PleaseCallMe(models.Model):
+    """A please call me we receive from a patient"""
+    sms_id = models.CharField(max_length=80)
+    number = models.CharField(max_length=12)
+    message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['created_at']
+        verbose_name, verbose_name_plural = "Please Call Me", "'Please Call Me's"
+        permissions = (
+            ('can_view_pcm_statistics', 'Can view PCM statistics'),
+        )
+
+    def __unicode__(self):
+        return u"PleaseCallMe: %s" % self.number
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('PleaseCallMe', [self.id])
+    

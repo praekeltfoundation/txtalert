@@ -2,10 +2,10 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadReque
 from django.utils import simplejson
 from django.views.decorators.http import require_POST, require_GET
 from opera.gateway import gateway
-from opera.models import SendSMS
+from opera.models import SendSMS, PleaseCallMe
 from opera.utils import (process_receipts_xml, require_POST_parameters, 
                             require_GET_parameters)
-from opera.resource import SendSMSResource
+from opera.resource import SendSMSResource, PleaseCallMeResource
 from opera.auth import has_perm_or_basicauth
 from datetime import datetime, timedelta
 import logging
@@ -47,7 +47,7 @@ def receipt(request):
 @has_perm_or_basicauth('opera.can_send_sms')
 @require_POST
 @require_POST_parameters('number','smstext')
-def send(request, format):
+def send_sms(request, format):
     numbers = request.POST.getlist('number')
     smstext = request.POST.get('smstext')
     if len(smstext) <= 160:
@@ -57,14 +57,37 @@ def send(request, format):
     else:
         return HttpResponseBadRequest("Too many characters")
 
-@has_perm_or_basicauth('opera.can_view_statistics')
+
+@has_perm_or_basicauth('opera.can_view_sms_statistics')
 @require_GET
 @require_GET_parameters('since', reveal=True)
-def statistics(request, format):
-    """Present SendSMS statistics over an HTTP API. Unless the since parameter
-    is provided assume we want the data for this day.
-    """
+def send_sms_statistics(request, format):
+    """Present SendSMS statistics over an HTTP API."""
     since = datetime.strptime(request.GET['since'], SendSMS.TIMESTAMP_FORMAT)
     sent_smss = SendSMS.objects.filter(delivery__gte=since)
     return HttpResponse(SendSMSResource(sent_smss).publish(format), \
+                                        content_type='text/%s' % format)
+
+
+@require_GET
+@require_GET_parameters('number', 'sms_id')
+def pcm(request):
+    """Receive a please call me message from somewhere, probably FrontlineSMS"""
+    sms_id = request.GET.get('sms_id')
+    number = request.GET.get('number')
+    message = request.GET.get('message', '')
+    
+    pcm = PleaseCallMe.objects.create(sms_id=sms_id, number=number, \
+                                                                message=message)
+    return HttpResponse('Your PCM has been received')
+
+
+@has_perm_or_basicauth('opera.can_view_pcm_statistics')
+@require_GET
+@require_GET_parameters('since', reveal=True)
+def pcm_statistics(request, format):
+    """Present PCM statistics over an HTTP API. """
+    since = datetime.strptime(request.GET['since'], SendSMS.TIMESTAMP_FORMAT)
+    pcms = PleaseCallMe.objects.filter(created_at__gte=since)
+    return HttpResponse(PleaseCallMeResource(pcms).publish(format), \
                                         content_type='text/%s' % format)

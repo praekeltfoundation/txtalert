@@ -110,16 +110,16 @@ class OperaTestCase(TestCase):
             self.assertEquals(send_sms.delivery_timestamp.strftime(SendSMS.TIMESTAMP_FORMAT), receipt.timestamp)
             self.assertEquals(send_sms.status, 'D')
     
-    def test_json_statistics_auth(self):
+    def test_json_sms_statistics_auth(self):
         response = self.client.get(reverse('sms-statistics',kwargs={"format":"json"}))
         self.assertEquals(response.status_code, 401) # Http Basic Auth
         
-        self.user.user_permissions.add(Permission.objects.get(codename='can_view_statistics'))
+        self.user.user_permissions.add(Permission.objects.get(codename='can_view_sms_statistics'))
         
         response = self.client.get(reverse('sms-statistics',kwargs={'format':'json'}), \
                                     {
                                         "since": datetime.now().strftime(SendSMS.TIMESTAMP_FORMAT)
-                                    },
+                                    }, 
                                     HTTP_AUTHORIZATION=basic_auth_string('user','password'))
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'text/json')
@@ -131,7 +131,7 @@ class OperaTestCase(TestCase):
                                     {
                                         'number': '27123456789',
                                         'smstext': 'hello'
-                                    }, \
+                                    }, 
                                     HTTP_AUTHORIZATION=basic_auth_string('user', 'password'))
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'text/json')
@@ -149,7 +149,7 @@ class OperaTestCase(TestCase):
                                         'number': '27123456789',
                                         'number': '27123456781',
                                         'smstext': 'bla bla bla'
-                                    }, \
+                                    }, 
                                     HTTP_AUTHORIZATION=basic_auth_string('user','password'))
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'text/json')
@@ -167,6 +167,20 @@ class OperaTestCase(TestCase):
                                     {
                                         'number': '27123456789',
                                         'smstext': 'a' * 161 # 1 char too large
-                                    }, \
+                                    }, 
                                     HTTP_AUTHORIZATION=basic_auth_string('user','password'))
         self.assertEquals(response.status_code, 400) # HttpResponseBadRequest
+    
+    def test_pcm_statistics(self):
+        response = self.client.get(reverse('sms-pcm-statistics',kwargs={"format":"json"}))
+        self.assertEquals(response.status_code, 401) # Http Basic Auth
+        
+        self.user.user_permissions.add(Permission.objects.get(codename='can_view_pcm_statistics'))
+        
+        response = self.client.get(reverse('sms-pcm-statistics',kwargs={'format':'json'}), \
+                                    {
+                                        "since": datetime.now().strftime(SendSMS.TIMESTAMP_FORMAT)
+                                    }, 
+                                    HTTP_AUTHORIZATION=basic_auth_string('user','password'))
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response['Content-Type'], 'text/json')

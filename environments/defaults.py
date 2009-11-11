@@ -44,6 +44,10 @@ if not any(isinstance(h, TimedRotatingFileHandler) for h in LOGGER.handlers):
 APP_PATH = join(APP_ROOT, 'apps')
 sys.path.insert(0, APP_PATH)
 
+# Add APP_ROOT/lib to the load path
+LIB_PATH = join(APP_ROOT, 'lib')
+sys.path.insert(0, LIB_PATH)
+
 SECRET_KEY = ''
 
 DEBUG = True

@@ -18,7 +18,6 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Group
 
-
 VISIT_STATUS_CHOICES = (
     ('m', 'Missed'),
     ('r', 'Rescheduled'),
@@ -145,15 +144,6 @@ class Visit(models.Model):
     def __unicode__(self):
         return self.get_visit_type_display()
     
-    def save(self, *args, **kwargs):
-        patient = self.patient
-        if patient.visits.count() == 0:
-            patient.last_clinic = self.clinic
-        else:
-            patient.last_clinic = patient.get_last_clinic()
-            patient.risk_profile = float(patient.visits.filter(status='m').count()) / patient.visits.count()
-        patient.save()
-        super(Visit, self).save(*args, **kwargs)
 
 
 class VisitEvent(models.Model):
@@ -172,6 +162,7 @@ class VisitEvent(models.Model):
 
     def save(self, *args, **kwargs):
         super(VisitEvent, self).save(*args, **kwargs)
+        # FIXME: too magical
         if self.date == self.visit.events.order_by('-date')[:1][0].date:
             self.visit.status = self.status
             self.visit.save()
@@ -207,6 +198,7 @@ class PleaseCallMe(models.Model):
         ('rm', 'Reschedule missed appointment'),
         ('rf', 'Reschedule future appointment'),
         ('ca', 'Confirm appointment'),
+        ('vm', 'Voicemail'),
         ('ot', 'Other (fill in notes)'),
     )
 
@@ -224,8 +216,17 @@ class PleaseCallMe(models.Model):
         return '%s - %s' % (self.msisdn, self.timestamp)
 
     def save(self, *args, **kwargs):
+        # FIXME: too magical
         # todo: currently we select the first patient we have attached to the msisdn
         if not self.clinic:
             patient = Patient.objects.get(id=self.msisdn.contacts.all()[0].id)
             self.clinic = patient.get_last_clinic()
         super(PleaseCallMe, self).save(*args, **kwargs)
+
+# signals
+from django.db.models.signals import post_save
+from therapyedge.signals import track_please_call_me, calculate_risk_profile
+from opera.models import PleaseCallMe as OperaPleaseCallMe
+
+post_save.connect(track_please_call_me, sender=OperaPleaseCallMe)
+post_save.connect(calculate_risk_profile, sender=Visit)

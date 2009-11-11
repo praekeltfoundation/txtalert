@@ -150,3 +150,48 @@ class VisitImportTestCase(TestCase):
         event = importDeletedVisit(self.event, self.clinic, {'key_id':'01-123456789', 'te_id':'01-12345'})
         self.assertEqual(event.type, 'update')
         self.assertEqual(models.Visit.objects.count(), 0)
+
+
+class PatientRiskProfileTestCase(TestCase):
+    fixtures = ['clinics.json', 'patients.json',]
+    
+    def setUp(self):
+        self.patient = models.Patient.objects.all()[0]
+        self.clinic = models.Clinic.objects.get(te_id='01')
+        self.event = ImportEvent()
+        
+    def reload_patient(self):
+        return models.Patient.objects.get(pk=self.patient.id)
+
+    def test_risk_profile_calculation(self):
+        event = importMissedVisit(self.event, self.clinic, {
+            'key_id':'02-123456789', 
+            'te_id':self.patient.te_id, 
+            'missed_date':'2100-07-01 00:00:00'
+        })
+        self.assertEquals(self.reload_patient().risk_profile, 1.0)
+    
+    def test_risk_profile_incremental_calculation(self):
+        importDoneVisit(self.event, self.clinic, {
+            'key_id':'02-123456701', 
+            'te_id':self.patient.te_id, 
+            'done_date':'2100-07-01 00:00:00'
+        })
+        importDoneVisit(self.event, self.clinic, {
+            'key_id':'02-123456702', 
+            'te_id':self.patient.te_id, 
+            'done_date':'2100-07-02 00:00:00'
+        })
+        self.assertEquals(self.reload_patient().risk_profile, 0.0)
+        importMissedVisit(self.event, self.clinic, {
+            'key_id':'02-123456703', 
+            'te_id':self.patient.te_id, 
+            'missed_date':'2100-07-03 00:00:00'
+        })
+        self.assertAlmostEquals(self.reload_patient().risk_profile, 0.33, places=2)
+        importMissedVisit(self.event, self.clinic, {
+            'key_id':'02-123456704', 
+            'te_id':self.patient.te_id, 
+            'missed_date':'2100-07-04 00:00:00'
+        })
+        self.assertAlmostEquals(self.reload_patient().risk_profile, 0.50, places=2)

@@ -39,6 +39,8 @@ class PleaseCallMeAdmin(admin.ModelAdmin):
     def queryset(self, request):
         qs = super(PleaseCallMeAdmin, self).queryset(request)
         groups = request.user.groups.all()
+        # FIXME: If this fails add the Group to the admin, should have CRUD
+        #        permissions for the PleaseCallMe's in TherapyEdge
         if Group.objects.get(name='Clinic Agents') in groups:
             clinics = Clinic.objects.filter(group__in=groups)
             qs = qs.filter(clinic__in=clinics)
