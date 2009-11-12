@@ -105,6 +105,7 @@ INSTALLED_APPS = (
     'therapyedge',
     'bookingtool',
     'opera',
+    'dirtyfields',
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.sessions',

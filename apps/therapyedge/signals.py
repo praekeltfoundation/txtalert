@@ -57,3 +57,16 @@ def calculate_risk_profile(visit):
             patient.risk_profile =  float(missed_visits) / total_visits
         patient.save()
     
+def check_for_opt_in_changes_handler(sender, **kwargs):
+    return check_for_opt_in_changes(patient)
+
+def check_for_opt_in_changes(patient):
+    """Check the dirty state of a patient, has the opt-in status changed 
+    compared to the state as known in the DB. This MUST be called as a pre_save
+    signal otherwise the dirty state tells us nothing."""
+    if 'opted_in' in patient.get_dirty_fields():
+        # here we should notify api client of the change in opt-in status 
+        # mb via an HTTP push
+        pass
+    
+    
