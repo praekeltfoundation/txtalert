@@ -58,7 +58,7 @@ def calculate_risk_profile(visit):
         patient.save()
     
 def check_for_opt_in_changes_handler(sender, **kwargs):
-    return check_for_opt_in_changes(patient)
+    return check_for_opt_in_changes(kwargs['instance'])
 
 def check_for_opt_in_changes(patient):
     """Check the dirty state of a patient, has the opt-in status changed 
