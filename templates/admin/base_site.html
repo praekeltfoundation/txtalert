@@ -5,7 +5,7 @@
 
 {% block branding %}
     <h1 id="site-name">
-        <img src="{% url static "images/logo.png" %}" />
+        <img src="/media/images/logo.png" />
         {% if user.is_authenticated and user.is_staff %}
             &nbsp;|&nbsp;
             <a href="/therapyedge/stats/">Statistics</a>
