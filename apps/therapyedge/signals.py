@@ -11,7 +11,7 @@ def track_please_call_me(opera_pcm):
     """Track a number we receive from a PCM back to a specific contact. This is
     tricky because MSISDNs in txtAlert are involved in all sorts of ManyToMany 
     relationships."""
-    msisdn, _ = MSISDN.objects.get_or_create(msisdn=opera_pcm.number)
+    msisdn, _ = MSISDN.objects.get_or_create(msisdn=opera_pcm.sender_number)
     contacts = Contact.objects.filter(active_msisdn=msisdn) or \
                 msisdn.contacts.all()
     if contacts.count() == 1:

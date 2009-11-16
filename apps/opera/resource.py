@@ -16,5 +16,5 @@ class SendSMSResource(Resource):
 
 class PleaseCallMeResource(Resource):
     """Resource for exposing PleaseCallMe's over HTTP"""
-    fields = ('sms_id', 'number', 'created_at')
+    fields = ('sms_id', 'sender_number', 'recipient_number', 'created_at')
     model = PleaseCallMe

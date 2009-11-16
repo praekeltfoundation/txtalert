@@ -69,16 +69,35 @@ def send_sms_statistics(request, format):
                                         content_type='text/%s' % format)
 
 
+@has_perm_or_basicauth('opera.can_place_pcms')
 @require_GET
-@require_GET_parameters('number', 'sms_id')
+@require_GET_parameters('sender_number', 'recipient_number', 'sms_id')
 def pcm(request):
-    """Receive a please call me message from somewhere, probably FrontlineSMS"""
+    """
+    Receive a please call me message from somewhere, probably FrontlineSMS
+    My current FrontlineSMS setup is configured to perform an HTTP request
+    triggered by a keyword.
+    
+    This is the current URL being requested:
+    
+    http://localhost:8000/sms/pcm/? \
+            &sender_number=${sender_number} \       # where the PCM came from
+            &message_content=${message_content} \   # the original PCM message
+            &sms_id=${sms_id} \                     # the SMSC's ID - mb we can use this to avoid duplicates
+            &recipient_number=${recipient_number}   # the number the PCM was called to, perhaps we can use this to identify the clinic
+    
+    See http://frontlinesms.ning.com/profiles/blog/show?id=2052630:BlogPost:9729 
+    for available substitution variables.
+    
+    """
     sms_id = request.GET.get('sms_id')
-    number = request.GET.get('number')
+    sender_number = request.GET.get('sender_number')
+    recipient_number = request.GET.get('recipient_number')
     message = request.GET.get('message', '')
     
-    pcm = PleaseCallMe.objects.create(sms_id=sms_id, number=number, \
-                                                                message=message)
+    pcm = PleaseCallMe.objects.create(sms_id=sms_id, sender_number=sender_number, 
+                                        recipient_number=recipient_number, 
+                                        message=message)
     return HttpResponse('Your PCM has been received')
 
 

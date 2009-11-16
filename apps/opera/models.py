@@ -76,7 +76,8 @@ class SendSMS(models.Model):
 class PleaseCallMe(models.Model):
     """A please call me we receive from a patient"""
     sms_id = models.CharField(max_length=80)
-    number = models.CharField(max_length=12)
+    sender_number = models.CharField(max_length=12)
+    recipient_number = models.CharField(max_length=12)
     message = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -84,11 +85,12 @@ class PleaseCallMe(models.Model):
         ordering = ['created_at']
         verbose_name, verbose_name_plural = "Please Call Me", "'Please Call Me's"
         permissions = (
+            ('can_place_pcms', 'Can place a PCM'),
             ('can_view_pcm_statistics', 'Can view PCM statistics'),
         )
 
     def __unicode__(self):
-        return u"PleaseCallMe: %s" % self.number
+        return u"PleaseCallMe: %s" % self.sender_number
 
     @models.permalink
     def get_absolute_url(self):

@@ -4,17 +4,24 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.utils import simplejson
+from django.db.models.signals import post_save
 from opera.utils import element_to_namedtuple
 from opera.gateway import gateway
 import xml.etree.ElementTree as ET
 from opera.gateway import Gateway
-from opera.models import SendSMS
+from opera.models import SendSMS, PleaseCallMe
 from datetime import datetime
 import base64
 
 def basic_auth_string(username, password):
     b64 = base64.encodestring('%s:%s' % (username, password)).strip()
     return 'Basic %s' % b64
+
+
+def add_perms_to_user(username, permission): # perms as in permissions, not the hair
+    user = User.objects.get(username=username)
+    return user.user_permissions.add(Permission.objects.get(codename=permission))
+
 
 class OperaTestingGateway(object):
     """Dummy gateway we used to monkey patch the real RPC gateway so we can write
@@ -114,7 +121,7 @@ class OperaTestCase(TestCase):
         response = self.client.get(reverse('sms-statistics',kwargs={"format":"json"}))
         self.assertEquals(response.status_code, 401) # Http Basic Auth
         
-        self.user.user_permissions.add(Permission.objects.get(codename='can_view_sms_statistics'))
+        add_perms_to_user('user', 'can_view_sms_statistics')
         
         response = self.client.get(reverse('sms-statistics',kwargs={'format':'json'}), \
                                     {
@@ -125,7 +132,7 @@ class OperaTestCase(TestCase):
         self.assertEquals(response['Content-Type'], 'text/json')
     
     def test_send_sms_json_response(self):
-        self.user.user_permissions.add(Permission.objects.get(codename='can_send_sms'))
+        add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('a' * 8)
         response = self.client.post(reverse('sms-send', kwargs={'format':'json'}), \
                                     {
@@ -142,7 +149,7 @@ class OperaTestCase(TestCase):
         self.assertEquals(receipt['identifier'], 'a' * 8)
     
     def test_send_multiple_sms_response(self):
-        self.user.user_permissions.add(Permission.objects.get(codename='can_send_sms'))
+        add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('b' * 8)
         response = self.client.post(reverse('sms-send', kwargs={'format':'json'}), \
                                     {
@@ -160,7 +167,7 @@ class OperaTestCase(TestCase):
             self.assertEquals(receipt['identifier'], 'b' * 8)
     
     def test_send_too_large_sms(self):
-        self.user.user_permissions.add(Permission.objects.get(codename='can_send_sms'))
+        add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('c' * 8)
         
         response = self.client.post(reverse('sms-send', kwargs={'format':'json'}), \
@@ -171,12 +178,69 @@ class OperaTestCase(TestCase):
                                     HTTP_AUTHORIZATION=basic_auth_string('user','password'))
         self.assertEquals(response.status_code, 400) # HttpResponseBadRequest
     
+
+
+class PcmAutomationTestCase(TestCase):
+    
+    fixtures = ['contacts.json']
+    
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='user', \
+                                                email='user@domain.com', \
+                                                password='password')
+        self.user.save()
+        
+        # we don't want to be bogged down with signal receivers in this test
+        self.original_post_save_receivers = post_save.receivers
+        post_save.receivers = []
+    
+    def tearDown(self):
+        # restore signals
+        post_save.receivers = self.original_post_save_receivers
+    
+    def test_pcm_receiving(self):
+        """We're assuming that FrontlineSMS or some other SMS receiving app
+        is correctly programmed to receive SMSs and post them to our web end point.
+        We're only testing from that point on.
+        """
+        add_perms_to_user('user', 'can_place_pcms')
+        
+        parameters = {
+            'sender_number': '27123456789',
+            'recipient_number': '27123456780',
+            'sms_id': 'doesntmatteratm',
+            'message': 'Please Call: Test User at 27123456789' # not actual text
+        }
+        
+        response = self.client.get(reverse('sms-pcm'), parameters, \
+                        HTTP_AUTHORIZATION=basic_auth_string('user','password'))
+        self.assertEquals(response.status_code, 200)
+        
+        pcm = PleaseCallMe.objects.latest('created_at')
+        
+        for key, value in parameters.items():
+            self.assertEquals(getattr(pcm, key), value)
+    
     def test_pcm_statistics(self):
         response = self.client.get(reverse('sms-pcm-statistics',kwargs={"format":"json"}))
         self.assertEquals(response.status_code, 401) # Http Basic Auth
         
-        self.user.user_permissions.add(Permission.objects.get(codename='can_view_pcm_statistics'))
+        add_perms_to_user('user', 'can_place_pcms')
+        add_perms_to_user('user', 'can_view_pcm_statistics')
         
+        # place a PCM
+        parameters = {
+            'sender_number': '27123456789',
+            'recipient_number': '27123456780',
+            'sms_id': 'doesntmatteratm',
+            'message': 'Please Call: Test User at 27123456789' # not actual text
+        }
+        
+        response = self.client.get(reverse('sms-pcm'), parameters, \
+                        HTTP_AUTHORIZATION=basic_auth_string('user','password'))
+        
+        # fetch it via the API
         response = self.client.get(reverse('sms-pcm-statistics',kwargs={'format':'json'}), \
                                     {
                                         "since": datetime.now().strftime(SendSMS.TIMESTAMP_FORMAT)
