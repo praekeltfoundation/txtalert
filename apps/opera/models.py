@@ -85,7 +85,7 @@ class PleaseCallMe(models.Model):
         ordering = ['created_at']
         verbose_name, verbose_name_plural = "Please Call Me", "'Please Call Me's"
         permissions = (
-            ('can_place_pcms', 'Can place a PCM'),
+            ('can_place_pcm', 'Can place a PCM'),
             ('can_view_pcm_statistics', 'Can view PCM statistics'),
         )
 

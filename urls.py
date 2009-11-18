@@ -22,6 +22,7 @@ from django.conf import settings
 
 admin.autodiscover()
 
+# web site
 urlpatterns = patterns('',
     # Uncomment this for admin docs:
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
@@ -33,4 +34,9 @@ urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
     (r'^static/(.*)$', 'django.views.static.serve', \
                             {'document_root': settings.MEDIA_ROOT}, "static"),
+)
+
+# web API
+urlpatterns += patterns('',
+   (r'^api/v1/', include('api.urls')),
 )

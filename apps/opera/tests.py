@@ -35,11 +35,44 @@ class OperaTestingGateway(object):
         return {'Identifier': self.identifier}
     
 
-class OperaTestCase(TestCase):
-    """Testing the opera gateway interactions"""
+
+class JSONTestCase(TestCase):
     
     def setUp(self):
         self.client = Client()
+    
+    def json_parameters(self, kwargs):
+        if 'parameters' in kwargs:
+            parameters = kwargs['parameters']
+            kwargs['parameters'] = simplejson.dumps(parameters)
+        return kwargs
+    
+    def json_get(self, *args, **kwargs):
+        return self.json_request('get', *args, **kwargs)
+    
+    def json_post(self, *args, **kwargs):
+        return self.json_request('post', *args, **self.json_parameters(kwargs))
+    
+    def json_put(self, *args, **kwargs):
+        return self.json_request('put', *args, **self.json_parameters(kwargs))
+    
+    def json_delete(self, *args, **kwargs):
+        return self.json_request('delete', *args, **self.json_parameters(kwargs))
+    
+    def json_request(self, method, path = 'api-sms', parameters = {}, content_type='application/json', auth=basic_auth_string('user','password')):
+        path = reverse(path, kwargs={'emitter_format': 'json'})
+        meth = getattr(self.client, method)
+        return meth(
+                path,
+                parameters,
+                content_type=content_type,
+                HTTP_AUTHORIZATION=auth
+        )
+
+class OperaTestCase(JSONTestCase):
+    """Testing the opera gateway interactions"""
+    
+    def setUp(self):
         self.user = User.objects.create_user(username='user', \
                                                 email='user@domain.com', \
                                                 password='password')
@@ -118,30 +151,27 @@ class OperaTestCase(TestCase):
             self.assertEquals(send_sms.status, 'D')
     
     def test_json_sms_statistics_auth(self):
-        response = self.client.get(reverse('sms-statistics',kwargs={"format":"json"}))
+        response = self.json_get(auth=basic_auth_string('invalid','user'))
         self.assertEquals(response.status_code, 401) # Http Basic Auth
         
         add_perms_to_user('user', 'can_view_sms_statistics')
         
-        response = self.client.get(reverse('sms-statistics',kwargs={'format':'json'}), \
-                                    {
-                                        "since": datetime.now().strftime(SendSMS.TIMESTAMP_FORMAT)
-                                    }, 
-                                    HTTP_AUTHORIZATION=basic_auth_string('user','password'))
+        response = self.json_get(parameters={
+            "since": datetime.now().strftime(SendSMS.TIMESTAMP_FORMAT)
+        })
+        
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(response['Content-Type'], 'text/json')
+        self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
     
     def test_send_sms_json_response(self):
         add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('a' * 8)
-        response = self.client.post(reverse('sms-send', kwargs={'format':'json'}), \
-                                    {
-                                        'number': '27123456789',
-                                        'smstext': 'hello'
-                                    }, 
-                                    HTTP_AUTHORIZATION=basic_auth_string('user', 'password'))
+        response = self.json_post(parameters={
+            'numbers': ['27123456789'],
+            'smstext': 'hello'
+        })
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(response['Content-Type'], 'text/json')
+        self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
         
         data = simplejson.loads(response.content)
         self.assertTrue(len(data),1)
@@ -151,15 +181,12 @@ class OperaTestCase(TestCase):
     def test_send_multiple_sms_response(self):
         add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('b' * 8)
-        response = self.client.post(reverse('sms-send', kwargs={'format':'json'}), \
-                                    {
-                                        'number': '27123456789',
-                                        'number': '27123456781',
-                                        'smstext': 'bla bla bla'
-                                    }, 
-                                    HTTP_AUTHORIZATION=basic_auth_string('user','password'))
+        response = self.json_post(parameters={
+            'numbers': ['27123456789', '27123456781'],
+            'smstext': 'bla bla bla'
+        })
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(response['Content-Type'], 'text/json')
+        self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
         
         data = simplejson.loads(response.content)
         self.assertTrue(len(data),2)
@@ -170,17 +197,15 @@ class OperaTestCase(TestCase):
         add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('c' * 8)
         
-        response = self.client.post(reverse('sms-send', kwargs={'format':'json'}), \
-                                    {
-                                        'number': '27123456789',
-                                        'smstext': 'a' * 161 # 1 char too large
-                                    }, 
-                                    HTTP_AUTHORIZATION=basic_auth_string('user','password'))
+        response = self.json_post(parameters={
+            'numbers': ['27123456789'],
+            'smstext': 'a' * 161 # 1 char too large
+        })
         self.assertEquals(response.status_code, 400) # HttpResponseBadRequest
     
 
 
-class PcmAutomationTestCase(TestCase):
+class PcmAutomationTestCase(JSONTestCase):
     
     fixtures = ['contacts.json']
     
@@ -204,7 +229,7 @@ class PcmAutomationTestCase(TestCase):
         is correctly programmed to receive SMSs and post them to our web end point.
         We're only testing from that point on.
         """
-        add_perms_to_user('user', 'can_place_pcms')
+        add_perms_to_user('user', 'can_place_pcm')
         
         parameters = {
             'sender_number': '27123456789',
@@ -213,9 +238,8 @@ class PcmAutomationTestCase(TestCase):
             'message': 'Please Call: Test User at 27123456789' # not actual text
         }
         
-        response = self.client.get(reverse('sms-pcm'), parameters, \
-                        HTTP_AUTHORIZATION=basic_auth_string('user','password'))
-        self.assertEquals(response.status_code, 200)
+        response = self.json_post(path='api-pcm', parameters=parameters)
+        self.assertEquals(response.status_code, 201) # Created
         
         pcm = PleaseCallMe.objects.latest('created_at')
         
@@ -223,10 +247,10 @@ class PcmAutomationTestCase(TestCase):
             self.assertEquals(getattr(pcm, key), value)
     
     def test_pcm_statistics(self):
-        response = self.client.get(reverse('sms-pcm-statistics',kwargs={"format":"json"}))
+        response = self.json_get(path='api-pcm', auth=basic_auth_string('invalid', 'user'))
         self.assertEquals(response.status_code, 401) # Http Basic Auth
         
-        add_perms_to_user('user', 'can_place_pcms')
+        add_perms_to_user('user', 'can_place_pcm')
         add_perms_to_user('user', 'can_view_pcm_statistics')
         
         # place a PCM
@@ -237,14 +261,12 @@ class PcmAutomationTestCase(TestCase):
             'message': 'Please Call: Test User at 27123456789' # not actual text
         }
         
-        response = self.client.get(reverse('sms-pcm'), parameters, \
-                        HTTP_AUTHORIZATION=basic_auth_string('user','password'))
+        response = self.json_post(path='api-pcm', parameters=parameters)
         
         # fetch it via the API
-        response = self.client.get(reverse('sms-pcm-statistics',kwargs={'format':'json'}), \
-                                    {
-                                        "since": datetime.now().strftime(SendSMS.TIMESTAMP_FORMAT)
-                                    }, 
-                                    HTTP_AUTHORIZATION=basic_auth_string('user','password'))
+        response = self.json_get(path='api-pcm', parameters={
+            "since": datetime.now().strftime(SendSMS.TIMESTAMP_FORMAT)
+        })
+        
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(response['Content-Type'], 'text/json')
+        self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')

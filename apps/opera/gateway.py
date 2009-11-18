@@ -30,15 +30,17 @@ class Gateway(object):
         
         proxy_response = self.proxy.EAPIGateway.SendSMS(struct)
         
-        return [SendSMS.objects.create(number=number, \
+        send_sms_ids = [SendSMS.objects.create(number=number, \
                                         smstext=smstext, \
                                         delivery=struct['Delivery'], \
                                         expiry=struct['Expiry'], \
                                         priority=struct['Priority'], \
                                         receipt=struct['Receipt'], \
-                                        identifier=proxy_response['Identifier'])
+                                        identifier=proxy_response['Identifier']).pk
             for (number, smstext) in zip(numbers, smstexts)]
-    
+        # Return a Django QuerySet instead of a list of Django objects
+        # allowing us to chain the QS later on
+        return SendSMS.objects.filter(pk__in=send_sms_ids)
     def status_for(self, identifier):
         return SendSMS.objects.filter(identifier=identifier)
     
