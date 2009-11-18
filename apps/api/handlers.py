@@ -1,13 +1,16 @@
 from django.contrib.auth.decorators import permission_required
+from django.utils import simplejson
+from django.http import HttpResponse
 
 from piston.handler import BaseHandler
-from piston.utils import rc, require_extended
+from piston.utils import rc, require_mime
 
-from opera.utils import require_POST_parameters, require_GET_parameters
+from opera.utils import require_POST_parameters, require_GET_parameters, process_receipts_xml
 from opera.models import SendSMS, PleaseCallMe
 from opera.gateway import gateway
 
 from datetime import datetime
+import logging
 
 class SMSHandler(BaseHandler):
     allowed_methods = ('POST', 'GET')
@@ -27,7 +30,7 @@ class SMSHandler(BaseHandler):
             return base.filter(delivery__gte=since)
     
     @permission_required('opera.can_send_sms')
-    @require_extended
+    @require_mime('json')
     def create(self, request):
         if request.content_type:
             numbers = request.data['numbers']
@@ -36,6 +39,20 @@ class SMSHandler(BaseHandler):
                 return gateway.send_sms(numbers, (smstext,) * len(numbers))
         return rc.BAD_REQUEST
 
+
+class SMSReceiptHandler(BaseHandler):
+    allowed_methods = ('POST')
+    
+    @permission_required('opera.can_place_sms_receipt')
+    @require_mime('xml')
+    def create(self, request):
+        logging.debug(request.raw_post_data)
+        success, fail = process_receipts_xml(request.raw_post_data)
+        return HttpResponse(simplejson.dumps({
+            'success': map(lambda rcpt: rcpt._asdict(), success),
+            'fail': map(lambda rcpt: rcpt._asdict(), fail)
+        }), status=201, content_type='application/json; charset=utf-8')
+    
 
 class PCMHandler(BaseHandler):
     allowed_methods = ('POST', 'GET')
@@ -46,7 +63,7 @@ class PCMHandler(BaseHandler):
         pass
     
     @permission_required('opera.can_place_pcm')
-    @require_extended
+    @require_mime('json')
     def create(self, request):
         """
         Receive a please call me message from somewhere, probably FrontlineSMS

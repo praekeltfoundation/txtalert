@@ -62,6 +62,7 @@ class SendSMS(models.Model):
         permissions = (
             ('can_view_sms_statistics', 'Can view SMS statistics'),
             ('can_send_sms', 'Can send SMSs'),
+            ('can_place_sms_receipt', 'Can place SMS receipt'),
         )
     
     def __unicode__(self):

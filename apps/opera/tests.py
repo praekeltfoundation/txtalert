@@ -129,11 +129,12 @@ class OperaTestCase(JSONTestCase):
             gateway.send_sms([receipt.msisdn], ['testing %s' % receipt.reference])
         
         # mimick POSTed receipt from Opera
-        response = self.client.post(reverse('sms-receipt'), raw_xml_post.strip(), \
-                                    content_type='text/xml')
+        add_perms_to_user('user','can_place_sms_receipt')
+        response = self.client.post(reverse('api-sms-receipt',kwargs={'emitter_format':'json'}), raw_xml_post.strip(), \
+                                    content_type='text/xml', HTTP_AUTHORIZATION=basic_auth_string('user','password'))
         
         # it should return a JSON response
-        self.assertEquals(response['Content-Type'], 'text/json')
+        self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
         
         # test the json response
         from django.utils import simplejson
