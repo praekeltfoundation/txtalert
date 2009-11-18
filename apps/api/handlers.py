@@ -60,7 +60,8 @@ class PCMHandler(BaseHandler):
     model = PleaseCallMe
     
     def read(self, request):
-        pass
+        since = datetime.strptime(request.GET['since'], SendSMS.TIMESTAMP_FORMAT)
+        return PleaseCallMe.objects.filter(created_at__gte=since)
     
     @permission_required('opera.can_place_pcm')
     @require_mime('json')

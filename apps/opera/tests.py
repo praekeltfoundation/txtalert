@@ -5,6 +5,7 @@ from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.utils import simplejson
 from django.db.models.signals import post_save
+
 from opera.utils import element_to_namedtuple
 from opera.gateway import gateway
 import xml.etree.ElementTree as ET
@@ -205,7 +206,6 @@ class OperaTestCase(JSONTestCase):
         self.assertEquals(response.status_code, 400) # HttpResponseBadRequest
     
 
-
 class PcmAutomationTestCase(JSONTestCase):
     
     fixtures = ['contacts.json']
@@ -271,3 +271,15 @@ class PcmAutomationTestCase(JSONTestCase):
         
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
+        
+        from django.utils import simplejson
+        data = simplejson.loads(response.content)
+        self.assertTrue(len(data) == 1)
+        first_item = data[0]
+        
+        from api.handlers import PCMHandler
+        
+        # test the fields exposed by the PCMHandler
+        for key in ('sms_id', 'sender_number', 'recipient_number'):
+            self.assertEquals(parameters[key], first_item[key])
+        
