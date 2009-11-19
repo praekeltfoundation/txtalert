@@ -1,7 +1,7 @@
 from xmlrpclib import ServerProxy
-from ..opera.models import SendSMS
 from datetime import datetime, timedelta
-from django.utils import simplejson
+
+from gateway.models import SendSMS
 
 class Gateway(object):
     """Gateway for communicating with the Opera"""
@@ -41,14 +41,9 @@ class Gateway(object):
         # Return a Django QuerySet instead of a list of Django objects
         # allowing us to chain the QS later on
         return SendSMS.objects.filter(pk__in=send_sms_ids)
-    def status_for(self, identifier):
-        return SendSMS.objects.filter(identifier=identifier)
-    
 
 
-try:
-    from mobile.sms.models import OperaGateway
-    og = OperaGateway.objects.all()[0]
-    gateway = Gateway(og.url, og.service, og.password, og.channel, verbose=True)
-except:
-    pass
+# FIXME, this is hideous
+from mobile.sms.models import OperaGateway
+og = OperaGateway.objects.all()[0]
+gateway = Gateway(og.url, og.service, og.password, og.channel, verbose=True)

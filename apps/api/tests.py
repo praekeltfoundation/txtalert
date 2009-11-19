@@ -6,25 +6,32 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import simplejson
 from django.db.models.signals import post_save
 
-from utils import element_to_namedtuple
-from backend import gateway
-from models import SendSMS, PleaseCallMe
+from gateway.backends.opera.utils import element_to_namedtuple
+from gateway.backends.opera.backend import gateway
+from gateway.models import SendSMS, PleaseCallMe
 
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import base64
 
 def basic_auth_string(username, password):
+    """
+    Encode a username and password for use in an HTTP Basic Authentication
+    header
+    """
     b64 = base64.encodestring('%s:%s' % (username, password)).strip()
     return 'Basic %s' % b64
 
 
 def add_perms_to_user(username, permission): # perms as in permissions, not the hair
+    """
+    Helper function to get a user and add permissions to it
+    """
     user = User.objects.get(username=username)
     return user.user_permissions.add(Permission.objects.get(codename=permission))
 
 
-class OperaTestingGateway(object):
+class MockGateway(object):
     """Dummy gateway we used to monkey patch the real RPC gateway so we can write
     our test code against something we control"""
     
@@ -60,7 +67,7 @@ class JSONTestCase(TestCase):
     def json_delete(self, *args, **kwargs):
         return self.json_request('delete', *args, **self.json_parameters(kwargs))
     
-    def json_request(self, method, path = 'api-sms', parameters = {}, content_type='application/json', auth=basic_auth_string('user','password')):
+    def json_request(self, method, path, parameters = {}, content_type='application/json', auth=basic_auth_string('user','password')):
         path = reverse(path, kwargs={'emitter_format': 'json'})
         meth = getattr(self.client, method)
         return meth(
@@ -80,7 +87,7 @@ class OperaTestCase(JSONTestCase):
         self.user.save()
         
         # specify the proxy's EAPIGateway, which is what Opera uses internally
-        setattr(gateway.proxy, 'EAPIGateway', OperaTestingGateway())
+        setattr(gateway.proxy, 'EAPIGateway', MockGateway())
         
         # add a helper function to set the identifier
         def use_identifier(identifier):
@@ -153,12 +160,12 @@ class OperaTestCase(JSONTestCase):
             self.assertEquals(send_sms.status, 'D')
     
     def test_json_sms_statistics_auth(self):
-        response = self.json_get(auth=basic_auth_string('invalid','user'))
+        response = self.json_get(path='api-sms', auth=basic_auth_string('invalid','user'))
         self.assertEquals(response.status_code, 401) # Http Basic Auth
         
         add_perms_to_user('user', 'can_view_sms_statistics')
         
-        response = self.json_get(parameters={
+        response = self.json_get(path='api-sms', parameters={
             "since": datetime.now().strftime(SendSMS.TIMESTAMP_FORMAT)
         })
         
@@ -168,7 +175,7 @@ class OperaTestCase(JSONTestCase):
     def test_send_sms_json_response(self):
         add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('a' * 8)
-        response = self.json_post(parameters={
+        response = self.json_post(path='api-sms', parameters={
             'numbers': ['27123456789'],
             'smstext': 'hello'
         })
@@ -183,7 +190,7 @@ class OperaTestCase(JSONTestCase):
     def test_send_multiple_sms_response(self):
         add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('b' * 8)
-        response = self.json_post(parameters={
+        response = self.json_post(path='api-sms', parameters={
             'numbers': ['27123456789', '27123456781'],
             'smstext': 'bla bla bla'
         })
@@ -199,7 +206,7 @@ class OperaTestCase(JSONTestCase):
         add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('c' * 8)
         
-        response = self.json_post(parameters={
+        response = self.json_post(path='api-sms', parameters={
             'numbers': ['27123456789'],
             'smstext': 'a' * 161 # 1 char too large
         })

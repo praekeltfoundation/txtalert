@@ -1,6 +1,6 @@
 from django.db import models
 
-# From https://dragon.sa.operatelecom.com:1089/Gateway#Receipt
+# Copied from https://dragon.sa.operatelecom.com:1089/Gateway#Receipt, seems sensible to keep for now
 RECEIPT_STATUS_CHOICES = (
     ('D', 'Delivered'), # message confirmed as delivered to handset.
     ('d', 'Sent'), # message sent to network operator aggregator and accepted by them. This will appear in a delivery receipt when the network operator or aggregaator does not support delivery receipts (so the best/only information we have about message delivery is that they accepted the message).
@@ -31,8 +31,8 @@ RECEIPT_STATUS_CHOICES = (
 
 class SendSMS(models.Model):
     """A local storage of SMS's sent via the SendSMS API, need to keep 
-    track of these to be able to process the receipts we receive back from
-    Opera"""
+    track of these to be able to process the receipts we receive asynchronously
+    back from the WASP"""
     
     TIMESTAMP_FORMAT = "%Y%m%dT%H:%M:%S"
     

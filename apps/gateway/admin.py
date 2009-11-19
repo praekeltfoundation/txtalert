@@ -15,6 +15,7 @@
 
 
 from django.contrib import admin
-from models import SendSMS
+from models import SendSMS, PleaseCallMe
 
 admin.site.register(SendSMS)
+admin.site.register(PleaseCallMe)

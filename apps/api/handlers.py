@@ -5,8 +5,8 @@ from django.http import HttpResponse
 from piston.handler import BaseHandler
 from piston.utils import rc, require_mime
 
-from gateway.opera.utils import process_receipts_xml
-from gateway.opera.models import SendSMS, PleaseCallMe
+from gateway.backends.opera.utils import process_receipts_xml
+from gateway.models import SendSMS, PleaseCallMe
 
 from gateway import gateway
 
@@ -19,7 +19,7 @@ class SMSHandler(BaseHandler):
                 'status', 'status_display', 'number')
     model = SendSMS
     
-    @permission_required('opera.can_view_sms_statistics')
+    @permission_required('gateway.can_view_sms_statistics')
     def read(self, request):
         base = SendSMS.objects
         if 'number' in request.GET and 'identifier' in request.GET:
@@ -30,7 +30,7 @@ class SMSHandler(BaseHandler):
             since = datetime.strptime(request.GET['since'], SendSMS.TIMESTAMP_FORMAT)
             return base.filter(delivery__gte=since)
     
-    @permission_required('opera.can_send_sms')
+    @permission_required('gateway.can_send_sms')
     @require_mime('json')
     def create(self, request):
         if request.content_type:
@@ -44,7 +44,7 @@ class SMSHandler(BaseHandler):
 class SMSReceiptHandler(BaseHandler):
     allowed_methods = ('POST')
     
-    @permission_required('opera.can_place_sms_receipt')
+    @permission_required('gateway.can_place_sms_receipt')
     @require_mime('xml')
     def create(self, request):
         logging.debug(request.raw_post_data)
@@ -64,7 +64,7 @@ class PCMHandler(BaseHandler):
         since = datetime.strptime(request.GET['since'], SendSMS.TIMESTAMP_FORMAT)
         return PleaseCallMe.objects.filter(created_at__gte=since)
     
-    @permission_required('opera.can_place_pcm')
+    @permission_required('gateway.can_place_pcm')
     @require_mime('json')
     def create(self, request):
         """

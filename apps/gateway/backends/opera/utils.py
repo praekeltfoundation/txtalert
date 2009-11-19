@@ -1,8 +1,10 @@
 from django.http import HttpResponseBadRequest
+
 from collections import namedtuple
-from models import SendSMS
 from datetime import datetime
 import xml.etree.ElementTree as ET
+
+from gateway.models import SendSMS
 
 def process_receipts_xml(receipt_xml_data):
     tree = ET.fromstring(receipt_xml_data)
