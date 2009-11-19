@@ -58,31 +58,3 @@ def element_to_namedtuple(element):
     return klass._make(d.values())
 
 
-def require_POST_parameters(*parameters, **kwargs):
-    return require_parameters(parameters, method='POST', **kwargs)
-
-def require_GET_parameters(*parameters, **kwargs):
-    return require_parameters(parameters, method='GET', **kwargs)
-
-def require_parameters(parameters=[], method='REQUEST', reveal=False):
-    """Decorator to ensure we get the required parameters for the view and raise
-    an HttpResponseBadRequest if we don't.
-    
-    @require_parameters(['param1','param2'], method='REQUEST')
-    def my_view(request):
-        # this code will always have request.REQUEST['param1'] 
-        # and request.REQUEST['param1']
-
-    """
-    def decorator(decorated_function):
-        def new_f(request, *args, **kwargs):
-            if all([(p in getattr(request, method)) for p in parameters]):
-                return decorated_function(request, *args, **kwargs)
-            else:
-                msg = "Missing some of the required parameters"
-                if reveal:
-                    msg += ': %s' % ', '.join(parameters)
-                return HttpResponseBadRequest(msg)
-        return new_f
-    return decorator
-
