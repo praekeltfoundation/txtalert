@@ -1,1 +1,0 @@
-from simpleresource import Resource
