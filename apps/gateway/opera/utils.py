@@ -1,6 +1,6 @@
 from django.http import HttpResponseBadRequest
 from collections import namedtuple
-from opera.models import SendSMS
+from models import SendSMS
 from datetime import datetime
 import xml.etree.ElementTree as ET
 

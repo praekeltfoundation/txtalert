@@ -227,7 +227,7 @@ class PleaseCallMe(models.Model):
 # signals
 from django.db.models.signals import post_save, pre_save
 from therapyedge import signals
-from opera.models import PleaseCallMe as OperaPleaseCallMe
+from gateway.opera.models import PleaseCallMe as OperaPleaseCallMe
 
 post_save.connect(signals.track_please_call_me_handler, sender=OperaPleaseCallMe)
 post_save.connect(signals.calculate_risk_profile_handler, sender=Visit)

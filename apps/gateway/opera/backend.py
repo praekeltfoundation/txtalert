@@ -1,5 +1,5 @@
 from xmlrpclib import ServerProxy
-from opera.models import SendSMS
+from ..opera.models import SendSMS
 from datetime import datetime, timedelta
 from django.utils import simplejson
 

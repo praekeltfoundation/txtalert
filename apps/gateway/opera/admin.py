@@ -15,6 +15,6 @@
 
 
 from django.contrib import admin
-from opera.models import SendSMS
+from models import SendSMS
 
 admin.site.register(SendSMS)

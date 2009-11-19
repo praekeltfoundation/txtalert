@@ -1,6 +1,6 @@
 # signals are auto loaded at boot
 from therapyedge.models import PleaseCallMe, MSISDN, Contact
-from opera.gateway import gateway
+from gateway import gateway
 from datetime import datetime
 from django.db.models import Q
 

@@ -5,9 +5,10 @@ from django.http import HttpResponse
 from piston.handler import BaseHandler
 from piston.utils import rc, require_mime
 
-from opera.utils import require_POST_parameters, require_GET_parameters, process_receipts_xml
-from opera.models import SendSMS, PleaseCallMe
-from opera.gateway import gateway
+from gateway.opera.utils import process_receipts_xml
+from gateway.opera.models import SendSMS, PleaseCallMe
+
+from gateway import gateway
 
 from datetime import datetime
 import logging

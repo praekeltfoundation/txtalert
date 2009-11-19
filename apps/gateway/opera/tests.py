@@ -6,11 +6,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import simplejson
 from django.db.models.signals import post_save
 
-from opera.utils import element_to_namedtuple
-from opera.gateway import gateway
+from utils import element_to_namedtuple
+from backend import gateway
+from models import SendSMS, PleaseCallMe
+
 import xml.etree.ElementTree as ET
-from opera.gateway import Gateway
-from opera.models import SendSMS, PleaseCallMe
 from datetime import datetime
 import base64
 

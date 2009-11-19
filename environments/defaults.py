@@ -104,7 +104,7 @@ INSTALLED_APPS = (
     'mobile.sms',
     'therapyedge',
     'bookingtool',
-    'opera',
+    'gateway.opera',
     'dirtyfields',
     'django.contrib.contenttypes',
     'django.contrib.auth',
@@ -112,6 +112,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
 )
+
+SMS_GATEWAY_CLASS = 'gateway.opera'
 
 BOOKING_TOOL_RISK_LEVELS = {
     # pc is for patient count
