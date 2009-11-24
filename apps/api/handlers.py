@@ -1,14 +1,10 @@
 from django.contrib.auth.decorators import permission_required
-from django.utils import simplejson
-from django.http import HttpResponse
 
 from piston.handler import BaseHandler
 from piston.utils import rc, require_mime, throttle
 
-from gateway.backends.opera.utils import process_receipts_xml
 from gateway.models import SendSMS, PleaseCallMe
-
-from gateway import gateway
+from gateway import gateway, sms_receipt_handler
 
 from datetime import datetime
 import logging
@@ -58,16 +54,7 @@ class SMSHandler(BaseHandler):
 
 class SMSReceiptHandler(BaseHandler):
     allowed_methods = ('POST')
-    
-    # @permission_required('gateway.can_place_sms_receipt')
-    # @require_mime('xml')
-    def create(self, request):
-        success, fail = process_receipts_xml(request.raw_post_data)
-        return HttpResponse(simplejson.dumps({
-            'success': map(lambda rcpt: rcpt._asdict(), success),
-            'fail': map(lambda rcpt: rcpt._asdict(), fail)
-        }), status=201, content_type='application/json; charset=utf-8')
-    
+    create = sms_receipt_handler
 
 class PCMHandler(BaseHandler):
     allowed_methods = ('POST', 'GET')

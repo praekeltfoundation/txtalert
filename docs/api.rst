@@ -75,8 +75,19 @@ Required parameters
 An example with cURL::
 
     $ curl --user 'user:password' \
-            --data 'since=2007-06-20T12:34:40+03:00' \
-            --
+            --data 'since=2009-11-22 14:12:44+00:00' \
+            http://localhost:8000/api/v1/sms.json
+    [
+        {
+            "status": "D", 
+            "status_display": "Delivered", 
+            "msisdn": "271234567890", 
+            "expiry": "2009-11-24 14:12:44", 
+            "delivery": "2009-11-23 14:12:44", 
+            "delivery_timestamp": "2009-11-23 14:13:10",
+            "identifier": "04caf966"
+        }
+    ]
 
 
 

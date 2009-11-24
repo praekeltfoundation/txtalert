@@ -47,3 +47,6 @@ class Gateway(object):
 from mobile.sms.models import OperaGateway
 og = OperaGateway.objects.all()[0]
 gateway = Gateway(og.url, og.service, og.password, og.channel, verbose=True)
+
+from views import sms_receipt_handler
+
