@@ -13,7 +13,7 @@ class Gateway(object):
             'Channel': channel,
         }
     
-    def send_sms(self, numbers, smstexts, delivery=None, expiry=None, \
+    def send_sms(self, msisdns, smstexts, delivery=None, expiry=None, \
                         priority='standard', receipt='Y'):
         """Send a bulk of smses SMS"""
         
@@ -21,7 +21,7 @@ class Gateway(object):
         delivery = delivery or datetime.now()
         expiry = expiry or (delivery + timedelta(days=1))
         
-        struct['Numbers'] = ','.join(map(str, numbers))
+        struct['Numbers'] = ','.join(map(str, msisdns))
         struct['SMSTexts'] = smstexts
         struct['Delivery'] = delivery
         struct['Expiry'] = expiry
@@ -30,14 +30,14 @@ class Gateway(object):
         
         proxy_response = self.proxy.EAPIGateway.SendSMS(struct)
         
-        send_sms_ids = [SendSMS.objects.create(number=number, \
+        send_sms_ids = [SendSMS.objects.create(msisdn=msisdn, \
                                         smstext=smstext, \
                                         delivery=struct['Delivery'], \
                                         expiry=struct['Expiry'], \
                                         priority=struct['Priority'], \
                                         receipt=struct['Receipt'], \
                                         identifier=proxy_response['Identifier']).pk
-            for (number, smstext) in zip(numbers, smstexts)]
+            for (msisdn, smstext) in zip(msisdns, smstexts)]
         # Return a Django QuerySet instead of a list of Django objects
         # allowing us to chain the QS later on
         return SendSMS.objects.filter(pk__in=send_sms_ids)

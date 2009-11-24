@@ -5,6 +5,9 @@ from datetime import datetime
 import xml.etree.ElementTree as ET
 
 from gateway.models import SendSMS
+import iso8601
+
+OPERA_TIMESTAMP_FORMAT = "%Y%m%dT%H:%M:%S"
 
 def process_receipts_xml(receipt_xml_data):
     tree = ET.fromstring(receipt_xml_data)
@@ -22,10 +25,10 @@ def process_receipts(receipts):
     for receipt in receipts:
         try:
             sms_sent = SendSMS.objects.get(identifier=receipt.reference, \
-                                                                number=receipt.msisdn)
+                                                        msisdn=receipt.msisdn)
             sms_sent.status = receipt.status
             sms_sent.delivery_timestamp = datetime.strptime(receipt.timestamp, \
-                                                            SendSMS.TIMESTAMP_FORMAT)
+                                                        OPERA_TIMESTAMP_FORMAT)
             sms_sent.save()
             success.append(receipt)
         except SendSMS.DoesNotExist, error:

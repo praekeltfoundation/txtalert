@@ -13,6 +13,7 @@ pcm_handler = Resource(PCMHandler, http_basic_authentication)
 # SMS api
 urlpatterns = patterns('',
     url(r'^sms/receipt\.(?P<emitter_format>.+)$', sms_receipt_handler, {}, 'api-sms-receipt'),
+    url(r'^sms/(?P<identifier>.+)/(?P<msisdn>[0-9]+)\.(?P<emitter_format>.+)$', sms_handler, {}, 'api-sms'),
     url(r'^sms\.(?P<emitter_format>.+)$', sms_handler, {}, 'api-sms'),
 )
 

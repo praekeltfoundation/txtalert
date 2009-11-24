@@ -34,7 +34,7 @@ class SendSMS(models.Model):
     track of these to be able to process the receipts we receive asynchronously
     back from the WASP"""
     
-    TIMESTAMP_FORMAT = "%Y%m%dT%H:%M:%S"
+    TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
     
     PRIORITY_CHOICES = (
         ('Urgent', 'Urgent'),
@@ -48,7 +48,7 @@ class SendSMS(models.Model):
         ('N', 'No'),
     )
     
-    number = models.CharField(max_length=12)
+    msisdn = models.CharField(max_length=12)
     smstext = models.TextField()
     delivery = models.DateTimeField()
     expiry = models.DateTimeField()
@@ -66,7 +66,7 @@ class SendSMS(models.Model):
         )
     
     def __unicode__(self):
-        return u"SendSMS %s - %s" % (self.identifier, self.number)
+        return u"SendSMS %s - %s" % (self.identifier, self.msisdn)
     
     @models.permalink
     def get_absolute_url(self):
@@ -77,8 +77,8 @@ class SendSMS(models.Model):
 class PleaseCallMe(models.Model):
     """A please call me we receive from a patient"""
     sms_id = models.CharField(max_length=80)
-    sender_number = models.CharField(max_length=12)
-    recipient_number = models.CharField(max_length=12)
+    sender_msisdn = models.CharField(max_length=12)
+    recipient_msisdn = models.CharField(max_length=12)
     message = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -91,7 +91,7 @@ class PleaseCallMe(models.Model):
         )
 
     def __unicode__(self):
-        return u"PleaseCallMe: %s" % self.sender_number
+        return u"PleaseCallMe: %s" % self.sender_msisdn
 
     @models.permalink
     def get_absolute_url(self):

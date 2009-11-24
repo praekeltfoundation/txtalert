@@ -6,13 +6,14 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import simplejson
 from django.db.models.signals import post_save
 
-from gateway.backends.opera.utils import element_to_namedtuple
+from gateway.backends.opera.utils import element_to_namedtuple, OPERA_TIMESTAMP_FORMAT
 from gateway.backends.opera.backend import gateway
 from gateway.models import SendSMS, PleaseCallMe
 
 import xml.etree.ElementTree as ET
-from datetime import datetime
+from datetime import datetime, timedelta
 import base64
+import iso8601
 
 def basic_auth_string(username, password):
     """
@@ -155,8 +156,8 @@ class OperaTestCase(JSONTestCase):
         
         # check database state
         for receipt in receipts:
-            send_sms = SendSMS.objects.get(number=receipt.msisdn, identifier=receipt.reference)
-            self.assertEquals(send_sms.delivery_timestamp.strftime(SendSMS.TIMESTAMP_FORMAT), receipt.timestamp)
+            send_sms = SendSMS.objects.get(msisdn=receipt.msisdn, identifier=receipt.reference)
+            self.assertEquals(send_sms.delivery_timestamp, datetime.strptime(receipt.timestamp, OPERA_TIMESTAMP_FORMAT))
             self.assertEquals(send_sms.status, 'D')
     
     def test_json_sms_statistics_auth(self):
@@ -176,7 +177,7 @@ class OperaTestCase(JSONTestCase):
         add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('a' * 8)
         response = self.json_post(path='api-sms', parameters={
-            'numbers': ['27123456789'],
+            'msisdns': ['27123456789'],
             'smstext': 'hello'
         })
         self.assertEquals(response.status_code, 200)
@@ -191,7 +192,7 @@ class OperaTestCase(JSONTestCase):
         add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('b' * 8)
         response = self.json_post(path='api-sms', parameters={
-            'numbers': ['27123456789', '27123456781'],
+            'msisdns': ['27123456789', '27123456781'],
             'smstext': 'bla bla bla'
         })
         self.assertEquals(response.status_code, 200)
@@ -207,7 +208,7 @@ class OperaTestCase(JSONTestCase):
         gateway.use_identifier('c' * 8)
         
         response = self.json_post(path='api-sms', parameters={
-            'numbers': ['27123456789'],
+            'msisdns': ['27123456789'],
             'smstext': 'a' * 161 # 1 char too large
         })
         self.assertEquals(response.status_code, 400) # HttpResponseBadRequest
@@ -240,8 +241,8 @@ class PcmAutomationTestCase(JSONTestCase):
         add_perms_to_user('user', 'can_place_pcm')
         
         parameters = {
-            'sender_number': '27123456789',
-            'recipient_number': '27123456780',
+            'sender_msisdn': '27123456789',
+            'recipient_msisdn': '27123456780',
             'sms_id': 'doesntmatteratm',
             'message': 'Please Call: Test User at 27123456789' # not actual text
         }
@@ -263,8 +264,8 @@ class PcmAutomationTestCase(JSONTestCase):
         
         # place a PCM
         parameters = {
-            'sender_number': '27123456789',
-            'recipient_number': '27123456780',
+            'sender_msisdn': '27123456789',
+            'recipient_msisdn': '27123456780',
             'sms_id': 'doesntmatteratm',
             'message': 'Please Call: Test User at 27123456789' # not actual text
         }
@@ -272,13 +273,12 @@ class PcmAutomationTestCase(JSONTestCase):
         response = self.json_post(path='api-pcm', parameters=parameters)
         
         # fetch it via the API
+        yesterday = datetime.now() - timedelta(days=1)
         response = self.json_get(path='api-pcm', parameters={
-            "since": datetime.now().strftime(SendSMS.TIMESTAMP_FORMAT)
+            "since": yesterday.strftime(SendSMS.TIMESTAMP_FORMAT)
         })
-        
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
-        
         from django.utils import simplejson
         data = simplejson.loads(response.content)
         self.assertTrue(len(data) == 1)
@@ -287,6 +287,6 @@ class PcmAutomationTestCase(JSONTestCase):
         from api.handlers import PCMHandler
         
         # test the fields exposed by the PCMHandler
-        for key in ('sms_id', 'sender_number', 'recipient_number'):
+        for key in ('sms_id', 'sender_msisdn', 'recipient_msisdn'):
             self.assertEquals(parameters[key], first_item[key])
         
