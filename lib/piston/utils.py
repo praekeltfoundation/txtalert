@@ -204,10 +204,9 @@ class Mimer(object):
         """    
         ctype = self.content_type()
         self.request.content_type = ctype
-        print 'ctype', ctype
+        
         if not self.is_multipart() and ctype:
             loadee = self.loader_for_type(ctype)
-            print 'loadee', loadee
             
             try:
                 self.request.data = loadee(self.request.raw_post_data)

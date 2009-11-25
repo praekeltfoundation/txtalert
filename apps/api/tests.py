@@ -65,9 +65,6 @@ class JSONTestCase(TestCase):
     def json_request(self, method, path, parameters = {}, content_type='application/json', auth=basic_auth_string('user','password')):
         path = reverse(path, kwargs={'emitter_format': 'json'})
         meth = getattr(self.client, method)
-        # print 'doing a %(method)s to %(path)s with parameters: %(parameters)s' % locals()
-        # print 'param type', type(parameters)
-        # print locals()
         return meth(
                 path,
                 parameters,
@@ -173,10 +170,12 @@ class OperaTestCase(JSONTestCase):
     def test_send_sms_json_response(self):
         add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('a' * 8)
-        response = self.json_post(path='api-sms', parameters={
-            'msisdns': ['27123456789'],
-            'smstext': 'hello'
-        })
+        response = self.client.post(reverse('api-sms',kwargs={'emitter_format':'json'}), simplejson.dumps({
+                'msisdns': ['27123456789'],
+                'smstext': 'hello'
+            }),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=basic_auth_string('user','password'))
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
         
@@ -188,10 +187,12 @@ class OperaTestCase(JSONTestCase):
     def test_send_multiple_sms_response(self):
         add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('b' * 8)
-        response = self.json_post(path='api-sms', parameters={
+        response = self.client.post(reverse('api-sms',kwargs={'emitter_format':'json'}), simplejson.dumps({
             'msisdns': ['27123456789', '27123456781'],
             'smstext': 'bla bla bla'
-        })
+            }),
+            content_type = 'application/json',
+            HTTP_AUTHORIZATION=basic_auth_string('user','password'))
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
         
@@ -204,10 +205,12 @@ class OperaTestCase(JSONTestCase):
         add_perms_to_user('user', 'can_send_sms')
         gateway.use_identifier('c' * 8)
         
-        response = self.json_post(path='api-sms', parameters={
-            'msisdns': ['27123456789'],
-            'smstext': 'a' * 161 # 1 char too large
-        })
+        response = self.client.post(reverse('api-sms',kwargs={'emitter_format':'json'}), simplejson.dumps({
+                'msisdns': ['27123456789'],
+                'smstext': 'a' * 161 # 1 char too large
+            }),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=basic_auth_string('user','password'))
         self.assertEquals(response.status_code, 400) # HttpResponseBadRequest
     
 
@@ -244,9 +247,11 @@ class PcmAutomationTestCase(JSONTestCase):
             'message': 'Please Call: Test User at 27123456789' # not actual text
         }
         
-        response = self.json_post(path='api-pcm', parameters=parameters, 
-                                    content_type='text/html')
-        # print response
+        response = self.client.post(reverse('api-pcm',kwargs={'emitter_format':'json'}),
+            parameters,
+            HTTP_AUTHORIZATION=basic_auth_string('user','password')
+        )
+        
         self.assertEquals(response.status_code, 201) # Created
         
         pcm = PleaseCallMe.objects.latest('created_at')
@@ -269,13 +274,17 @@ class PcmAutomationTestCase(JSONTestCase):
             'message': 'Please Call: Test User at 27123456789' # not actual text
         }
         
-        response = self.json_post(path='api-pcm', parameters=parameters)
+        response = self.client.post(reverse('api-pcm',kwargs={'emitter_format':'json'}), 
+                        parameters,
+                        HTTP_AUTHORIZATION=basic_auth_string('user','password')
+                    )
         
         # fetch it via the API
         yesterday = datetime.now() - timedelta(days=1)
         response = self.json_get(path='api-pcm', parameters={
             "since": yesterday.strftime(SendSMS.TIMESTAMP_FORMAT)
         })
+        
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
         from django.utils import simplejson

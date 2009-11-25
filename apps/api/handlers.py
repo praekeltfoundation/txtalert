@@ -99,6 +99,7 @@ class PCMHandler(BaseHandler):
         for available substitution variables.
         
         """
+        
         if ('sms_id' in request.POST
             and 'sender_msisdn' in request.POST 
             and 'recipient_msisdn' in request.POST):
