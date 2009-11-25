@@ -45,34 +45,7 @@ class MockGateway(object):
     
 
 
-class JSONTestCase(TestCase):
-    
-    def setUp(self):
-        self.client = Client()
-    
-    def json_get(self, *args, **kwargs):
-        return self.json_request('get', *args, **kwargs)
-    
-    def json_post(self, *args, **kwargs):
-        return self.json_request('post', *args, **kwargs)
-    
-    def json_put(self, *args, **kwargs):
-        return self.json_request('put', *args, **kwargs)
-    
-    def json_delete(self, *args, **kwargs):
-        return self.json_request('delete', *args, **kwargs)
-    
-    def json_request(self, method, path, parameters = {}, content_type='application/json', auth=basic_auth_string('user','password')):
-        path = reverse(path, kwargs={'emitter_format': 'json'})
-        meth = getattr(self.client, method)
-        return meth(
-                path,
-                parameters,
-                content_type=content_type,
-                HTTP_AUTHORIZATION=auth
-        )
-
-class OperaTestCase(JSONTestCase):
+class OperaTestCase(TestCase):
     """Testing the opera gateway interactions"""
     
     def setUp(self):
@@ -155,14 +128,16 @@ class OperaTestCase(JSONTestCase):
             self.assertEquals(send_sms.status, 'D')
     
     def test_json_sms_statistics_auth(self):
-        response = self.json_get(path='api-sms', auth=basic_auth_string('invalid','user'))
+        response = self.client.get(reverse('api-sms',kwargs={'emitter_format':'json'}), 
+                                    HTTP_AUTHORIZATION=basic_auth_string('invalid','user'))
         self.assertEquals(response.status_code, 401) # Http Basic Auth
         
         add_perms_to_user('user', 'can_view_sms_statistics')
         
-        response = self.json_get(path='api-sms', parameters={
+        response = self.client.get(reverse('api-sms',kwargs={'emitter_format':'json'}), {
             "since": datetime.now().strftime(SendSMS.TIMESTAMP_FORMAT)
-        })
+            }, 
+            HTTP_AUTHORIZATION=basic_auth_string('user','password'))
         
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
@@ -214,7 +189,7 @@ class OperaTestCase(JSONTestCase):
         self.assertEquals(response.status_code, 400) # HttpResponseBadRequest
     
 
-class PcmAutomationTestCase(JSONTestCase):
+class PcmAutomationTestCase(TestCase):
     
     fixtures = ['contacts.json']
     
@@ -260,7 +235,8 @@ class PcmAutomationTestCase(JSONTestCase):
             self.assertEquals(getattr(pcm, key), value)
     
     def test_pcm_statistics(self):
-        response = self.json_get(path='api-pcm', auth=basic_auth_string('invalid', 'user'))
+        response = self.client.get(reverse('api-pcm', kwargs={'emitter_format':'json'}), 
+                                HTTP_AUTHORIZATION=basic_auth_string('invalid', 'user'))
         self.assertEquals(response.status_code, 401) # Http Basic Auth
         
         add_perms_to_user('user', 'can_place_pcm')
@@ -275,15 +251,17 @@ class PcmAutomationTestCase(JSONTestCase):
         }
         
         response = self.client.post(reverse('api-pcm',kwargs={'emitter_format':'json'}), 
-                        parameters,
-                        HTTP_AUTHORIZATION=basic_auth_string('user','password')
-                    )
+            parameters,
+            HTTP_AUTHORIZATION=basic_auth_string('user','password')
+        )
         
         # fetch it via the API
         yesterday = datetime.now() - timedelta(days=1)
-        response = self.json_get(path='api-pcm', parameters={
+        response = self.client.get(reverse('api-pcm',kwargs={'emitter_format':'json'}), {
             "since": yesterday.strftime(SendSMS.TIMESTAMP_FORMAT)
-        })
+            },
+            HTTP_AUTHORIZATION=basic_auth_string('user','password')
+        )
         
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
