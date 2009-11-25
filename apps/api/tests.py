@@ -50,27 +50,24 @@ class JSONTestCase(TestCase):
     def setUp(self):
         self.client = Client()
     
-    def json_parameters(self, kwargs):
-        if 'parameters' in kwargs:
-            parameters = kwargs['parameters']
-            kwargs['parameters'] = simplejson.dumps(parameters)
-        return kwargs
-    
     def json_get(self, *args, **kwargs):
         return self.json_request('get', *args, **kwargs)
     
     def json_post(self, *args, **kwargs):
-        return self.json_request('post', *args, **self.json_parameters(kwargs))
+        return self.json_request('post', *args, **kwargs)
     
     def json_put(self, *args, **kwargs):
-        return self.json_request('put', *args, **self.json_parameters(kwargs))
+        return self.json_request('put', *args, **kwargs)
     
     def json_delete(self, *args, **kwargs):
-        return self.json_request('delete', *args, **self.json_parameters(kwargs))
+        return self.json_request('delete', *args, **kwargs)
     
     def json_request(self, method, path, parameters = {}, content_type='application/json', auth=basic_auth_string('user','password')):
         path = reverse(path, kwargs={'emitter_format': 'json'})
         meth = getattr(self.client, method)
+        # print 'doing a %(method)s to %(path)s with parameters: %(parameters)s' % locals()
+        # print 'param type', type(parameters)
+        # print locals()
         return meth(
                 path,
                 parameters,
@@ -247,7 +244,9 @@ class PcmAutomationTestCase(JSONTestCase):
             'message': 'Please Call: Test User at 27123456789' # not actual text
         }
         
-        response = self.json_post(path='api-pcm', parameters=parameters)
+        response = self.json_post(path='api-pcm', parameters=parameters, 
+                                    content_type='text/html')
+        # print response
         self.assertEquals(response.status_code, 201) # Created
         
         pcm = PleaseCallMe.objects.latest('created_at')

@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import permission_required
+from django.shortcuts import get_object_or_404
 
 from piston.handler import BaseHandler
 from piston.utils import rc, require_mime, throttle
@@ -22,7 +23,7 @@ class SMSHandler(BaseHandler):
     @throttle(10, 60)
     def read(self, request, msisdn=None, identifier=None):
         if all([msisdn, identifier]):
-            return self._read_one(msisdn, identifier)
+            return get_object_or_404(SendSMS, msisdn=msisdn, identifier=identifier)
         else:
             return self._read_list(request)
     
@@ -33,8 +34,6 @@ class SMSHandler(BaseHandler):
         else:
             return rc.BAD_REQUEST
     
-    def _read_one(self, msisdn, identifier):
-        return SendSMS.objects.get(msisdn=msisdn, identifier=identifier)
     
     @permission_required('gateway.can_send_sms')
     @throttle(10, 60)
@@ -53,6 +52,9 @@ class SMSHandler(BaseHandler):
     
 
 class SMSReceiptHandler(BaseHandler):
+    """This is completely handed off to the specified gateway, it should
+    specify the sms_receipt_handler, this can be a regular Django view 
+    responding some type of HttpResponse object"""
     allowed_methods = ('POST')
     create = sms_receipt_handler
 
@@ -64,6 +66,10 @@ class PCMHandler(BaseHandler):
     @permission_required('gateway.can_view_pcm_statistics')
     @throttle(10, 60)
     def read(self, request):
+        """
+        Return the list of PleaseCallMe's received since the timestamp specified 
+        in the `since` parameter.
+        """
         if 'since' in request.GET:
             since = iso8601.parse_date(request.GET['since'])
             return PleaseCallMe.objects.filter(created_at__gte=since)
@@ -71,34 +77,41 @@ class PCMHandler(BaseHandler):
             return rc.BAD_REQUEST
     
     @permission_required('gateway.can_place_pcm')
-    @require_mime('json')
     def create(self, request):
         """
+        FIXME: This should probably be moved into something more pluggable, it 
+                shouldn't rely on FrontlineSMS. FrontlineSMS should be one of 
+                several options
+        
         Receive a please call me message from somewhere, probably FrontlineSMS
         My current FrontlineSMS setup is configured to perform an HTTP request
         triggered by a keyword.
-
+        
         This is the current URL being requested:
-
-        http://localhost:8000/sms/pcm/? \
+        
+        http://localhost:8000/api/v1/pcm.json? \
                 &sender_msisdn=${sender_number} \       # where the PCM came from
                 &message_content=${message_content} \   # the original PCM message
                 &sms_id=${sms_id} \                     # the SMSC's ID - mb we can use this to avoid duplicates
                 &recipient_msisdn=${recipient_number}   # the number the PCM was called to, perhaps we can use this to identify the clinic
-
+        
         See http://frontlinesms.ning.com/profiles/blog/show?id=2052630:BlogPost:9729 
         for available substitution variables.
-
+        
         """
-        if request.content_type:
-            sms_id = request.data.get('sms_id')
-            sender_msisdn = request.data.get('sender_msisdn')
-            recipient_msisdn = request.data.get('recipient_msisdn')
-            message = request.data.get('message', '')
+        if ('sms_id' in request.POST
+            and 'sender_msisdn' in request.POST 
+            and 'recipient_msisdn' in request.POST):
+            sms_id = request.POST.get('sms_id')
+            sender_msisdn = request.POST.get('sender_msisdn')
+            recipient_msisdn = request.POST.get('recipient_msisdn')
+            message = request.POST.get('message', '')
             
             pcm = PleaseCallMe.objects.create(sms_id=sms_id, sender_msisdn=sender_msisdn, 
                                                 recipient_msisdn=recipient_msisdn, 
                                                 message=message)
-            return rc.CREATED
+            resp = rc.CREATED
+            resp.content = 'Please Call Me registered'
+            return resp
         return rc.BAD_REQUEST
-            
+    

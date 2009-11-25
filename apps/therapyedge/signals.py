@@ -1,17 +1,19 @@
-# signals are auto loaded at boot
 from therapyedge.models import PleaseCallMe, MSISDN, Contact
 from gateway import gateway
 from datetime import datetime
 from django.db.models import Q
 
+import logging
+logger = logging.getLogger("signals")
+
 def track_please_call_me_handler(sender, **kwargs):
     return track_please_call_me(kwargs['instance'])
 
 def track_please_call_me(opera_pcm):
-    """Track a number we receive from a PCM back to a specific contact. This is
+    """Track a MSISDN we receive from a PCM back to a specific contact. This is
     tricky because MSISDNs in txtAlert are involved in all sorts of ManyToMany 
     relationships."""
-    msisdn, _ = MSISDN.objects.get_or_create(msisdn=opera_pcm.sender_number)
+    msisdn, _ = MSISDN.objects.get_or_create(msisdn=opera_pcm.sender_msisdn)
     contacts = Contact.objects.filter(active_msisdn=msisdn) or \
                 msisdn.contacts.all()
     if contacts.count() == 1:
@@ -28,10 +30,10 @@ def track_please_call_me(opera_pcm):
         gateway.send_sms([msisdn.msisdn],[msg])
     elif contacts.count() == 0:
         # not sure what to do in this situation yet
-        raise Exception, 'No contacts found for MSISDN: %s' % msisdn
+        logger.error('track_please_call_me: No contacts found for MSISDN: %s' % msisdn)
     else:
         # not sure what to do in this situation yet
-        raise Exception, "More than one contact found for MSISDN: %s" % msisdn
+        logger.error("track_please_call_me: More than one contact found for MSISDN: %s" % msisdn)
 
 
 def calculate_risk_profile_handler(sender, **kwargs):

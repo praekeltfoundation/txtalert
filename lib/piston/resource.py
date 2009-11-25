@@ -65,12 +65,12 @@ class Resource(object):
         that are different (OAuth stuff in `Authorization` header.)
         """
         rm = request.method.upper()
-
+        print 'rm', rm
         # Django's internal mechanism doesn't pick up
         # PUT request, so we trick it a little here.
         if rm == "PUT":
             coerce_put_post(request)
-
+        print 'authentication', self.authentication.is_authenticated(request)
         if not self.authentication.is_authenticated(request):
             if hasattr(self.handler, 'anonymous') and \
                 callable(self.handler.anonymous) and \
@@ -83,12 +83,17 @@ class Resource(object):
         else:
             handler = self.handler
             anonymous = handler.is_anonymous
+            print 'handler', self.handler
+            print 'anonymous', handler.is_anonymous
         
         # Translate nested datastructs into `request.data` here.
         if rm in ('POST', 'PUT'):
             try:
+                print 'translating mime'
+                print 'request', request
                 translate_mime(request)
             except MimerDataException:
+                print 'returning rc.BAD_REQUEST'
                 return rc.BAD_REQUEST
         
         if not rm in handler.allowed_methods:
@@ -110,6 +115,7 @@ class Resource(object):
         request = self.cleanup_request(request)
         
         try:
+            print 'request', request, 'args', args, 'kwargs', kwargs
             result = meth(request, *args, **kwargs)
         except FormValidationError, e:
             # TODO: Use rc.BAD_REQUEST here
