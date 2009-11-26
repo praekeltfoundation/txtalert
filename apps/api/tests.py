@@ -7,13 +7,44 @@ from django.utils import simplejson
 from django.db.models.signals import post_save
 
 from gateway.backends.opera.utils import element_to_namedtuple, OPERA_TIMESTAMP_FORMAT
-from gateway.backends.opera.backend import gateway
 from gateway.models import SendSMS, PleaseCallMe
 
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 import base64
 import iso8601
+
+class TestingGateway(object):
+    """Dummy gateway we used to monkey patch the real RPC gateway so we can write
+    our test code against something we control"""
+    
+    def use_identifier(self, identifier):
+        """specify what identifier to return, this way we can tell what we'd 
+        expect back from Opera"""
+        self.identifier = identifier
+    
+    
+    def send_sms(self, msisdns, smstexts, delivery=None, expiry=None,
+                        priority='standard', receipt='Y'):
+        delivery = delivery or datetime.now()
+        expiry = expiry or (datetime.now() + timedelta(days=1))
+        send_sms_ids = [SendSMS.objects.create(msisdn=msisdn, \
+                                        smstext=smstext, \
+                                        delivery=delivery, \
+                                        expiry=expiry, \
+                                        priority=priority, \
+                                        receipt=receipt, \
+                                        identifier=self.identifier).pk
+                            for (msisdn, smstext) in zip(msisdns, smstexts)]
+        # Return a Django QuerySet instead of a list of Django objects
+        # allowing us to chain the QS later on
+        return SendSMS.objects.filter(pk__in=send_sms_ids)
+
+# Specify that we want to use the TestingGateway instead of the one specified
+# by default, still a bit too hackish for my liking
+import gateway
+gateway.gateway = TestingGateway()
+from gateway import gateway
 
 def basic_auth_string(username, password):
     """
@@ -32,20 +63,6 @@ def add_perms_to_user(username, permission): # perms as in permissions, not the 
     return user.user_permissions.add(Permission.objects.get(codename=permission))
 
 
-# FIXME: Now that gateways are pluggable this should be able to be less hacky
-class MockGateway(object):
-    """Dummy gateway we used to monkey patch the real RPC gateway so we can write
-    our test code against something we control"""
-    
-    def use_identifier(self, identifier):
-        """specify what identifier to return"""
-        self.identifier = identifier
-    
-    def SendSMS(self, args):
-        return {'Identifier': self.identifier}
-    
-
-
 class OperaTestCase(TestCase):
     """Testing the opera gateway interactions"""
     
@@ -54,14 +71,6 @@ class OperaTestCase(TestCase):
                                                 email='user@domain.com', \
                                                 password='password')
         self.user.save()
-        
-        # specify the proxy's EAPIGateway, which is what Opera uses internally
-        setattr(gateway.proxy, 'EAPIGateway', MockGateway())
-        
-        # add a helper function to set the identifier
-        def use_identifier(identifier):
-            gateway.proxy.EAPIGateway.use_identifier(identifier)
-        setattr(gateway, 'use_identifier', use_identifier)
     
     def test_send_sms(self):
         """we've hijacked the EAPIGateway and tell it what to return as the 

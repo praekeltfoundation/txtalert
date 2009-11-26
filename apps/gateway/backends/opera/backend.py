@@ -38,6 +38,8 @@ class Gateway(object):
                                         receipt=struct['Receipt'], \
                                         identifier=proxy_response['Identifier']).pk
             for (msisdn, smstext) in zip(msisdns, smstexts)]
+        
+        # FIXME: probably silly optimization which'll hurt in the long run
         # Return a Django QuerySet instead of a list of Django objects
         # allowing us to chain the QS later on
         return SendSMS.objects.filter(pk__in=send_sms_ids)
