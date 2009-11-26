@@ -32,6 +32,7 @@ def add_perms_to_user(username, permission): # perms as in permissions, not the 
     return user.user_permissions.add(Permission.objects.get(codename=permission))
 
 
+# FIXME: Now that gateways are pluggable this should be able to be less hacky
 class MockGateway(object):
     """Dummy gateway we used to monkey patch the real RPC gateway so we can write
     our test code against something we control"""
@@ -195,8 +196,8 @@ class PcmAutomationTestCase(TestCase):
     
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(username='user', \
-                                                email='user@domain.com', \
+        self.user = User.objects.create_user(username='user',
+                                                email='user@domain.com',
                                                 password='password')
         self.user.save()
         
@@ -275,4 +276,6 @@ class PcmAutomationTestCase(TestCase):
         # test the fields exposed by the PCMHandler
         for key in ('sms_id', 'sender_msisdn', 'recipient_msisdn'):
             self.assertEquals(parameters[key], first_item[key])
+    
+
         

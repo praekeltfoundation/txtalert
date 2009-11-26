@@ -37,7 +37,7 @@ Parameters
 --------------------------------------------------------------------------------
 
 :msisdsns: A list of unique `MSISDNs <http://en.wikipedia.org/wiki/MSISDN>`_
-:smstext: The text to be sent to the MSISDNs. It should not be longer than 160 characters
+:smstext: The text to be sent to the MSISDNs. It should not be longer than 160 characters. **Note:** The must be posted as a JSON object, not HTTP post key value pair variables.
 
 Example
 --------------------------------------------------------------------------------
@@ -157,7 +157,7 @@ In txtAlert PCMs are used as a low-cost means for the patient and the clinic to 
 Registering PCMs
 ********************************************************************************
 
-TxtAlert hasn't settled on a single method of registering PCMs yet. The current infrastructure supports HTTP POSTing of the necessary variables to a specific URI.
+TxtAlert hasn't settled on a single method of registering PCMs yet. The current infrastructure supports HTTP POSTing of the necessary variables to a specific URI. **Note**: This is different from sending SMSs where a JSON object needs to be posted as raw post data.
 
 URI
     /api/v1/pcm.json
