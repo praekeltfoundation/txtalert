@@ -64,7 +64,7 @@ def importRanges(content_type, clinic, days_ahead=0):
     else:
         start = import_events[0].stamp
     end = datetime.now() + timedelta(days=days_ahead)
-
+    
     # split the period into intervals
     ranges = []
     if start != end:
@@ -75,7 +75,7 @@ def importRanges(content_type, clinic, days_ahead=0):
             ranges.append({'start':str(prev)[:10], 'end':str(end)[:10]})
             prev = next
         ranges.append({'start':str(prev)[:10], 'end':str(end)[:10]})
-
+    
     return ranges
 
 
@@ -158,7 +158,7 @@ def importPatient(event, clinic, record):
             msisdn.save()
             patient.msisdns.add(msisdn)
         patient.save()
-
+    
     return event
 
 
@@ -166,7 +166,7 @@ def importPatients():
     ct = models.ContentType.objects.get(model='patient')
     server = ServerProxy(SERVICE_URL, verbose=settings.DEBUG)
     all_events = ImportEvents()
-
+    
     if models.Patient.objects.count() == 0:
         # import all patient data
         for clinic in models.Clinic.objects.all():
@@ -181,7 +181,7 @@ def importPatients():
             events = importVisitData(server, events, clinic, importRanges(ct, clinic, 0), 'patients_update', importPatient)
             models.ImportEvent.objects.create(content_type=ct, clinic=clinic, events=events)
             all_events.extend(events)
-
+    
     return all_events
 
 
@@ -201,7 +201,7 @@ def getVisit(visit_id):
 
 def validateVisitRecord(event, record):
     date_key = (set(record.keys()) & set(['scheduled_visit_date', 'done_date', 'missed_date'])).pop()
-
+    
     visit_id = validateField(event, record, APPOINTMENT_ID_RE, 'key_id', 'Visit ID')
     patient_id = validateField(event, record, PATIENT_ID_RE, 'te_id', 'Patient ID')
     date = validateField(event, record, DATE_RE, date_key, 'Date')
@@ -295,7 +295,7 @@ def importVisits():
     ct = models.ContentType.objects.get(model='visit')
     server = ServerProxy(SERVICE_URL)
     all_events = ImportEvents()
-
+    
     for clinic in models.Clinic.objects.all():
         events = ImportEvents()
         events = importRecords(server, events, clinic, importRanges(ct, clinic, 31), 'comingvisits', importComingVisit)
@@ -304,7 +304,7 @@ def importVisits():
         events = importRecords(server, events, clinic, importRanges(ct, clinic), 'deletedvisits', importDeletedVisit)
         models.ImportEvent.objects.create(content_type=ct, clinic=clinic, events=events)
         all_events.extend(events)
-
+    
     return all_events
 
 
@@ -314,7 +314,7 @@ def importAll():
     message = "New: %s\nUpdated: %s\nErrors: %s\n\n%s" % (events.new, events.updated, events.errors, '\n'.join(events.error_messages)) 
     logger.debug("mailing admins: %s" % message)
     mail.mail_admins('Patient Import Report', message, fail_silently=True)
-
+    
     logger.debug("importing visits")
     events = importVisits()
     message = "New: %s\nUpdated: %s\nErrors: %s\n\n%s" % (events.new, events.updated, events.errors, '\n'.join(events.error_messages)) 
