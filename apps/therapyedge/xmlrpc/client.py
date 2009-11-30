@@ -91,3 +91,24 @@ class Client(object):
         return self.call_method('deletedvisits', *args, **kwargs)
     
 
+
+def introspect(*args, **kwargs):
+    client = Client()
+    methods = [
+        'get_all_patients',
+        'get_updated_patients',
+        'get_coming_visits',
+        'get_missed_visits',
+        'get_done_visits',
+        'get_deleted_visits'
+    ]
+    for method in methods:
+        try:
+            meth = getattr(client, method)
+            results = meth(*args, **kwargs)
+            if results:
+                print 'method:', method, 'records:', len(results), 'of type:', results[0]
+            else:
+                print method, 'returned an empty set'
+        except Exception, e:
+            print method, 'raised an exception', e

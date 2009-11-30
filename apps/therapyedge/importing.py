@@ -207,7 +207,7 @@ def validateVisitRecord(event, record):
     date = validateField(event, record, DATE_RE, date_key, 'Date')
     try: date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S').date()
     except ValueError: pass
-
+    
     return event, visit_id, patient_id, date 
 
 
