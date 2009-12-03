@@ -22,6 +22,7 @@ import logging
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
+from general.settings.models import Setting
 
 from events import ImportEvent, ImportEvents
 
@@ -31,7 +32,9 @@ import models
 import logging
 logger = logging.getLogger("importing")
 
-SERVICE_URL = 'https://196.36.218.99/tools/ws/sms/patients/server.php'
+TE_USERNAME = Setting.objects.get(name='THERAPYEDGE_USERNAME').value
+TE_PASSWORD = Setting.objects.get(name='THERAPYEDGE_PASSWORD').value
+SERVICE_URL = 'https://%s:%s@196.36.218.99/tools/ws/sms/patients/server.php' % (TE_USERNAME, TE_PASSWORD)
 
 PATIENT_ID_RE = re.compile(r'^[0-9]{2}-[0-9]{5}$')
 PATIENT_AGE_RE = re.compile(r'^[0-9]{1,3}$')
