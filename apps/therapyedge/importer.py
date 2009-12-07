@@ -180,3 +180,16 @@ class Importer(object):
                 logger.exception('Failed to create visit')
             except Patient.DoesNotExist, e:
                 logger.exception('Could not find Patient for Visit.te_id')
+    
+    def import_deleted_visits(self, since, until=None):
+        deleted_visits = self.client.get_deleted_visits(since, until)
+        return self.update_local_deleted_visits(deleted_visits)
+    
+    def update_local_deleted_visits(self, visits):
+        for visit in visits:
+            try:
+                local_visit = Visit.objects.get(te_visit_id=visit.key_id)
+                local_visit.delete()
+                yield local_visit
+            except Visit.DoesNotExist, e:
+                logger.exception('Could not find Visit to delete')

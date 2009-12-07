@@ -44,6 +44,13 @@ DoneVisit = namedtuple('DoneVisit', [
     'te_id'
 ])
 
+DeletedVisit = namedtuple('DeletedVisit', [
+    'key_id',
+    'dr_status',
+    'dr_site_id',
+    'te_id',
+    'dr_site_name'
+])
 
 class ImporterTestCase(TestCase):
     """Testing the TherapyEdge import loop"""
@@ -179,4 +186,43 @@ class ImporterTestCase(TestCase):
             self.assertEquals(
                 visit_event.status,
                 'a'
+            )
+    
+    def test_update_local_deleted_visits(self):
+        
+        # first create the visit events to be deleted
+        data = [(
+            '',                             # dr_site_name 
+            '',                             # dr_site_id
+            'false',                        # dr_status 
+            '2009-11-1%s 00:00:00' % idx,   # scheduled_visit_date
+            '02-00089421%s' % idx,          # key_id
+            patient.te_id,                  # te_id
+        ) for idx, patient in enumerate(Patient.objects.all())]
+        coming_visits = map(ComingVisit._make, data)
+        local_visits = set(self.importer.update_local_coming_visits(
+            self.clinic, 
+            coming_visits
+        ))
+        self.assertEquals(len(coming_visits), len(local_visits))
+        
+        data = [(
+            '02-00089421%s' % idx,  # key_id
+            'false',                # dr_status
+            '',                     # dr_site_id
+            patient.te_id,          # te_id
+            '',                     # dr_site_name
+        ) for idx, patient in enumerate(Patient.objects.all())]
+        deleted_visits = map(DeletedVisit._make, data)
+        # use list comprihensions because set() dedupes the list and for some
+        # reason it considers deleted the deleted django objects as dupes
+        # and returns a list of one
+        local_visits = [v for v in self.importer.update_local_deleted_visits(
+            deleted_visits
+        )]
+        self.assertEquals(len(local_visits), Patient.objects.count())
+        for deleted_visit in deleted_visits:
+            self.assertEquals(
+                Visit.objects.filter(te_visit_id=deleted_visit.key_id).count(), 
+                0
             )

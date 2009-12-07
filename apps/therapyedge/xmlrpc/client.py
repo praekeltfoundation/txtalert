@@ -141,7 +141,7 @@ if __name__ == '__main__':
     )
     
     kwargs = {
-        'clinic_id': '02', 
+        'clinic_id': '02',  # magical I know, i think this is the Themba Lethu Clinic
         'since': datetime.now() - timedelta(days=2),
         'until': datetime.now() + timedelta(days=2)
     }
