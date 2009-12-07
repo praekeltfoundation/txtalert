@@ -2,8 +2,6 @@ from xmlrpclib import ServerProxy, Error, ProtocolError
 from datetime import datetime, timedelta
 from collections import namedtuple
 
-class IllegaleDateRange(Exception): pass
-
 class Client(object):
     """A class abstracting the TherapyEdge XML-RPC away into something more
     approachable and less temperamental"""
@@ -55,6 +53,27 @@ class Client(object):
                                             3, # Highly magical, no clue
                                             clinic_id)
     
+    
+    def create_instances_of(self, klass, iterable):
+        """This is sort of kludgy. We get a dict from TherapyEdge and in turn
+        read the values from that dict to populate a class instance. We're 
+        expecting that TherapyEdge will not change the order of the dict and that
+        the order of the values are always consistent. This isn't true and as such
+        we should be populating the instances by explicitly passing in the values
+        instead of iterating over a list of unreliable ordering.
+        
+        Ugh, this is sketchy at best
+        """
+        def create(kwargs):
+            # create empty instance with empty values
+            instance = klass._make(['' for key in klass._fields])
+            # named tuples won't allow the setting of variables but will allow
+            # replacing them with a new set of vars and which returns a new
+            # instance of the named tuple
+            return instance._replace(**kwargs)
+        
+        return map(create, iterable)
+    
     def call_method(self, request, *args, **kwargs):
         """Call a method on the XML-RPC service, returning them as named tuples"""
         result_list = self.rpc_call(request, *args, **kwargs)
@@ -64,12 +83,12 @@ class Client(object):
             # convert 'PatientUpdate' (str) into PatientUpdate (class)
             klass = self.dict_to_class(klass_name, result_list[0])
             # make list of dicts into PatientUpdate instances
-            return map(klass._make, [d.values() for d in result_list])
+            return self.create_instances_of(klass, result_list)
         return result_list
     
-    def get_all_patients(self, clinic_id):
+    def get_all_patients(self, clinic_id, *args, **kwargs):
         """Get a list of all patients available at the clinic"""
-        return self.call_method('patientlist', clinic_id)
+        return self.call_method('patientlist', clinic_id, *args, **kwargs)
     
     def get_updated_patients(self, clinic_id, since, until=None):
         """Get a list of all patients updated between the date values given
@@ -92,8 +111,7 @@ class Client(object):
     
 
 
-def introspect(*args, **kwargs):
-    client = Client()
+def introspect(client, *args, **kwargs):
     methods = [
         'get_all_patients',
         'get_updated_patients',
@@ -110,5 +128,24 @@ def introspect(*args, **kwargs):
                 print 'method:', method, 'records:', len(results), 'of type:', results[0]
             else:
                 print method, 'returned an empty set'
-        except Exception, e:
-            print method, 'raised an exception', e
+        except ProtocolError, e:
+            print method, 'raised a ProtocolError', e
+
+
+if __name__ == '__main__':
+    import os
+    from datetime import datetime, timedelta
+    uri = 'https://%s:%s@196.36.218.99/tools/ws/sms/patients/server.php' % (
+        os.environ['THERAPYEDGE_USERNAME'],
+        os.environ['THERAPYEDGE_PASSWORD']
+    )
+    
+    kwargs = {
+        'clinic_id': '02', 
+        'since': datetime.now() - timedelta(days=2),
+        'until': datetime.now() + timedelta(days=2)
+    }
+    
+    print "Introspecting with uri: %s" % uri
+    print "                  args: %s" % kwargs
+    introspect(Client(uri), **kwargs)

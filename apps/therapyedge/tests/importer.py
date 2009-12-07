@@ -1,9 +1,10 @@
 from django.test import TestCase
 from collections import namedtuple
 from therapyedge.importer import Importer, SEX_MAP
-from therapyedge.models import Patient, MSISDN
+from therapyedge.models import Patient, MSISDN, Visit, Clinic
 from datetime import datetime, timedelta
 import random
+import iso8601
 
 PatientUpdate = namedtuple('PatientUpdate', [
     'dr_site_name', 
@@ -24,11 +25,36 @@ ComingVisit = namedtuple('ComingVisit', [
     'te_id'
 ])
 
+MissedVisit = namedtuple('MissedVisit', [
+    'dr_site_name',
+    'dr_site_id',
+    'missed_date', 
+    'dr_status', 
+    'key_id', 
+    'te_id'
+])
+
+DoneVisit = namedtuple('DoneVisit', [
+    'done_date', 
+    'dr_site_id', 
+    'dr_status', 
+    'dr_site_name', 
+    'scheduled_date', 
+    'key_id', 
+    'te_id'
+])
+
+
 class ImporterTestCase(TestCase):
     """Testing the TherapyEdge import loop"""
     
+    fixtures = ['patients', 'clinics']
+    
     def setUp(self):
         self.importer = Importer()
+        # make sure we're actually testing some data
+        self.assertTrue(Patient.objects.count() > 0)
+        self.clinic = Clinic.objects.all()[0]
     
     def tearDown(self):
         pass
@@ -77,8 +103,80 @@ class ImporterTestCase(TestCase):
             'false',                        # dr_status 
             '2009-11-1%s 00:00:00' % idx,   # scheduled_visit_date
             '02-00089421%s' % idx,          # key_id
-            '02-1075%s' % idx,              # te_id
-        ) for idx in range(0,10)]
+            patient.te_id,                  # te_id
+        ) for idx, patient in enumerate(Patient.objects.all())]
         coming_visits = map(ComingVisit._make, data)
-        local_visits = set(self.importer.update_local_coming_visits(coming_visits))
-        self.assertEquals(len(local_visits), 10)
+        
+        local_visits = set(self.importer.update_local_coming_visits(
+            self.clinic, 
+            coming_visits
+        ))
+        self.assertEquals(len(local_visits), Patient.objects.count())
+        
+        for coming_visit in coming_visits:
+            # don't need to test this as Django does this for us
+            local_visit = Visit.objects.get(te_visit_id=coming_visit.key_id)
+            self.assertEquals(
+                iso8601.parse_date(coming_visit.scheduled_visit_date).date(),
+                local_visit.date
+            )
+    
+    def test_update_local_missed_visits(self):
+        data = [(
+            '',                                 # dr_site_name
+            '',                                 # dr_site_id
+            '2009-11-1%s 00:00:00' % idx,       # missed_date
+            '',                                 # dr_status
+            '02-00089421%s' % idx,              # key_id
+            patient.te_id,                      # te_id
+        ) for idx, patient in enumerate(Patient.objects.all())]
+        missed_visits = map(MissedVisit._make, data)
+        local_visits = set(self.importer.update_local_missed_visits(
+            self.clinic, 
+            missed_visits
+        ))
+        self.assertEquals(len(local_visits), Patient.objects.count())
+        for missed_visit in missed_visits:
+            local_visit = Visit.objects.get(te_visit_id=missed_visit.key_id)
+            self.assertEquals(
+                iso8601.parse_date(missed_visit.missed_date).date(),
+                local_visit.date
+            )
+    
+    def test_update_local_done_visits(self):
+        data = [(
+          '2009-11-1%s 00:00:00' % idx, # done_date 
+          '',                           # dr_site_id 
+          '',                           # dr_status
+          '',                           # dr_site_name
+          '2009-10-1%s 00:00:00' % idx, # scheduled_date, mocked to be a month earlier
+          '02-00089421%s' % idx,        # key_id
+          patient.te_id,                # te_id
+        ) for idx, patient in enumerate(Patient.objects.all())]
+        done_visits = map(DoneVisit._make, data)
+        local_visits = set(self.importer.update_local_done_visits(
+            self.clinic,
+            done_visits
+        ))
+        self.assertEquals(len(local_visits), Patient.objects.count())
+        for done_visit in done_visits:
+            local_visit = Visit.objects.get(te_visit_id=done_visit.key_id)
+            
+            # the main event should have the same scheduled date
+            self.assertEquals(
+                iso8601.parse_date(done_visit.scheduled_date).date(),
+                local_visit.date
+            )
+            
+            # the visit event itself should have the same done date
+            visit_event = local_visit.events.latest('date')
+            self.assertEquals(
+                iso8601.parse_date(done_visit.done_date).date(),
+                visit_event.date
+            )
+            
+            # the visit event should have the status of a, 'attended'
+            self.assertEquals(
+                visit_event.status,
+                'a'
+            )
