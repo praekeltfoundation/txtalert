@@ -6,6 +6,9 @@ from datetime import datetime, timedelta
 import random
 import iso8601
 
+# These classes are generated on the fly by the client, the client has
+# a call to class name map and reads the attribute names from the dict
+# returned by TherapyEdge's XML-RPC service
 PatientUpdate = namedtuple('PatientUpdate', [
     'dr_site_name', 
     'dr_site_id', 
