@@ -106,6 +106,7 @@ INSTALLED_APPS = (
     'bookingtool',
     'gateway',
     'api',
+    'piston',
     'dirtyfields',
     'django.contrib.contenttypes',
     'django.contrib.auth',

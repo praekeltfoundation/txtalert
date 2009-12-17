@@ -229,3 +229,4 @@ class ImporterTestCase(TestCase):
                 Visit.objects.filter(te_visit_id=deleted_visit.key_id).count(), 
                 0
             )
+    

@@ -28,6 +28,21 @@ def get_object_or_none(model, *args, **kwargs):
     except model.DoesNotExist, e:
         return None
 
+def update_or_create_patient(te_id, **key_value_pairs):
+    """not very pretty"""
+    created = False
+    patient = get_object_or_none(Patient, te_id=te_id)
+    if not patient:
+        logger.debug('Creating new Patient with te_id %s' % te_id)
+        Patient(te_id=te_id)
+        created = True
+    else:
+        logger.debug('Updating patient with te_id %s' % te_id)
+    for key, value in key_value_pairs.items():
+        setattr(patient, key, value)
+    patient.save()
+    return patient, created
+    
 class VisitException(Exception): pass
 
 class Importer(object):
@@ -35,24 +50,37 @@ class Importer(object):
     def __init__(self, uri=None, verbose=False):
         self.client = Client(uri, verbose)
     
-    def import_all_patients(self, clinic_id):
-        all_patients = self.client.get_all_patients(clinic_id)
+    def import_all_patients(self, clinic):
+        all_patients = self.client.get_all_patients(clinic.id)
+        return all_patients
         # not sure what this returns since they all the RPC calls are failing
         # for me ATM
         # return self.update_local_patients(all_patients)
     
-    def import_updated_patients(self, clinic, since, until=None):
+    def import_updated_patients(self, clinic, since, until=''):
         updated_patients = self.client.get_updated_patients(clinic.id, since, until)
+        logger.info('Received %s coming visits for %s between %s and %s' % (
+            len(updated_patients),
+            clinic.name,
+            since,
+            until
+        ))
         return self.update_local_patients(updated_patients)
     
     def update_local_patients(self, updated_patients):
         for remote_patient in updated_patients:
             try:
-                local_patient, created = Patient.objects.get_or_create(
-                    te_id=remote_patient.te_id,
+                logger.debug('Processing: %s' % remote_patient._asdict())
+                local_patient, created = update_or_create_patient(
+                    remote_patient.te_id,
                     age=remote_patient.age,
-                    sex=SEX_MAP.get(remote_patient.sex, None) or 't'
+                    sex=(SEX_MAP.get(remote_patient.sex, None) or 't') # for some reason it defaults to transgender, no clue why
                 )
+                
+                if created:
+                    logger.debug('Patient created: %s' % local_patient)
+                else:
+                    logger.debug('Update for existing patient: %s' % local_patient)
                 
                 # `celphone` typo is TherapyEdge's
                 for phone_number in remote_patient.celphone.split('/'):
@@ -69,8 +97,14 @@ class Importer(object):
             
         
     
-    def import_coming_visits(self, clinic, since, until=None):
+    def import_coming_visits(self, clinic, since, until=''):
         coming_visits = self.client.get_coming_visits(clinic.id, since, until)
+        logger.info('Received %s coming visits for %s between %s and %s' % (
+            len(coming_visits),
+            clinic.name,
+            since,
+            until
+        ))
         return self.update_local_coming_visits(clinic, coming_visits)
     
     def update_local_coming_visits(self, clinic, visits):
@@ -108,8 +142,14 @@ class Importer(object):
             except Patient.DoesNotExist, e:
                 logger.exception('Could not find Patient for Visit.te_id')
     
-    def import_missed_visits(self, clinic, since, until=None):
+    def import_missed_visits(self, clinic, since, until=''):
         missed_visits = self.client.get_missed_visits(clinic.id, since, until)
+        logger.info('Received %s missed visits for %s between %s and %s' % (
+            len(missed_visits),
+            clinic.name,
+            since,
+            until
+        ))
         return self.update_local_missed_visits(clinic, missed_visits)
     
     def update_local_missed_visits(self, clinic, visits):
@@ -149,8 +189,14 @@ class Importer(object):
             except VisitException, e:
                 logger.exception('VisitException')
     
-    def import_done_visits(self, clinic, since, until=None):
+    def import_done_visits(self, clinic, since, until=''):
         done_visits = self.client.get_done_visits(clinic.id, since, until)
+        logger.info('Received %s done visits for %s between %s and %s' % (
+            len(done_visits),
+            clinic.name,
+            since,
+            until
+        ))
         return self.update_local_done_visits(clinic, done_visits)
     
     def update_local_done_visits(self, clinic, visits):
@@ -181,8 +227,13 @@ class Importer(object):
             except Patient.DoesNotExist, e:
                 logger.exception('Could not find Patient for Visit.te_id')
     
-    def import_deleted_visits(self, since, until=None):
+    def import_deleted_visits(self, since, until=''):
         deleted_visits = self.client.get_deleted_visits(since, until)
+        logger.info('Received %s deleted visits between %s and %s' % (
+            len(deleted_visits),
+            since,
+            until
+        ))
         return self.update_local_deleted_visits(deleted_visits)
     
     def update_local_deleted_visits(self, visits):
@@ -193,3 +244,13 @@ class Importer(object):
                 yield local_visit
             except Visit.DoesNotExist, e:
                 logger.exception('Could not find Visit to delete')
+    
+    def import_all_changes(self, clinic, since, until):
+        # I set these because they all are generators, setting them forces
+        # them to be iterated over
+        set(self.import_updated_patients(clinic, since, until))
+        set(self.import_coming_visits(clinic, since, until))
+        set(self.import_missed_visits(clinic, since, until))
+        set(self.import_done_visits(clinic, since, until))
+        set(self.import_deleted_visits(since, until))
+    
