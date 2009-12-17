@@ -64,20 +64,19 @@ class Client(object):
         
         Ugh, this is sketchy at best
         """
-        def create(kwargs):
+        for item in iterable:
             # create empty instance with empty values
-            instance = klass._make(['' for key in klass._fields])
+            instance = klass._make(klass._fields)
             # named tuples won't allow the setting of variables but will allow
             # replacing them with a new set of vars and which returns a new
             # instance of the named tuple
-            return instance._replace(**kwargs)
+            yield instance._replace(**item)
         
-        return map(create, iterable)
     
     def call_method(self, request, *args, **kwargs):
         """Call a method on the XML-RPC service, returning them as named tuples"""
         result_list = self.rpc_call(request, *args, **kwargs)
-        if len(result_list):
+        if result_list:
             # convert 'patients_update' to 'PatientUpdate'
             klass_name = self.TYPE_MAP[request]
             # convert 'PatientUpdate' (str) into PatientUpdate (class)

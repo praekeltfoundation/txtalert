@@ -34,7 +34,7 @@ def update_or_create_patient(te_id, **key_value_pairs):
     patient = get_object_or_none(Patient, te_id=te_id)
     if not patient:
         logger.debug('Creating new Patient with te_id %s' % te_id)
-        Patient(te_id=te_id)
+        patient = Patient(te_id=te_id)
         created = True
     else:
         logger.debug('Updating patient with te_id %s' % te_id)
@@ -42,7 +42,7 @@ def update_or_create_patient(te_id, **key_value_pairs):
         setattr(patient, key, value)
     patient.save()
     return patient, created
-    
+
 class VisitException(Exception): pass
 
 class Importer(object):
@@ -59,8 +59,7 @@ class Importer(object):
     
     def import_updated_patients(self, clinic, since, until=''):
         updated_patients = self.client.get_updated_patients(clinic.id, since, until)
-        logger.info('Received %s coming visits for %s between %s and %s' % (
-            len(updated_patients),
+        logger.info('Receiving updated patients for %s between %s and %s' % (
             clinic.name,
             since,
             until
@@ -99,8 +98,7 @@ class Importer(object):
     
     def import_coming_visits(self, clinic, since, until=''):
         coming_visits = self.client.get_coming_visits(clinic.id, since, until)
-        logger.info('Received %s coming visits for %s between %s and %s' % (
-            len(coming_visits),
+        logger.info('Receiving coming visits for %s between %s and %s' % (
             clinic.name,
             since,
             until
@@ -109,6 +107,7 @@ class Importer(object):
     
     def update_local_coming_visits(self, clinic, visits):
         for visit in visits:
+            logger.debug('Processing Visit %s' % visit._asdict())
             try:
                 # I'm assuming we'll always have the patient being referenced
                 # in the Visit object, if not - raise hell
@@ -124,12 +123,14 @@ class Importer(object):
                         patient=patient,
                         date=iso8601.parse_date(visit.scheduled_visit_date)
                     )
+                    logger.debug('Creating new Visit: %s' % local_visit.id)
                 else:
                     # if the dates differ between the existing date and the 
                     # date we're receiving from TherapyEdge then our data needs
                     # to be updated
                     scheduled_date = iso8601.parse_date(visit.scheduled_visit_date)
                     if local_visit.date != scheduled_date:
+                        logger.debug('Updating existing Visit: %s' % local_visit.id)
                         # not sure why the original version of the import script
                         # only updates the date and not the status
                         local_visit.date = scheduled_date
@@ -144,8 +145,7 @@ class Importer(object):
     
     def import_missed_visits(self, clinic, since, until=''):
         missed_visits = self.client.get_missed_visits(clinic.id, since, until)
-        logger.info('Received %s missed visits for %s between %s and %s' % (
-            len(missed_visits),
+        logger.info('Receiving missed visits for %s between %s and %s' % (
             clinic.name,
             since,
             until
@@ -154,6 +154,7 @@ class Importer(object):
     
     def update_local_missed_visits(self, clinic, visits):
         for visit in visits:
+            logger.debug('Processing missed Visit: %s' % visit._asdict())
             try:
                 # get the patient or raise error
                 patient = Patient.objects.get(te_id=visit.te_id)
@@ -167,6 +168,7 @@ class Importer(object):
                         patient=patient,
                         date=missed_date
                     )
+                    logger.debug('Creating new Visit: %s' % local_visit.id)
                 
                 # if it is in the future it couldn't possible have been missed
                 # not sure why the original import has this
@@ -179,6 +181,12 @@ class Importer(object):
                     status = 'r'
                 else:
                     status = 'm'
+                
+                logger.debug('Creating event for Visit:%s, date: %s, status: %s' % (
+                    local_visit.id,
+                    missed_date,
+                    status
+                ))
                 local_visit.events.create(date=missed_date, status=status)
                 
                 yield local_visit
@@ -191,8 +199,7 @@ class Importer(object):
     
     def import_done_visits(self, clinic, since, until=''):
         done_visits = self.client.get_done_visits(clinic.id, since, until)
-        logger.info('Received %s done visits for %s between %s and %s' % (
-            len(done_visits),
+        logger.info('Receiving done visits for %s between %s and %s' % (
             clinic.name,
             since,
             until
@@ -201,6 +208,7 @@ class Importer(object):
     
     def update_local_done_visits(self, clinic, visits):
         for visit in visits:
+            logger.debug('Processing done visit: %s' % visit._asdict())
             try:
                 # get patient or raise error
                 patient = Patient.objects.get(te_id=visit.te_id)
@@ -216,9 +224,16 @@ class Importer(object):
                         patient=patient,
                         date=scheduled_date
                     )
+                    logger.debug('Creating new done Visit: %s' % local_visit.id)
+                    
                 # done events we flag as a for 'attended', not sure why the orignal
                 # import script did a get_or_create here. Maybe an error or 
                 # maybe the TherapyEdge data is *really* wonky
+                logger.debug('Creating event for Visit:%s, date: %s, status: %s' % (
+                    local_visit.id,
+                    done_date,
+                    'a'
+                ))
                 local_visit.events.get_or_create(date=done_date, status='a')
                 
                 yield local_visit
@@ -229,8 +244,7 @@ class Importer(object):
     
     def import_deleted_visits(self, since, until=''):
         deleted_visits = self.client.get_deleted_visits(since, until)
-        logger.info('Received %s deleted visits between %s and %s' % (
-            len(deleted_visits),
+        logger.info('Receiving deleted visits between %s and %s' % (
             since,
             until
         ))
@@ -238,9 +252,11 @@ class Importer(object):
     
     def update_local_deleted_visits(self, visits):
         for visit in visits:
+            logger.debug('Processing deleted visit: %s' % visit._asdict())
             try:
                 local_visit = Visit.objects.get(te_visit_id=visit.key_id)
                 local_visit.delete()
+                logger.debug('Deleted Visit: %s' % local_visit.id)
                 yield local_visit
             except Visit.DoesNotExist, e:
                 logger.exception('Could not find Visit to delete')
@@ -253,4 +269,5 @@ class Importer(object):
         set(self.import_missed_visits(clinic, since, until))
         set(self.import_done_visits(clinic, since, until))
         set(self.import_deleted_visits(since, until))
+    
     
