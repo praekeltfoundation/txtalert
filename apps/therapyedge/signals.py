@@ -58,7 +58,8 @@ def calculate_risk_profile(visit):
         else:
             patient.risk_profile =  float(missed_visits) / total_visits
         patient.save()
-    
+
+
 def check_for_opt_in_changes_handler(sender, **kwargs):
     return check_for_opt_in_changes(kwargs['instance'])
 
@@ -71,4 +72,36 @@ def check_for_opt_in_changes(patient):
         # mb via an HTTP push
         pass
     
+
+
+def update_contact_active_msisdn_handler(sender, **kwargs):
+    return update_contact_active_msisdn(kwargs['instance'])
+
+def update_contact_active_msisdn(patient):
+    """Update the patients active_msisdn with the first in the list
+    of available options if none have been set yet"""
+    msisdns = patient.msisdns.all()
+    if not patient.active_msisdn and msisdns.count() > 0:
+        patient.active_msisdn = msisdns[0]
+        patient.save()
+
+
+def find_clinic_for_please_call_me_handler(sender, **kwargs):
+    return find_clinic_for_please_call_me(kwargs['instance'])
+
+def find_clinic_for_please_call_me(pcm):
+    if not pcm.clinic:
+        patient = Patient.objects.get(id=pcm.msisdn.contacts.all()[0].id)
+        pcm.clinic = patient.get_last_clinic()
+
+
+def update_visit_status_handler(sender, **kwargs):
+    return update_visit_status(kwargs['instance'])
+
+def update_visit_status(visit_event):
+    # Fixme: magical slicing, unclear what's going on
+    if visit_event.date == visit_event.visit.events.order_by('-date')[:1][0].date:
+        visit_event.visit.status = visit_event.status
+        visit_event.visit.save()
+
     

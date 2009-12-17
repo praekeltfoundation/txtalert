@@ -50,11 +50,6 @@ class Contact(models.Model):
     def __unicode__(self):
         return ('%s - ' % self.id) + u'/'.join([str(msisdn) for msisdn in self.msisdns.all()])
     
-    def save(self, *args, **kwargs):
-        super(Contact, self).save(*args, **kwargs)
-        msisdns = self.msisdns.all()
-        if not self.active_msisdn and len(msisdns) > 0:
-            self.active_msisdn = msisdns[0]
 
 
 class Relation(models.Model):
@@ -89,6 +84,11 @@ class Clinic(models.Model):
     
 
 
+class ActivePatientManager(models.Manager):
+    def get_query_set(self):
+        return super(ActivePatientManager, self).get_query_set().filter(deleted=False)
+
+
 class Patient(DirtyFieldsMixin, Contact):
     SEX_CHOICES = (
         ('m', 'male'),
@@ -108,18 +108,37 @@ class Patient(DirtyFieldsMixin, Contact):
     risk_profile = models.FloatField('Risk Profile', blank=True, null=True)
     language = models.ForeignKey(Language, verbose_name='Language', default=1)
     
+    # audit trail fields
+    deleted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # custom manager that excludes all deleted patients
+    objects = models.Manager()
+    # active = ActivePatientManager()
+    
     class Meta:
         verbose_name = 'Patient'
         verbose_name_plural = 'Patients'
-
+    
     def __unicode__(self):
         return self.te_id
-
+    
+    def delete(self):
+        """
+        Implementing soft delete, this isn't possible with signals as far
+        as I know since there isn't a way to cancel the delete to be executed
+        """
+        if not self.deleted:
+            self.deleted = False
+            self.save()
+    
     def get_last_clinic(self):
         if self.visits.count():
             return self.visits.latest('date').clinic
         else:
             return None
+    
 
 class Visit(models.Model):
     
@@ -160,13 +179,6 @@ class VisitEvent(models.Model):
 
     def __unicode__(self):
         return '%s (%s)' % (self.visit, self.status)
-
-    def save(self, *args, **kwargs):
-        super(VisitEvent, self).save(*args, **kwargs)
-        # FIXME: too magical
-        if self.date == self.visit.events.order_by('-date')[:1][0].date:
-            self.visit.status = self.status
-            self.visit.save()
 
 
 class ImportEvent(models.Model):
@@ -215,21 +227,18 @@ class PleaseCallMe(models.Model):
 
     def __unicode__(self):
         return '%s - %s' % (self.msisdn, self.timestamp)
+    
 
-    def save(self, *args, **kwargs):
-        # FIXME: too magical
-        # todo: currently we select the first patient we have attached to the msisdn
-        if not self.clinic:
-            patient = Patient.objects.get(id=self.msisdn.contacts.all()[0].id)
-            self.clinic = patient.get_last_clinic()
-        super(PleaseCallMe, self).save(*args, **kwargs)
 
 # signals
 from django.db.models.signals import post_save, pre_save
 from therapyedge import signals
 from gateway.models import PleaseCallMe as OperaPleaseCallMe
 
+pre_save.connect(signals.check_for_opt_in_changes_handler, sender=Patient)
+pre_save.connect(signals.find_clinic_for_please_call_me_handler, sender=PleaseCallMe)
+
 post_save.connect(signals.track_please_call_me_handler, sender=OperaPleaseCallMe)
 post_save.connect(signals.calculate_risk_profile_handler, sender=Visit)
-
-pre_save.connect(signals.check_for_opt_in_changes_handler, sender=Patient)
+post_save.connect(signals.update_visit_status_handler, sender=VisitEvent)
+post_save.connect(signals.update_contact_active_msisdn_handler, sender=Patient)
