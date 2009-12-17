@@ -113,9 +113,10 @@ class Patient(DirtyFieldsMixin, Contact):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # custom manager that excludes all deleted patients
+    # normal custom manager
     objects = models.Manager()
-    # active = ActivePatientManager()
+    # custom manager that excludes all deleted patients
+    active = ActivePatientManager()
     
     class Meta:
         verbose_name = 'Patient'
