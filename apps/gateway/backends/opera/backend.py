@@ -1,3 +1,4 @@
+import os
 from xmlrpclib import ServerProxy
 from datetime import datetime, timedelta
 
@@ -46,9 +47,11 @@ class Gateway(object):
 
 
 # FIXME, this is hideous
-from mobile.sms.models import OperaGateway
-og = OperaGateway.objects.all()[0]
-gateway = Gateway(og.url, og.service, og.password, og.channel, verbose=True)
+gateway = Gateway('https://dragon.sa.operatelecom.com:1089/Gateway', 
+                    os.environ['OPERA_SERVICE'], 
+                    os.environ['OPERA_PASSWORD'], 
+                    os.environ['OPERA_CHANNEL'], 
+                    verbose=True)
 
 from views import sms_receipt_handler
 

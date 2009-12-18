@@ -3,8 +3,7 @@ import datetime
 
 from django.db import models
 
-from chapter11.current_user import models as current_user
-from chapter11.history import manager
+from history import manager
 
 class HistoricalRecords(object):
     def contribute_to_class(self, cls, name):
@@ -70,7 +69,6 @@ class HistoricalRecords(object):
         return {
             'history_id': models.AutoField(primary_key=True),
             'history_date': models.DateTimeField(default=datetime.datetime.now),
-            'history_user': current_user.CurrentUserField(related_name=rel_nm),
             'history_type': models.CharField(max_length=1, choices=(
                 ('+', 'Created'),
                 ('~', 'Changed'),

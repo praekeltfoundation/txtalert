@@ -83,7 +83,7 @@ def update_contact_active_msisdn(patient):
     msisdns = patient.msisdns.all()
     if not patient.active_msisdn and msisdns.count() > 0:
         patient.active_msisdn = msisdns[0]
-        patient.save()
+    
 
 
 def find_clinic_for_please_call_me_handler(sender, **kwargs):
@@ -100,8 +100,9 @@ def update_visit_status_handler(sender, **kwargs):
 
 def update_visit_status(visit_event):
     # Fixme: magical slicing, unclear what's going on
-    if visit_event.date == visit_event.visit.events.order_by('-date')[:1][0].date:
-        visit_event.visit.status = visit_event.status
-        visit_event.visit.save()
+    visit = visit_event.visit
+    if visit_event.date == visit.events.order_by('-date')[:1][0].date:
+        visit.status = visit_event.status
+        visit.save()
 
     

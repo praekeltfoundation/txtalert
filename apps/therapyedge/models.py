@@ -18,6 +18,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Group
 from dirtyfields import DirtyFieldsMixin
+from history.models import HistoricalRecords
 
 VISIT_STATUS_CHOICES = (
     ('m', 'Missed'),
@@ -115,8 +116,11 @@ class Patient(DirtyFieldsMixin, Contact):
     
     # normal custom manager
     objects = models.Manager()
+    
     # custom manager that excludes all deleted patients
     active = ActivePatientManager()
+    # history of all patients
+    history = HistoricalRecords()
     
     class Meta:
         verbose_name = 'Patient'
@@ -238,8 +242,8 @@ from gateway.models import PleaseCallMe as OperaPleaseCallMe
 
 pre_save.connect(signals.check_for_opt_in_changes_handler, sender=Patient)
 pre_save.connect(signals.find_clinic_for_please_call_me_handler, sender=PleaseCallMe)
+pre_save.connect(signals.update_contact_active_msisdn_handler, sender=Patient)
 
 post_save.connect(signals.track_please_call_me_handler, sender=OperaPleaseCallMe)
 post_save.connect(signals.calculate_risk_profile_handler, sender=Visit)
 post_save.connect(signals.update_visit_status_handler, sender=VisitEvent)
-post_save.connect(signals.update_contact_active_msisdn_handler, sender=Patient)
