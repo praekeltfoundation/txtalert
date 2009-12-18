@@ -131,6 +131,12 @@ DATABASE_HOST = ''             # Set to empty string for localhost. Not used wit
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 DATABASE_OPTIONS = {}          # Set to empty dictionary for default.
 
+# The email backend to use. For possible shortcuts see django.core.mail.
+# The default is to use the SMTP backend.
+# Third-party backends can be specified by providing a Python path
+# to a module that defines an EmailBackend class.
+EMAIL_BACKEND = 'django.core.mail.backends.smtp'
+
 # Host for sending e-mail.
 EMAIL_HOST = 'localhost'
 
@@ -152,9 +158,9 @@ TEMPLATE_DIRS = ()
 # See the comments in django/core/template/loader.py for interface
 # documentation.
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+#     'django.template.loaders.eggs.Loader',
 )
 
 # List of processors used by RequestContext to populate the context.
@@ -166,6 +172,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.i18n',
     'django.core.context_processors.media',
 #    'django.core.context_processors.request',
+    'django.contrib.messages.context_processors.messages',
 )
 
 # Output to use in template system for invalid (e.g. misspelled) variables.
@@ -300,7 +307,9 @@ DEFAULT_INDEX_TABLESPACE = ''
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
 #     'django.middleware.http.ConditionalGetMiddleware',
 #     'django.middleware.gzip.GZipMiddleware',
 )
@@ -373,6 +382,28 @@ LOGIN_REDIRECT_URL = '/accounts/profile/'
 
 # The number of days a password reset link is valid for
 PASSWORD_RESET_TIMEOUT_DAYS = 3
+
+########
+# CSRF #
+########
+
+# Dotted path to callable to be used as view when a request is
+# rejected by the CSRF middleware.
+CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
+
+# Name and domain for CSRF cookie.
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_COOKIE_DOMAIN = None
+
+############
+# MESSAGES #
+############
+
+# Class to use as messges backend
+MESSAGE_STORAGE = 'django.contrib.messages.storage.user_messages.LegacyFallbackStorage'
+
+# Default values of MESSAGE_LEVEL and MESSAGE_TAGS are defined within
+# django.contrib.messages to avoid imports in this settings file.
 
 ###########
 # TESTING #

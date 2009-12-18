@@ -319,9 +319,7 @@ class BaseModelForm(BaseForm):
             if self.instance.pk is not None:
                 qs = qs.exclude(pk=self.instance.pk)
 
-            # This cute trick with extra/values is the most efficient way to
-            # tell if a particular query returns any results.
-            if qs.extra(select={'a': 1}).values('a').order_by():
+            if qs.exists():
                 if len(unique_check) == 1:
                     self._errors[unique_check[0]] = ErrorList([self.unique_error_message(unique_check)])
                 else:
@@ -354,9 +352,7 @@ class BaseModelForm(BaseForm):
             if self.instance.pk is not None:
                 qs = qs.exclude(pk=self.instance.pk)
 
-            # This cute trick with extra/values is the most efficient way to
-            # tell if a particular query returns any results.
-            if qs.extra(select={'a': 1}).values('a').order_by():
+            if qs.exists():
                 self._errors[field] = ErrorList([
                     self.date_error_message(lookup_type, field, unique_for)
                 ])
@@ -706,10 +702,10 @@ def modelformset_factory(model, form=ModelForm, formfield_callback=lambda f: f.f
 class BaseInlineFormSet(BaseModelFormSet):
     """A formset for child objects related to a parent."""
     def __init__(self, data=None, files=None, instance=None,
-                 save_as_new=False, prefix=None):
+                 save_as_new=False, prefix=None, queryset=None):
         from django.db.models.fields.related import RelatedObject
         if instance is None:
-            self.instance = self.model()
+            self.instance = self.fk.rel.to()
         else:
             self.instance = instance
         self.save_as_new = save_as_new
@@ -719,7 +715,9 @@ class BaseInlineFormSet(BaseModelFormSet):
             backlink_value = self.instance
         else:
             backlink_value = getattr(self.instance, self.fk.rel.field_name)
-        qs = self.model._default_manager.filter(**{self.fk.name: backlink_value})
+        if queryset is None:
+            queryset = self.model._default_manager
+        qs = queryset.filter(**{self.fk.name: backlink_value})
         super(BaseInlineFormSet, self).__init__(data, files, prefix=prefix,
                                                 queryset=qs)
 
@@ -913,6 +911,9 @@ class ModelChoiceIterator(object):
         else:
             for obj in self.queryset.all():
                 yield self.choice(obj)
+
+    def __len__(self):
+        return len(self.queryset)
 
     def choice(self, obj):
         if self.field.to_field_name:

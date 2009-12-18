@@ -6,6 +6,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin import widgets
 from django.contrib.admin import helpers
 from django.contrib.admin.util import unquote, flatten_fieldsets, get_deleted_objects, model_ngettext, model_format_dict
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_protect
 from django.core.exceptions import PermissionDenied
 from django.db import models, transaction
 from django.db.models.fields import BLANK_CHOICE_DASH
@@ -40,14 +42,15 @@ FORMFIELD_FOR_DBFIELD_DEFAULTS = {
         'form_class': forms.SplitDateTimeField,
         'widget': widgets.AdminSplitDateTime
     },
-    models.DateField:    {'widget': widgets.AdminDateWidget},
-    models.TimeField:    {'widget': widgets.AdminTimeWidget},
-    models.TextField:    {'widget': widgets.AdminTextareaWidget},
-    models.URLField:     {'widget': widgets.AdminURLFieldWidget},
-    models.IntegerField: {'widget': widgets.AdminIntegerFieldWidget},
-    models.CharField:    {'widget': widgets.AdminTextInputWidget},
-    models.ImageField:   {'widget': widgets.AdminFileWidget},
-    models.FileField:    {'widget': widgets.AdminFileWidget},
+    models.DateField:       {'widget': widgets.AdminDateWidget},
+    models.TimeField:       {'widget': widgets.AdminTimeWidget},
+    models.TextField:       {'widget': widgets.AdminTextareaWidget},
+    models.URLField:        {'widget': widgets.AdminURLFieldWidget},
+    models.IntegerField:    {'widget': widgets.AdminIntegerFieldWidget},
+    models.BigIntegerField: {'widget': widgets.AdminIntegerFieldWidget},
+    models.CharField:       {'widget': widgets.AdminTextInputWidget},
+    models.ImageField:      {'widget': widgets.AdminFileWidget},
+    models.FileField:       {'widget': widgets.AdminFileWidget},
 }
 
 
@@ -152,8 +155,9 @@ class BaseModelAdmin(object):
         """
         Get a form Field for a ManyToManyField.
         """
-        # If it uses an intermediary model, don't show field in admin.
-        if db_field.rel.through is not None:
+        # If it uses an intermediary model that isn't auto created, don't show
+        # a field in admin.
+        if not db_field.rel.through._meta.auto_created:
             return None
 
         if db_field.name in self.raw_id_fields:
@@ -539,9 +543,9 @@ class ModelAdmin(BaseModelAdmin):
     def message_user(self, request, message):
         """
         Send a message to the user. The default implementation
-        posts a message using the auth Message object.
+        posts a message using the django.contrib.messages backend.
         """
-        request.user.message_set.create(message=message)
+        messages.info(request, message)
 
     def save_form(self, request, form, change):
         """
@@ -689,6 +693,9 @@ class ModelAdmin(BaseModelAdmin):
             # perform an action on it, so bail.
             selected = request.POST.getlist(helpers.ACTION_CHECKBOX_NAME)
             if not selected:
+                # Reminder that something needs to be selected or nothing will happen
+                msg = _("Items must be selected in order to perform actions on them. No items have been changed.")
+                self.message_user(request, msg)
                 return None
 
             response = func(self, request, queryset.filter(pk__in=selected))
@@ -700,7 +707,12 @@ class ModelAdmin(BaseModelAdmin):
                 return response
             else:
                 return HttpResponseRedirect(".")
+        else:
+            msg = _("No action selected.")
+            self.message_user(request, msg)
 
+    @csrf_protect
+    @transaction.commit_on_success
     def add_view(self, request, form_url='', extra_context=None):
         "The 'add' admin view for this model."
         model = self.model
@@ -782,8 +794,9 @@ class ModelAdmin(BaseModelAdmin):
         }
         context.update(extra_context or {})
         return self.render_change_form(request, context, form_url=form_url, add=True)
-    add_view = transaction.commit_on_success(add_view)
 
+    @csrf_protect
+    @transaction.commit_on_success
     def change_view(self, request, object_id, extra_context=None):
         "The 'change' admin view for this model."
         model = self.model
@@ -871,8 +884,8 @@ class ModelAdmin(BaseModelAdmin):
         }
         context.update(extra_context or {})
         return self.render_change_form(request, context, change=True, obj=obj)
-    change_view = transaction.commit_on_success(change_view)
 
+    @csrf_protect
     def changelist_view(self, request, extra_context=None):
         "The 'change list' admin view for this model."
         from django.contrib.admin.views.main import ChangeList, ERROR_FLAG
@@ -985,6 +998,7 @@ class ModelAdmin(BaseModelAdmin):
             'admin/change_list.html'
         ], context, context_instance=context_instance)
 
+    @csrf_protect
     def delete_view(self, request, object_id, extra_context=None):
         "The 'delete' admin view for this model."
         opts = self.model._meta
@@ -1052,7 +1066,7 @@ class ModelAdmin(BaseModelAdmin):
             content_type__id__exact = ContentType.objects.get_for_model(model).id
         ).select_related().order_by('action_time')
         # If no history was found, see whether this object even exists.
-        obj = get_object_or_404(model, pk=object_id)
+        obj = get_object_or_404(model, pk=unquote(object_id))
         context = {
             'title': _('Change history: %s') % force_unicode(obj),
             'action_list': action_list,

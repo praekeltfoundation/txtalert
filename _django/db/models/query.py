@@ -2,19 +2,12 @@
 The main QuerySet implementation. This provides the public API for the ORM.
 """
 
-try:
-    set
-except NameError:
-    from sets import Set as set     # Python 2.3 fallback
-
-from copy import deepcopy
-
 from django.db import connection, transaction, IntegrityError
 from django.db.models.aggregates import Aggregate
 from django.db.models.fields import DateField
 from django.db.models.query_utils import Q, select_related_descend, CollectedObjects, CyclicDependency, deferred_class_factory
 from django.db.models import signals, sql
-
+from django.utils.copycompat import deepcopy
 
 # Used to control how many objects are worked with at once in some cases (e.g.
 # when deleting objects).
@@ -113,6 +106,36 @@ class QuerySet(object):
         except StopIteration:
             return False
         return True
+
+    def __contains__(self, val):
+        # The 'in' operator works without this method, due to __iter__. This
+        # implementation exists only to shortcut the creation of Model
+        # instances, by bailing out early if we find a matching element.
+        pos = 0
+        if self._result_cache is not None:
+            if val in self._result_cache:
+                return True
+            elif self._iter is None:
+                # iterator is exhausted, so we have our answer
+                return False
+            # remember not to check these again:
+            pos = len(self._result_cache)
+        else:
+            # We need to start filling the result cache out. The following
+            # ensures that self._iter is not None and self._result_cache is not
+            # None
+            it = iter(self)
+
+        # Carry on, one result at a time.
+        while True:
+            if len(self._result_cache) <= pos:
+                self._fill_cache(num=1)
+            if self._iter is None:
+                # we ran out of items
+                return False
+            if self._result_cache[pos] == val:
+                return True
+            pos += 1
 
     def __getitem__(self, k):
         """
@@ -443,6 +466,11 @@ class QuerySet(object):
         self._result_cache = None
         return query.execute_sql(None)
     _update.alters_data = True
+
+    def exists(self):
+        if self._result_cache is None:
+            return self.query.has_results()
+        return bool(self._result_cache)
 
     ##################################################
     # PUBLIC METHODS THAT RETURN A QUERYSET SUBCLASS #
@@ -1030,7 +1058,8 @@ def delete_objects(seen_objs):
 
             # Pre-notify all instances to be deleted.
             for pk_val, instance in items:
-                signals.pre_delete.send(sender=cls, instance=instance)
+                if not cls._meta.auto_created:
+                    signals.pre_delete.send(sender=cls, instance=instance)
 
             pk_list = [pk for pk,instance in items]
             del_query = sql.DeleteQuery(cls, connection)
@@ -1064,7 +1093,8 @@ def delete_objects(seen_objs):
                     if field.rel and field.null and field.rel.to in seen_objs:
                         setattr(instance, field.attname, None)
 
-                signals.post_delete.send(sender=cls, instance=instance)
+                if not cls._meta.auto_created:
+                    signals.post_delete.send(sender=cls, instance=instance)
                 setattr(instance, cls._meta.pk.attname, None)
 
         if forced_managed:

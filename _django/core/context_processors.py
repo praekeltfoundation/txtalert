@@ -8,27 +8,9 @@ RequestContext.
 """
 
 from django.conf import settings
-from django.utils.functional import lazy, memoize, LazyObject
-
-class ContextLazyObject(LazyObject):
-    """
-    A lazy object initialised from any function, useful for lazily
-    adding things to the Context.
-
-    Designed for compound objects of unknown type. For simple objects of known
-    type, use django.utils.functional.lazy.
-    """
-    def __init__(self, func):
-        """
-        Pass in a callable that returns the actual value to be used
-        """
-        self.__dict__['_setupfunc'] = func
-        # For some reason, we have to inline LazyObject.__init__ here to avoid
-        # recursion
-        self._wrapped = None
-
-    def _setup(self):
-        self._wrapped = self._setupfunc()
+from django.middleware.csrf import get_token
+from django.utils.functional import lazy, memoize, SimpleLazyObject
+from django.contrib import messages
 
 def auth(request):
     """
@@ -55,10 +37,28 @@ def auth(request):
             return AnonymousUser()
 
     return {
-        'user': ContextLazyObject(get_user),
-        'messages': lazy(memoize(lambda: get_user().get_and_delete_messages(), {}, 0), list)(),
-        'perms':  lazy(lambda: PermWrapper(get_user()), PermWrapper)(),
+        'user': SimpleLazyObject(get_user),
+        'messages': messages.get_messages(request),
+        'perms': lazy(lambda: PermWrapper(get_user()), PermWrapper)(),
     }
+
+def csrf(request):
+    """
+    Context processor that provides a CSRF token, or the string 'NOTPROVIDED' if
+    it has not been provided by either a view decorator or the middleware
+    """
+    def _get_val():
+        token = get_token(request)
+        if token is None:
+            # In order to be able to provide debugging info in the
+            # case of misconfiguration, we use a sentinel value
+            # instead of returning an empty dict.
+            return 'NOTPROVIDED'
+        else:
+            return token
+    _get_val = lazy(_get_val, str)
+
+    return {'csrf_token': _get_val() }
 
 def debug(request):
     "Returns context variables helpful for debugging."
