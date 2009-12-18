@@ -44,7 +44,7 @@ class HistoricalRecords(object):
 
         for field in model._meta.fields:
             field = copy.copy(field)
-
+            print 'copying field', field, type(field)
             if isinstance(field, models.AutoField):
                 # The historical model gets its own AutoField, so any
                 # existing one must be replaced with an IntegerField.

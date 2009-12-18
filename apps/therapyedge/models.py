@@ -120,7 +120,7 @@ class Patient(DirtyFieldsMixin, Contact):
     # custom manager that excludes all deleted patients
     active = ActivePatientManager()
     # history of all patients
-    history = HistoricalRecords()
+    # history = HistoricalRecords()
     
     class Meta:
         verbose_name = 'Patient'
@@ -128,6 +128,18 @@ class Patient(DirtyFieldsMixin, Contact):
     
     def __unicode__(self):
         return self.te_id
+    
+    # Fixme: ugly on so many levels
+    def save(self, *args, **kwargs):
+        # save so that we have a PK
+        if self.is_dirty(): super(Patient, self).save(*args, **kwargs)
+        # Update the patients active_msisdn with the first in the list
+        # of available options if none have been set yet
+        if not self.active_msisdn and self.msisdns.count():
+            # there is no ordering, depend on the database to specify
+            # auto incrementing primary keys
+            self.active_msisdn = self.msisdns.latest('id')
+            self.save()
     
     def delete(self):
         """
@@ -242,7 +254,6 @@ from gateway.models import PleaseCallMe as OperaPleaseCallMe
 
 pre_save.connect(signals.check_for_opt_in_changes_handler, sender=Patient)
 pre_save.connect(signals.find_clinic_for_please_call_me_handler, sender=PleaseCallMe)
-pre_save.connect(signals.update_contact_active_msisdn_handler, sender=Patient)
 
 post_save.connect(signals.track_please_call_me_handler, sender=OperaPleaseCallMe)
 post_save.connect(signals.calculate_risk_profile_handler, sender=Visit)

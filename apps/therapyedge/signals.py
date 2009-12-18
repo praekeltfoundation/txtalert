@@ -74,18 +74,6 @@ def check_for_opt_in_changes(patient):
     
 
 
-def update_contact_active_msisdn_handler(sender, **kwargs):
-    return update_contact_active_msisdn(kwargs['instance'])
-
-def update_contact_active_msisdn(patient):
-    """Update the patients active_msisdn with the first in the list
-    of available options if none have been set yet"""
-    msisdns = patient.msisdns.all()
-    if not patient.active_msisdn and msisdns.count() > 0:
-        patient.active_msisdn = msisdns[0]
-    
-
-
 def find_clinic_for_please_call_me_handler(sender, **kwargs):
     return find_clinic_for_please_call_me(kwargs['instance'])
 
