@@ -85,10 +85,17 @@ class Clinic(models.Model):
     
 
 
-class ActivePatientManager(models.Manager):
+class FilteredQuerySetManager(models.Manager):
+    
+    def __init__(self, *args, **kwargs):
+        super(FilteredQuerySetManager, self).__init__()
+        self.args = args
+        self.kwargs = kwargs
+    
     def get_query_set(self):
-        return super(ActivePatientManager, self).get_query_set().filter(deleted=False)
-
+        return super(FilteredQuerySetManager, self) \
+                .get_query_set() \
+                .filter(*self.args, **self.kwargs)
 
 class Patient(DirtyFieldsMixin, Contact):
     SEX_CHOICES = (
@@ -114,11 +121,12 @@ class Patient(DirtyFieldsMixin, Contact):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # normal custom manager
-    objects = models.Manager()
-    
     # custom manager that excludes all deleted patients
-    active = ActivePatientManager()
+    objects = FilteredQuerySetManager(deleted=False)
+    
+    # normal custom manager, including deleted patients
+    all_objects = models.Manager()
+    
     # history of all patients
     history = HistoricalRecords()
     
@@ -147,7 +155,7 @@ class Patient(DirtyFieldsMixin, Contact):
         as I know since there isn't a way to cancel the delete to be executed
         """
         if not self.deleted:
-            self.deleted = False
+            self.deleted = True
             self.save()
     
     def get_last_clinic(self):
