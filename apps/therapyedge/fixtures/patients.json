@@ -9,15 +9,9 @@
     },
     {
         "pk":"1",
-        "model":"therapyedge.contact",
-        "fields":{
-            "msisdns":["1"]
-        }
-    },
-    {
-        "pk":"1",
         "model":"therapyedge.patient",
         "fields":{
+            "msisdns":["1"],
 			"id":"1",
             "te_id":"01-12345",
             "age":"33",
@@ -37,15 +31,9 @@
     },
     {
         "pk":"2",
-        "model":"therapyedge.contact",
-        "fields":{
-            "msisdns":["2"]
-        }
-    },
-    {
-        "pk":"2",
         "model":"therapyedge.patient",
         "fields":{
+			"msisdns":["2"],
 			"id":"2",
             "te_id":"02-12345",
             "age":"23",

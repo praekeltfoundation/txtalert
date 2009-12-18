@@ -1,4 +1,4 @@
-from therapyedge.models import PleaseCallMe, MSISDN, Contact
+from therapyedge.models import PleaseCallMe, MSISDN
 from gateway import gateway
 from datetime import datetime
 from django.db.models import Q

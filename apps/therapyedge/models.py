@@ -39,26 +39,6 @@ class MSISDN(models.Model):
         return self.msisdn
 
 
-class Contact(models.Model):
-    buddies = models.ManyToManyField('Contact', symmetrical=False, through='Relation')
-    msisdns = models.ManyToManyField(MSISDN, related_name='contacts')
-    active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', null=True, blank=True)
-    
-    class Meta:
-        verbose_name = 'Contact'
-        verbose_name_plural = 'Contacts'
-    
-    def __unicode__(self):
-        return ('%s - ' % self.id) + u'/'.join([str(msisdn) for msisdn in self.msisdns.all()])
-    
-
-
-class Relation(models.Model):
-    contact = models.ForeignKey(Contact, related_name='relations')
-    relation = models.ForeignKey(Contact, related_name='contacts')
-    description = models.TextField('Description')
-
-
 class Language(models.Model):
     name = models.CharField('Name', max_length=50)
     missed_message = models.TextField('Missed Message')
@@ -97,7 +77,7 @@ class FilteredQuerySetManager(models.Manager):
                 .get_query_set() \
                 .filter(*self.args, **self.kwargs)
 
-class Patient(DirtyFieldsMixin, Contact):
+class Patient(DirtyFieldsMixin,models.Model):
     SEX_CHOICES = (
         ('m', 'male'),
         ('f', 'female'),
@@ -105,8 +85,11 @@ class Patient(DirtyFieldsMixin, Contact):
         ('f>m', 'transgender f>m'),
         ('m>f', 'transgender m>f'),
     )
-
+    
     te_id = models.CharField('MRS ID', max_length=10, unique=True)
+    msisdns = models.ManyToManyField(MSISDN, related_name='contacts')
+    active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', null=True, blank=True)
+    
     age = models.IntegerField('Age')
     sex = models.CharField('Sex', max_length=3, choices=SEX_CHOICES)
     opted_in = models.BooleanField('Opted In', default=False)

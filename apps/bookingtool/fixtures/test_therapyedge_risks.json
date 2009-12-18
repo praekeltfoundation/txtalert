@@ -14,30 +14,6 @@
 },
 {
     "pk": 1,
-    "model": "therapyedge.contact",
-    "fields": {
-        "msisdns": [1],
-        "active_msisdn": null
-    }
-},
-{
-    "pk": 2,
-    "model": "therapyedge.contact",
-    "fields": {
-        "msisdns": [2],
-        "active_msisdn": null
-    }
-},
-{
-    "pk": 3,
-    "model": "therapyedge.contact",
-    "fields": {
-        "msisdns": [],
-        "active_msisdn": 1
-    }
-},
-{
-    "pk": 1,
     "model": "therapyedge.language",
     "fields": {
         "tomorrow_message": "See you at the clinic tomorrow morning.",
@@ -179,6 +155,8 @@
     "pk": 1,
     "model": "therapyedge.patient",
     "fields": {
+        "msisdns": [1],
+		"active_msisdn": null,
 		"id": 1,
         "last_clinic": null,
         "language": 1,
@@ -196,6 +174,8 @@
     "pk": 2,
     "model": "therapyedge.patient",
     "fields": {
+        "msisdns": [1],
+		"active_msisdn": null,
 		"id": 2,
         "last_clinic": null,
         "language": 1,
@@ -213,6 +193,8 @@
     "pk": 3,
     "model": "therapyedge.patient",
     "fields": {
+        "msisdns": [1],
+		"active_msisdn": null,
 		"id": 3,
         "last_clinic": 2,
         "language": 1,

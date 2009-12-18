@@ -62,7 +62,6 @@ admin.site.register(PleaseCallMe, PleaseCallMeAdmin)
 admin.site.register(Patient, PatientAdmin)
 
 admin.site.register(MSISDN)
-admin.site.register(Contact)
 admin.site.register(Language)
 admin.site.register(Clinic)
 admin.site.register(Visit)
