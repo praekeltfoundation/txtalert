@@ -1,2 +1,3 @@
 Piston: http://bitbucket.org/jespern/django-piston/
 iso8601: http://code.google.com/p/pyiso8601/
+history: Chapter 11 from Pro Django, slightly adapted
