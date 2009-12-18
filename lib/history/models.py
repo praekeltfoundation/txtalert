@@ -44,12 +44,11 @@ class HistoricalRecords(object):
 
         for field in model._meta.fields:
             field = copy.copy(field)
-            print 'copying field', field, type(field)
             if isinstance(field, models.AutoField):
                 # The historical model gets its own AutoField, so any
                 # existing one must be replaced with an IntegerField.
                 field.__class__ = models.IntegerField
-
+            
             if field.primary_key or field.unique:
                 # Unique fields can no longer be guaranteed unique,
                 # but they should still be indexed for faster lookups.

@@ -18,6 +18,7 @@
         "pk":"1",
         "model":"therapyedge.patient",
         "fields":{
+			"id":"1",
             "te_id":"01-12345",
             "age":"33",
             "sex":"m",
@@ -45,6 +46,7 @@
         "pk":"2",
         "model":"therapyedge.patient",
         "fields":{
+			"id":"2",
             "te_id":"02-12345",
             "age":"23",
             "sex":"f",

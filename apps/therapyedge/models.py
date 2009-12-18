@@ -120,7 +120,7 @@ class Patient(DirtyFieldsMixin, Contact):
     # custom manager that excludes all deleted patients
     active = ActivePatientManager()
     # history of all patients
-    # history = HistoricalRecords()
+    history = HistoricalRecords()
     
     class Meta:
         verbose_name = 'Patient'

@@ -1,1 +1,2184 @@
-[{"pk": 1, "model": "therapyedge.msisdn", "fields": {"msisdn": "27821111111"}}, {"pk": 2, "model": "therapyedge.msisdn", "fields": {"msisdn": "27822222222"}}, {"pk": 1, "model": "therapyedge.contact", "fields": {"msisdns": [1], "active_msisdn": null}}, {"pk": 2, "model": "therapyedge.contact", "fields": {"msisdns": [2], "active_msisdn": null}}, {"pk": 3, "model": "therapyedge.contact", "fields": {"msisdns": [], "active_msisdn": 1}}, {"pk": 1, "model": "therapyedge.language", "fields": {"tomorrow_message": "See you at the clinic tomorrow morning.", "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.", "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.", "name": "English", "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."}}, {"pk": 2, "model": "therapyedge.language", "fields": {"tomorrow_message": "See you at the clinic tomorrow morning.", "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.", "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.", "name": "Afrikaans", "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."}}, {"pk": 3, "model": "therapyedge.language", "fields": {"tomorrow_message": "See you at the clinic tomorrow morning.", "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.", "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.", "name": "Zulu", "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."}}, {"pk": 4, "model": "therapyedge.language", "fields": {"tomorrow_message": "See you at the clinic tomorrow morning.", "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.", "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.", "name": "Xhosa", "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."}}, {"pk": 5, "model": "therapyedge.language", "fields": {"tomorrow_message": "See you at the clinic tomorrow morning.", "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.", "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.", "name": "Ndebele", "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."}}, {"pk": 6, "model": "therapyedge.language", "fields": {"tomorrow_message": "See you at the clinic tomorrow morning.", "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.", "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.", "name": "Venda", "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."}}, {"pk": 7, "model": "therapyedge.language", "fields": {"tomorrow_message": "See you at the clinic tomorrow morning.", "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.", "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.", "name": "Swati", "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."}}, {"pk": 8, "model": "therapyedge.language", "fields": {"tomorrow_message": "See you at the clinic tomorrow morning.", "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.", "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.", "name": "Sesotho", "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."}}, {"pk": 9, "model": "therapyedge.language", "fields": {"tomorrow_message": "See you at the clinic tomorrow morning.", "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.", "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.", "name": "Sepedi", "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."}}, {"pk": 10, "model": "therapyedge.language", "fields": {"tomorrow_message": "See you at the clinic tomorrow morning.", "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.", "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.", "name": "Tsonga", "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."}}, {"pk": 11, "model": "therapyedge.language", "fields": {"tomorrow_message": "See you at the clinic tomorrow morning.", "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.", "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.", "name": "Tswana", "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."}}, {"pk": 2, "model": "therapyedge.clinic", "fields": {"group": null, "name": "Crosby", "te_id": "25"}}, {"pk": 1, "model": "therapyedge.clinic", "fields": {"group": null, "name": "Test Clinic", "te_id": "01"}}, {"pk": 1, "model": "therapyedge.patient", "fields": {"last_clinic": null, "language": 1, "age": 33, "sex": "m", "msisdns": [1], "disclosed": true, "risk_profile": null, "te_id": "01-12345", "opted_in": true, "deceased": false}}, {"pk": 2, "model": "therapyedge.patient", "fields": {"last_clinic": null, "language": 1, "age": 23, "sex": "f", "msisdns": [2], "disclosed": true, "risk_profile": null, "te_id": "02-12345", "opted_in": true, "deceased": false}}, {"pk": 3, "model": "therapyedge.patient", "fields": {"last_clinic": 2, "language": 1, "age": 29, "sex": "m", "msisdns": [], "disclosed": false, "risk_profile": 1.0, "te_id": "1234567890", "opted_in": false, "deceased": false}}, {"pk": 436, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "775bc5c30e27f0e56211", "date": "2009-10-01"}}, {"pk": 427, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "42468d2f1fcc8717b202", "date": "2009-10-01"}}, {"pk": 428, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "f6fdcd38c5c0640d8b33", "date": "2009-10-01"}}, {"pk": 429, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "aa6dd8e560f651e75728", "date": "2009-10-01"}}, {"pk": 430, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "5e8c3e16f49ade00e722", "date": "2009-10-01"}}, {"pk": 431, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "eaa3fabdb4c3b8a8b4fb", "date": "2009-10-01"}}, {"pk": 432, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "dab8a2cd269a25b6d317", "date": "2009-10-01"}}, {"pk": 433, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "78932e805393baff597b", "date": "2009-10-01"}}, {"pk": 434, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "21141c6833f8992620f3", "date": "2009-10-01"}}, {"pk": 435, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "4fb22738d9cb50fe9e1f", "date": "2009-10-01"}}, {"pk": 476, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "25f84108688e74b7144f", "date": "2009-10-02"}}, {"pk": 477, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "074cafa442a5a83d137a", "date": "2009-10-02"}}, {"pk": 478, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "7830184800cad0b2349c", "date": "2009-10-02"}}, {"pk": 479, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "2bcfa8738e33a812169b", "date": "2009-10-02"}}, {"pk": 480, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "f1cc0f7b261a29187819", "date": "2009-10-02"}}, {"pk": 481, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "9ffb6bc10b2fa2753656", "date": "2009-10-02"}}, {"pk": 482, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "bdf4910ce47145171e30", "date": "2009-10-02"}}, {"pk": 483, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "0127bc15ff9f59b4148c", "date": "2009-10-02"}}, {"pk": 484, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "df49cf29ac1015fe5977", "date": "2009-10-02"}}, {"pk": 485, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "016e4a60127fcd420582", "date": "2009-10-02"}}, {"pk": 486, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "40a24a353560755952c9", "date": "2009-10-02"}}, {"pk": 487, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "a9ab0de0b9d237ba2ca7", "date": "2009-10-02"}}, {"pk": 437, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "6c55a96f2559f5f8e52d", "date": "2009-10-02"}}, {"pk": 438, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "abbdf67c8cd955b4b178", "date": "2009-10-02"}}, {"pk": 439, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "c07182a567cfe67d0665", "date": "2009-10-02"}}, {"pk": 440, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "ac0a2b6c6d93bdb02c88", "date": "2009-10-02"}}, {"pk": 441, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "5b9df914debf388818cb", "date": "2009-10-02"}}, {"pk": 442, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "8e7f02f17a938e7636b6", "date": "2009-10-02"}}, {"pk": 443, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "8d52c9749ae6b94c7f1f", "date": "2009-10-02"}}, {"pk": 444, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "4fa56337cc4cadc17229", "date": "2009-10-02"}}, {"pk": 445, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "52c3f8fec1b53edf825d", "date": "2009-10-02"}}, {"pk": 446, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "d9a4852315d30980f99c", "date": "2009-10-02"}}, {"pk": 447, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "c85466f9fa0cb0740929", "date": "2009-10-02"}}, {"pk": 448, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "8c3c96a30eef2e87911c", "date": "2009-10-02"}}, {"pk": 449, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "995089904e032aac8d6e", "date": "2009-10-02"}}, {"pk": 450, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "f4693b4ded53b0b3d189", "date": "2009-10-02"}}, {"pk": 451, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "df9d94b13d98a976cc65", "date": "2009-10-02"}}, {"pk": 452, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "5c2a3a6457115b6eeda7", "date": "2009-10-02"}}, {"pk": 453, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "6c4664e481293423719a", "date": "2009-10-02"}}, {"pk": 454, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "5f7347f3109a3045852c", "date": "2009-10-02"}}, {"pk": 455, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "03569266e0fba3341de1", "date": "2009-10-02"}}, {"pk": 456, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "5b143f25b4a533a3112b", "date": "2009-10-02"}}, {"pk": 457, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "7124f2ddfb9409f7830b", "date": "2009-10-02"}}, {"pk": 458, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "330c1b045bb8969ed31f", "date": "2009-10-02"}}, {"pk": 459, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "aad631df8971d9a55034", "date": "2009-10-02"}}, {"pk": 460, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "7b6ab58acdf5e8dabb2f", "date": "2009-10-02"}}, {"pk": 461, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "4d770a8f87dd4482b44d", "date": "2009-10-02"}}, {"pk": 462, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "318f672ba41415e074e7", "date": "2009-10-02"}}, {"pk": 463, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "9cc75ed070e10265be2f", "date": "2009-10-02"}}, {"pk": 464, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "c4361341c8724d941688", "date": "2009-10-02"}}, {"pk": 466, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "406f3975b759c38e09e3", "date": "2009-10-02"}}, {"pk": 465, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "e1af9061380456beccc6", "date": "2009-10-02"}}, {"pk": 467, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "5301aa1a810e4df3a14b", "date": "2009-10-02"}}, {"pk": 468, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "c88a7fc8f26411d3cfab", "date": "2009-10-02"}}, {"pk": 469, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "d57fd66f548310ca5680", "date": "2009-10-02"}}, {"pk": 470, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "eb550440e0da10838690", "date": "2009-10-02"}}, {"pk": 471, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "98512f88a3ab27514407", "date": "2009-10-02"}}, {"pk": 472, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "b50018db12fed3106e00", "date": "2009-10-02"}}, {"pk": 473, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "5e3baa868b5ea6c1b753", "date": "2009-10-02"}}, {"pk": 474, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "3b66957293468264e64b", "date": "2009-10-02"}}, {"pk": 475, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "c7b01682c5e82e766ca7", "date": "2009-10-02"}}, {"pk": 548, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "706b3cf8cb925ce7f738", "date": "2009-10-03"}}, {"pk": 549, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "47e7a4f834d764173535", "date": "2009-10-03"}}, {"pk": 550, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "bff08cea1a1cdf438a11", "date": "2009-10-03"}}, {"pk": 551, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "5e0610939018eda7418e", "date": "2009-10-03"}}, {"pk": 552, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "cb6f7d79e11a5335f9e5", "date": "2009-10-03"}}, {"pk": 553, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "f47fceb1cad4756f57eb", "date": "2009-10-03"}}, {"pk": 554, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "3559a8c851321ede8059", "date": "2009-10-03"}}, {"pk": 555, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "d24bea6dcef6c3227bd5", "date": "2009-10-03"}}, {"pk": 556, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "1b59bf8c4d3e8e83a812", "date": "2009-10-03"}}, {"pk": 557, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "4c83a099812b3be9f63c", "date": "2009-10-03"}}, {"pk": 558, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "b9a5932dc04d7a797c68", "date": "2009-10-03"}}, {"pk": 559, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "217edb426cf795b65a90", "date": "2009-10-03"}}, {"pk": 560, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "d26b61b4d86d7a91b50a", "date": "2009-10-03"}}, {"pk": 561, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "5411304638b617e97f78", "date": "2009-10-03"}}, {"pk": 562, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "1bb89902187c6e357901", "date": "2009-10-03"}}, {"pk": 563, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "892fcc9106ee4276318c", "date": "2009-10-03"}}, {"pk": 564, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "c69fb002edcb7a0b0bc6", "date": "2009-10-03"}}, {"pk": 565, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "d70604ef786dacd3aec2", "date": "2009-10-03"}}, {"pk": 566, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "9d74f8bdb8f7dc4c20d0", "date": "2009-10-03"}}, {"pk": 567, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "f1cfc2d97c843c86e522", "date": "2009-10-03"}}, {"pk": 568, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "8fb89334946342471ed6", "date": "2009-10-03"}}, {"pk": 569, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "f39ac5e769b50cea805c", "date": "2009-10-03"}}, {"pk": 570, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "b0915398075bda5ddd7e", "date": "2009-10-03"}}, {"pk": 571, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "ee7834f6fa203e14d7a7", "date": "2009-10-03"}}, {"pk": 572, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "732318775b103c33267b", "date": "2009-10-03"}}, {"pk": 573, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "7f44ffc0fbedad9597d4", "date": "2009-10-03"}}, {"pk": 574, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "067a312a25de6630b60b", "date": "2009-10-03"}}, {"pk": 575, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "6128aeb6498d904ee444", "date": "2009-10-03"}}, {"pk": 576, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "f254ee810fb6a5fac83f", "date": "2009-10-03"}}, {"pk": 577, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "0a42d6a0116693dd7d63", "date": "2009-10-03"}}, {"pk": 578, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "3818b686f0cc38249e44", "date": "2009-10-03"}}, {"pk": 579, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "c2836e4c8547deca7548", "date": "2009-10-03"}}, {"pk": 580, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "96e54f5bfc9573ea6ccc", "date": "2009-10-03"}}, {"pk": 581, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "b48d47ebaf2e3b643d41", "date": "2009-10-03"}}, {"pk": 582, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "d8e357846118c246ddf8", "date": "2009-10-03"}}, {"pk": 583, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "409ee0956ca0a25ed73f", "date": "2009-10-03"}}, {"pk": 584, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "2d83d55638ed61b3274f", "date": "2009-10-03"}}, {"pk": 585, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "bcc003cb12f243778766", "date": "2009-10-03"}}, {"pk": 586, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "4e7d664a873eb1f79e5b", "date": "2009-10-03"}}, {"pk": 587, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "2c0560ad137f714403e9", "date": "2009-10-03"}}, {"pk": 588, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "2d7eef06ce48c72e2cf5", "date": "2009-10-03"}}, {"pk": 488, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "2b6a2aa50d971a064f75", "date": "2009-10-03"}}, {"pk": 489, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "8ea10a65182f4ef14235", "date": "2009-10-03"}}, {"pk": 490, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "bf2dbc1345753487f26f", "date": "2009-10-03"}}, {"pk": 491, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "8fe4c8daef530d91e3ee", "date": "2009-10-03"}}, {"pk": 492, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "8b61232857c413161dec", "date": "2009-10-03"}}, {"pk": 493, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "41bcd30923a0c4eaa6c6", "date": "2009-10-03"}}, {"pk": 494, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "380d831221fa1c1053e0", "date": "2009-10-03"}}, {"pk": 495, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "290448489a06c6a2dc62", "date": "2009-10-03"}}, {"pk": 496, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "b2b7f479224526498711", "date": "2009-10-03"}}, {"pk": 497, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "5acef8dd49f67fd7813c", "date": "2009-10-03"}}, {"pk": 498, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "d102de17f03a0ecbb49a", "date": "2009-10-03"}}, {"pk": 499, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "373d0d0c486f34983bcf", "date": "2009-10-03"}}, {"pk": 500, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "eaf5f03f3bc4da9f4133", "date": "2009-10-03"}}, {"pk": 501, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "a433a0c12c792fbc377d", "date": "2009-10-03"}}, {"pk": 502, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "8f0346a086e2ee6789f5", "date": "2009-10-03"}}, {"pk": 503, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "47087d774370f5616176", "date": "2009-10-03"}}, {"pk": 504, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "63eaba7ef2b4f5026252", "date": "2009-10-03"}}, {"pk": 505, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "f249e533899349a41184", "date": "2009-10-03"}}, {"pk": 506, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "88afda148a3ab0afe500", "date": "2009-10-03"}}, {"pk": 507, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "2e7bc2bb6411b8a3ded4", "date": "2009-10-03"}}, {"pk": 508, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "2c8925569c156812ae16", "date": "2009-10-03"}}, {"pk": 509, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "359d009d886fe75f62a6", "date": "2009-10-03"}}, {"pk": 510, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "e750a659b3f742c549ae", "date": "2009-10-03"}}, {"pk": 511, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "e56145f58713fa30a34e", "date": "2009-10-03"}}, {"pk": 512, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "46f251c27e82295f0036", "date": "2009-10-03"}}, {"pk": 513, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "54a51af242959f98dbd0", "date": "2009-10-03"}}, {"pk": 514, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "a43e4815ecd675506c13", "date": "2009-10-03"}}, {"pk": 515, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "bf5a5340148fd05b53fe", "date": "2009-10-03"}}, {"pk": 516, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "2a35e4498b87becd20b6", "date": "2009-10-03"}}, {"pk": 517, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "5e0dedbb11aaf989ae03", "date": "2009-10-03"}}, {"pk": 518, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "668c5601fecceca1ef84", "date": "2009-10-03"}}, {"pk": 519, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "15fae2368d27792e64b4", "date": "2009-10-03"}}, {"pk": 520, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "928fbf4d248be2381eb3", "date": "2009-10-03"}}, {"pk": 521, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "422a978b2ec700fb5a0c", "date": "2009-10-03"}}, {"pk": 522, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "07d5c1930e74a373f09b", "date": "2009-10-03"}}, {"pk": 523, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "77075935e8ec50806581", "date": "2009-10-03"}}, {"pk": 524, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "3e6bf6c89ba8a8b8b189", "date": "2009-10-03"}}, {"pk": 525, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "958334771de0497db07d", "date": "2009-10-03"}}, {"pk": 526, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "88236ceb8a3c144fe926", "date": "2009-10-03"}}, {"pk": 527, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "340b37135465fa21da64", "date": "2009-10-03"}}, {"pk": 528, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "5f4adc9193063728a509", "date": "2009-10-03"}}, {"pk": 529, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "a69116461ebe10ce0844", "date": "2009-10-03"}}, {"pk": 530, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "93682a5bf3307df0fa36", "date": "2009-10-03"}}, {"pk": 531, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "316891dc5a704829cbc2", "date": "2009-10-03"}}, {"pk": 532, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "369ffdf10ea374d7783b", "date": "2009-10-03"}}, {"pk": 533, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "194874d333e2fc7e3b43", "date": "2009-10-03"}}, {"pk": 534, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "19bb12738aee751c1c4c", "date": "2009-10-03"}}, {"pk": 535, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "88332415a4f36f808d1a", "date": "2009-10-03"}}, {"pk": 536, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "22406b002bd2a52bdfbb", "date": "2009-10-03"}}, {"pk": 537, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "b6b3e7e9e2fb4330e5bb", "date": "2009-10-03"}}, {"pk": 538, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "abe74cbe6c5846d500bc", "date": "2009-10-03"}}, {"pk": 539, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "30634855d051350adb3b", "date": "2009-10-03"}}, {"pk": 540, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "c761a2e8fc2e8ae31bd6", "date": "2009-10-03"}}, {"pk": 541, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "410cb324333e13a419c5", "date": "2009-10-03"}}, {"pk": 542, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "a3738482d3d437553fd6", "date": "2009-10-03"}}, {"pk": 543, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "ffb53813217429e2c027", "date": "2009-10-03"}}, {"pk": 544, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "b1532c0b2e529c09b97c", "date": "2009-10-03"}}, {"pk": 545, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "97b3af2b67396c5f59aa", "date": "2009-10-03"}}, {"pk": 546, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "8a639491783383b3b08d", "date": "2009-10-03"}}, {"pk": 547, "model": "therapyedge.visit", "fields": {"status": "m", "patient": 3, "visit_type": "", "clinic": 2, "te_visit_id": "d81324315f86e37aefba", "date": "2009-10-03"}}, {"pk": 1, "model": "therapyedge.visit", "fields": {"status": "s", "patient": 1, "visit_type": "", "clinic": 1, "te_visit_id": "01-123456789", "date": "2100-06-01"}}]
+[{
+    "pk": 1,
+    "model": "therapyedge.msisdn",
+    "fields": {
+        "msisdn": "27821111111"
+    }
+},
+{
+    "pk": 2,
+    "model": "therapyedge.msisdn",
+    "fields": {
+        "msisdn": "27822222222"
+    }
+},
+{
+    "pk": 1,
+    "model": "therapyedge.contact",
+    "fields": {
+        "msisdns": [1],
+        "active_msisdn": null
+    }
+},
+{
+    "pk": 2,
+    "model": "therapyedge.contact",
+    "fields": {
+        "msisdns": [2],
+        "active_msisdn": null
+    }
+},
+{
+    "pk": 3,
+    "model": "therapyedge.contact",
+    "fields": {
+        "msisdns": [],
+        "active_msisdn": 1
+    }
+},
+{
+    "pk": 1,
+    "model": "therapyedge.language",
+    "fields": {
+        "tomorrow_message": "See you at the clinic tomorrow morning.",
+        "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "name": "English",
+        "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."
+    }
+},
+{
+    "pk": 2,
+    "model": "therapyedge.language",
+    "fields": {
+        "tomorrow_message": "See you at the clinic tomorrow morning.",
+        "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "name": "Afrikaans",
+        "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."
+    }
+},
+{
+    "pk": 3,
+    "model": "therapyedge.language",
+    "fields": {
+        "tomorrow_message": "See you at the clinic tomorrow morning.",
+        "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "name": "Zulu",
+        "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."
+    }
+},
+{
+    "pk": 4,
+    "model": "therapyedge.language",
+    "fields": {
+        "tomorrow_message": "See you at the clinic tomorrow morning.",
+        "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "name": "Xhosa",
+        "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."
+    }
+},
+{
+    "pk": 5,
+    "model": "therapyedge.language",
+    "fields": {
+        "tomorrow_message": "See you at the clinic tomorrow morning.",
+        "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "name": "Ndebele",
+        "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."
+    }
+},
+{
+    "pk": 6,
+    "model": "therapyedge.language",
+    "fields": {
+        "tomorrow_message": "See you at the clinic tomorrow morning.",
+        "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "name": "Venda",
+        "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."
+    }
+},
+{
+    "pk": 7,
+    "model": "therapyedge.language",
+    "fields": {
+        "tomorrow_message": "See you at the clinic tomorrow morning.",
+        "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "name": "Swati",
+        "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."
+    }
+},
+{
+    "pk": 8,
+    "model": "therapyedge.language",
+    "fields": {
+        "tomorrow_message": "See you at the clinic tomorrow morning.",
+        "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "name": "Sesotho",
+        "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."
+    }
+},
+{
+    "pk": 9,
+    "model": "therapyedge.language",
+    "fields": {
+        "tomorrow_message": "See you at the clinic tomorrow morning.",
+        "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "name": "Sepedi",
+        "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."
+    }
+},
+{
+    "pk": 10,
+    "model": "therapyedge.language",
+    "fields": {
+        "tomorrow_message": "See you at the clinic tomorrow morning.",
+        "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "name": "Tsonga",
+        "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."
+    }
+},
+{
+    "pk": 11,
+    "model": "therapyedge.language",
+    "fields": {
+        "tomorrow_message": "See you at the clinic tomorrow morning.",
+        "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "twoweeks_message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "name": "Tswana",
+        "missed_message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm."
+    }
+},
+{
+    "pk": 2,
+    "model": "therapyedge.clinic",
+    "fields": {
+        "group": null,
+        "name": "Crosby",
+        "te_id": "25"
+    }
+},
+{
+    "pk": 1,
+    "model": "therapyedge.clinic",
+    "fields": {
+        "group": null,
+        "name": "Test Clinic",
+        "te_id": "01"
+    }
+},
+{
+    "pk": 1,
+    "model": "therapyedge.patient",
+    "fields": {
+		"id": 1,
+        "last_clinic": null,
+        "language": 1,
+        "age": 33,
+        "sex": "m",
+        "msisdns": [1],
+        "disclosed": true,
+        "risk_profile": null,
+        "te_id": "01-12345",
+        "opted_in": true,
+        "deceased": false
+    }
+},
+{
+    "pk": 2,
+    "model": "therapyedge.patient",
+    "fields": {
+		"id": 2,
+        "last_clinic": null,
+        "language": 1,
+        "age": 23,
+        "sex": "f",
+        "msisdns": [2],
+        "disclosed": true,
+        "risk_profile": null,
+        "te_id": "02-12345",
+        "opted_in": true,
+        "deceased": false
+    }
+},
+{
+    "pk": 3,
+    "model": "therapyedge.patient",
+    "fields": {
+		"id": 3,
+        "last_clinic": 2,
+        "language": 1,
+        "age": 29,
+        "sex": "m",
+        "msisdns": [],
+        "disclosed": false,
+        "risk_profile": 1.0,
+        "te_id": "1234567890",
+        "opted_in": false,
+        "deceased": false
+    }
+},
+{
+    "pk": 436,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "775bc5c30e27f0e56211",
+        "date": "2009-10-01"
+    }
+},
+{
+    "pk": 427,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "42468d2f1fcc8717b202",
+        "date": "2009-10-01"
+    }
+},
+{
+    "pk": 428,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "f6fdcd38c5c0640d8b33",
+        "date": "2009-10-01"
+    }
+},
+{
+    "pk": 429,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "aa6dd8e560f651e75728",
+        "date": "2009-10-01"
+    }
+},
+{
+    "pk": 430,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "5e8c3e16f49ade00e722",
+        "date": "2009-10-01"
+    }
+},
+{
+    "pk": 431,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "eaa3fabdb4c3b8a8b4fb",
+        "date": "2009-10-01"
+    }
+},
+{
+    "pk": 432,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "dab8a2cd269a25b6d317",
+        "date": "2009-10-01"
+    }
+},
+{
+    "pk": 433,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "78932e805393baff597b",
+        "date": "2009-10-01"
+    }
+},
+{
+    "pk": 434,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "21141c6833f8992620f3",
+        "date": "2009-10-01"
+    }
+},
+{
+    "pk": 435,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "4fb22738d9cb50fe9e1f",
+        "date": "2009-10-01"
+    }
+},
+{
+    "pk": 476,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "25f84108688e74b7144f",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 477,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "074cafa442a5a83d137a",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 478,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "7830184800cad0b2349c",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 479,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "2bcfa8738e33a812169b",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 480,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "f1cc0f7b261a29187819",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 481,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "9ffb6bc10b2fa2753656",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 482,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "bdf4910ce47145171e30",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 483,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "0127bc15ff9f59b4148c",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 484,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "df49cf29ac1015fe5977",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 485,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "016e4a60127fcd420582",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 486,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "40a24a353560755952c9",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 487,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "a9ab0de0b9d237ba2ca7",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 437,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "6c55a96f2559f5f8e52d",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 438,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "abbdf67c8cd955b4b178",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 439,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "c07182a567cfe67d0665",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 440,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "ac0a2b6c6d93bdb02c88",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 441,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "5b9df914debf388818cb",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 442,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "8e7f02f17a938e7636b6",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 443,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "8d52c9749ae6b94c7f1f",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 444,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "4fa56337cc4cadc17229",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 445,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "52c3f8fec1b53edf825d",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 446,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "d9a4852315d30980f99c",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 447,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "c85466f9fa0cb0740929",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 448,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "8c3c96a30eef2e87911c",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 449,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "995089904e032aac8d6e",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 450,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "f4693b4ded53b0b3d189",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 451,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "df9d94b13d98a976cc65",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 452,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "5c2a3a6457115b6eeda7",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 453,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "6c4664e481293423719a",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 454,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "5f7347f3109a3045852c",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 455,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "03569266e0fba3341de1",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 456,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "5b143f25b4a533a3112b",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 457,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "7124f2ddfb9409f7830b",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 458,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "330c1b045bb8969ed31f",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 459,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "aad631df8971d9a55034",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 460,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "7b6ab58acdf5e8dabb2f",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 461,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "4d770a8f87dd4482b44d",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 462,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "318f672ba41415e074e7",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 463,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "9cc75ed070e10265be2f",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 464,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "c4361341c8724d941688",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 466,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "406f3975b759c38e09e3",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 465,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "e1af9061380456beccc6",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 467,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "5301aa1a810e4df3a14b",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 468,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "c88a7fc8f26411d3cfab",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 469,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "d57fd66f548310ca5680",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 470,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "eb550440e0da10838690",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 471,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "98512f88a3ab27514407",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 472,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "b50018db12fed3106e00",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 473,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "5e3baa868b5ea6c1b753",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 474,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "3b66957293468264e64b",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 475,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "c7b01682c5e82e766ca7",
+        "date": "2009-10-02"
+    }
+},
+{
+    "pk": 548,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "706b3cf8cb925ce7f738",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 549,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "47e7a4f834d764173535",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 550,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "bff08cea1a1cdf438a11",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 551,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "5e0610939018eda7418e",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 552,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "cb6f7d79e11a5335f9e5",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 553,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "f47fceb1cad4756f57eb",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 554,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "3559a8c851321ede8059",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 555,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "d24bea6dcef6c3227bd5",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 556,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "1b59bf8c4d3e8e83a812",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 557,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "4c83a099812b3be9f63c",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 558,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "b9a5932dc04d7a797c68",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 559,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "217edb426cf795b65a90",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 560,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "d26b61b4d86d7a91b50a",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 561,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "5411304638b617e97f78",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 562,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "1bb89902187c6e357901",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 563,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "892fcc9106ee4276318c",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 564,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "c69fb002edcb7a0b0bc6",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 565,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "d70604ef786dacd3aec2",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 566,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "9d74f8bdb8f7dc4c20d0",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 567,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "f1cfc2d97c843c86e522",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 568,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "8fb89334946342471ed6",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 569,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "f39ac5e769b50cea805c",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 570,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "b0915398075bda5ddd7e",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 571,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "ee7834f6fa203e14d7a7",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 572,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "732318775b103c33267b",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 573,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "7f44ffc0fbedad9597d4",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 574,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "067a312a25de6630b60b",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 575,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "6128aeb6498d904ee444",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 576,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "f254ee810fb6a5fac83f",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 577,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "0a42d6a0116693dd7d63",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 578,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "3818b686f0cc38249e44",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 579,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "c2836e4c8547deca7548",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 580,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "96e54f5bfc9573ea6ccc",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 581,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "b48d47ebaf2e3b643d41",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 582,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "d8e357846118c246ddf8",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 583,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "409ee0956ca0a25ed73f",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 584,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "2d83d55638ed61b3274f",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 585,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "bcc003cb12f243778766",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 586,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "4e7d664a873eb1f79e5b",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 587,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "2c0560ad137f714403e9",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 588,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "2d7eef06ce48c72e2cf5",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 488,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "2b6a2aa50d971a064f75",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 489,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "8ea10a65182f4ef14235",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 490,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "bf2dbc1345753487f26f",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 491,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "8fe4c8daef530d91e3ee",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 492,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "8b61232857c413161dec",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 493,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "41bcd30923a0c4eaa6c6",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 494,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "380d831221fa1c1053e0",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 495,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "290448489a06c6a2dc62",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 496,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "b2b7f479224526498711",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 497,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "5acef8dd49f67fd7813c",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 498,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "d102de17f03a0ecbb49a",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 499,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "373d0d0c486f34983bcf",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 500,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "eaf5f03f3bc4da9f4133",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 501,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "a433a0c12c792fbc377d",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 502,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "8f0346a086e2ee6789f5",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 503,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "47087d774370f5616176",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 504,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "63eaba7ef2b4f5026252",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 505,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "f249e533899349a41184",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 506,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "88afda148a3ab0afe500",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 507,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "2e7bc2bb6411b8a3ded4",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 508,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "2c8925569c156812ae16",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 509,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "359d009d886fe75f62a6",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 510,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "e750a659b3f742c549ae",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 511,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "e56145f58713fa30a34e",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 512,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "46f251c27e82295f0036",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 513,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "54a51af242959f98dbd0",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 514,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "a43e4815ecd675506c13",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 515,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "bf5a5340148fd05b53fe",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 516,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "2a35e4498b87becd20b6",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 517,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "5e0dedbb11aaf989ae03",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 518,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "668c5601fecceca1ef84",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 519,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "15fae2368d27792e64b4",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 520,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "928fbf4d248be2381eb3",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 521,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "422a978b2ec700fb5a0c",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 522,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "07d5c1930e74a373f09b",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 523,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "77075935e8ec50806581",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 524,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "3e6bf6c89ba8a8b8b189",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 525,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "958334771de0497db07d",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 526,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "88236ceb8a3c144fe926",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 527,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "340b37135465fa21da64",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 528,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "5f4adc9193063728a509",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 529,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "a69116461ebe10ce0844",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 530,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "93682a5bf3307df0fa36",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 531,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "316891dc5a704829cbc2",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 532,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "369ffdf10ea374d7783b",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 533,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "194874d333e2fc7e3b43",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 534,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "19bb12738aee751c1c4c",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 535,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "88332415a4f36f808d1a",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 536,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "22406b002bd2a52bdfbb",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 537,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "b6b3e7e9e2fb4330e5bb",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 538,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "abe74cbe6c5846d500bc",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 539,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "30634855d051350adb3b",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 540,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "c761a2e8fc2e8ae31bd6",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 541,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "410cb324333e13a419c5",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 542,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "a3738482d3d437553fd6",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 543,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "ffb53813217429e2c027",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 544,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "b1532c0b2e529c09b97c",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 545,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "97b3af2b67396c5f59aa",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 546,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "8a639491783383b3b08d",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 547,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "m",
+        "patient": 3,
+        "visit_type": "",
+        "clinic": 2,
+        "te_visit_id": "d81324315f86e37aefba",
+        "date": "2009-10-03"
+    }
+},
+{
+    "pk": 1,
+    "model": "therapyedge.visit",
+    "fields": {
+        "status": "s",
+        "patient": 1,
+        "visit_type": "",
+        "clinic": 1,
+        "te_visit_id": "01-123456789",
+        "date": "2100-06-01"
+    }
+}]
