@@ -21,7 +21,7 @@ from django.core import mail
 
 from general.settings.models import Setting
 from mobile.sms.models import SMSSendAction
-from models import Visit, VisitEvent
+from models import Visit #, VisitEvent
 
 
 REMINDERS_EMAIL_TEXT = \

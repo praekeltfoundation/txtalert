@@ -1,4 +1,4 @@
-from therapyedge.models import PleaseCallMe, MSISDN
+from therapyedge.models import PleaseCallMe, MSISDN, Visit
 from gateway import gateway
 from datetime import datetime
 from django.db.models import Q
@@ -46,12 +46,12 @@ def calculate_risk_profile(visit):
     # FIXME, the main argument should be the Patient not the Visit, this method
     #        is being too clever
     patient = visit.patient
-    if patient.visits.count() == 0:
+    if patient.visit_set.count() == 0:
         patient.last_clinic = visit.clinic
     else:
         patient.last_clinic = patient.get_last_clinic()
-        missed_visits = patient.visits.filter(Q(status='m') | Q(events__status='m')).distinct().count()
-        attended_visits = patient.visits.filter(Q(status='a') | Q(events__status='a')).distinct().count()
+        missed_visits = Visit.history.filter(patient=patient, status='m').count()
+        attended_visits = Visit.history.filter(patient=patient, status='a').count()
         total_visits = missed_visits + attended_visits
         if total_visits == 0:
             patient.risk_profile = 0

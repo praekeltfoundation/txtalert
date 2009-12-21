@@ -99,7 +99,7 @@ class Patient(DirtyFieldsMixin,models.Model):
     risk_profile = models.FloatField('Risk Profile', blank=True, null=True)
     language = models.ForeignKey(Language, verbose_name='Language', default=1)
     
-    # audit trail fields
+    # soft delete & modification audit trail methods
     deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -141,11 +141,13 @@ class Patient(DirtyFieldsMixin,models.Model):
             self.deleted = True
             self.save()
     
+    def clinics(self):
+        return [visit.clinic for visit in self.visit_set.order_by('-date')]
+    
     def get_last_clinic(self):
-        if self.visits.count():
-            return self.visits.latest('date').clinic
-        else:
-            return None
+        if self.visit_set.count(): 
+            return self.visit_set.latest('date').clinic
+        return None
     
 
 class Visit(models.Model):
@@ -157,12 +159,16 @@ class Visit(models.Model):
         ('pediatric', 'Pediatric'),
     )
     
-    patient = models.ForeignKey(Patient, related_name='visits')
+    patient = models.ForeignKey(Patient)
     te_visit_id = models.CharField('TE Visit id', max_length=20, unique=True, null=True)
     date = models.DateField('Date')
     status = models.CharField('Status', max_length=1, choices=VISIT_STATUS_CHOICES)
-    clinic = models.ForeignKey(Clinic, verbose_name='Clinic', related_name='visits')
+    comment = models.TextField('Reason', default='')
+    clinic = models.ForeignKey(Clinic)
     visit_type = models.CharField('Visit Type', blank=True, max_length=80, choices=VISIT_TYPES)
+    
+    # keep track of Visit changes over time
+    history = HistoricalRecords()
     
     class Meta:
         verbose_name = 'Visit'
@@ -174,19 +180,19 @@ class Visit(models.Model):
     
 
 
-class VisitEvent(models.Model):
-    visit = models.ForeignKey(Visit, related_name='events')
-    date = models.DateField('Date')
-    status = models.CharField('Status', max_length=1, choices=VISIT_STATUS_CHOICES, default='s')
-    reason = models.TextField('Reason', default='')
-
-    class Meta:
-        verbose_name = 'Visit Event'
-        verbose_name_plural = 'Visit Events'
-        ordering = ['date']
-
-    def __unicode__(self):
-        return '%s (%s)' % (self.visit, self.status)
+# class VisitEvent(models.Model):
+#     visit = models.ForeignKey(Visit, related_name='events')
+#     date = models.DateField('Date')
+#     status = models.CharField('Status', max_length=1, choices=VISIT_STATUS_CHOICES, default='s')
+#     reason = models.TextField('Reason', default='')
+# 
+#     class Meta:
+#         verbose_name = 'Visit Event'
+#         verbose_name_plural = 'Visit Events'
+#         ordering = ['date']
+# 
+#     def __unicode__(self):
+#         return '%s (%s)' % (self.visit, self.status)
 
 
 class ImportEvent(models.Model):
@@ -248,4 +254,4 @@ pre_save.connect(signals.find_clinic_for_please_call_me_handler, sender=PleaseCa
 
 post_save.connect(signals.track_please_call_me_handler, sender=OperaPleaseCallMe)
 post_save.connect(signals.calculate_risk_profile_handler, sender=Visit)
-post_save.connect(signals.update_visit_status_handler, sender=VisitEvent)
+# post_save.connect(signals.update_visit_status_handler, sender=VisitEvent)
