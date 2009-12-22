@@ -124,7 +124,7 @@ def two_weeks(gateway, visits, today):
 def attended(gateway, visits, today):
     # send reminders to patients who attended their visits
     yesterday = today - timedelta(days=1)
-    attended_yesterday = visits.filter(events__status__exact='a', \
+    attended_yesterday = visits.filter(status__exact='a', \
                                         date__exact=yesterday).select_related()
     return send_messages(
         gateway,
@@ -136,7 +136,7 @@ def attended(gateway, visits, today):
 def missed(gateway, visits, today):
     # send reminders to patients who missed their visits
     yesterday = today - timedelta(days=1)
-    missed_yesterday = visits.filter(events__status__exact='m', \
+    missed_yesterday = visits.filter(status__exact='m', \
                                         date__exact=yesterday).select_related()
     return send_messages(
         gateway,

@@ -102,48 +102,52 @@ class VisitImportTestCase(TestCase):
 
     def testIndicateReschedule(self):
         # reschedule an visit
-        event = importMissedVisit(self.event, self.clinic, {'key_id':'01-123456789', 'te_id':'01-12345', 'missed_date':'2100-05-01 00:00:00'})
+        event = importMissedVisit(self.event, self.clinic, {
+            'key_id':'01-123456789', 
+            'te_id':'01-12345', 
+            'missed_date':'2100-05-01 00:00:00' # future date should be seen as a reschedule
+        })
         self.assertEqual(event.type, 'update')
         visit = models.Visit.objects.get(te_visit_id='01-123456789')
-        event = visit.events.all()[0]
-        self.assertEquals(event.status, 'r')
-        self.assertEquals(event.date, datetime(2100, 5, 1).date())
+        self.assertEquals(visit.status, 'r')
+        self.assertEquals(visit.date, datetime(2100, 5, 1).date())
 
     def testIndicateMissed(self):
         # indicate a missed visit
         event = importMissedVisit(self.event, self.clinic, {'key_id':'01-123456789', 'te_id':'01-12345', 'missed_date':'2100-06-01 00:00:00'})
         self.assertEqual(event.type, 'update')
         visit = models.Visit.objects.get(te_visit_id='01-123456789')
-        event = visit.events.all()[0]
-        self.assertEquals(event.status, 'm')
-        self.assertEquals(event.date, datetime(2100, 6, 1).date())
+        self.assertEquals(visit.status, 'm')
+        self.assertEquals(visit.date, datetime(2100, 6, 1).date())
 
     def testIndicateAttended(self):
         # indicate a attended visit
         event = importDoneVisit(self.event, self.clinic, {'key_id':'01-123456789', 'te_id':'01-12345', 'done_date':'2100-07-01 00:00:00'})
         self.assertEqual(event.type, 'update')
         visit = models.Visit.objects.get(te_visit_id='01-123456789')
-        event = visit.events.all()[0]
-        self.assertEquals(event.status, 'a')
-        self.assertEquals(event.date, datetime(2100, 7, 1).date())
+        self.assertEquals(visit.status, 'a')
+        self.assertEquals(visit.date, datetime(2100, 7, 1).date())
 
     def testIndicateNewAttended(self):
         # indicate a new attended visit
         event = importDoneVisit(self.event, self.clinic, {'key_id':'02-123456789', 'te_id':'01-12345', 'done_date':'2100-07-01 00:00:00'})
         self.assertEqual(event.type, 'new')
         visit = models.Visit.objects.get(te_visit_id='02-123456789')
-        event = visit.events.all()[0]
-        self.assertEquals(event.status, 'a')
-        self.assertEquals(event.date, datetime(2100, 7, 1).date())
+        self.assertEquals(visit.status, 'a')
+        self.assertEquals(visit.date, datetime(2100, 7, 1).date())
 
     def testIndicateNewMissed(self):
         # indicate a new attended visit
-        event = importMissedVisit(self.event, self.clinic, {'key_id':'02-123456789', 'te_id':'01-12345', 'missed_date':'2100-07-01 00:00:00'})
+        yesterday = datetime.now() - timedelta(days=1)
+        event = importMissedVisit(self.event, self.clinic, {
+            'key_id':'02-123456789', 
+            'te_id':'01-12345', 
+            'missed_date': yesterday.strftime('%Y-%m-%d 00:00:00')
+        })
         self.assertEqual(event.type, 'new')
         visit = models.Visit.objects.get(te_visit_id='02-123456789')
-        event = visit.events.all()[0]
-        self.assertEquals(event.status, 'm')
-        self.assertEquals(event.date, datetime(2100, 7, 1).date())
+        self.assertEquals(visit.status, 'm')
+        self.assertEquals(visit.date, yesterday.date())
 
     def testDelete(self):
         # delete an visit
@@ -164,14 +168,17 @@ class PatientRiskProfileTestCase(TestCase):
         return models.Patient.objects.get(pk=self.patient.id)
 
     def test_risk_profile_calculation(self):
+        today = datetime.now() - timedelta(days=1)
         event = importMissedVisit(self.event, self.clinic, {
             'key_id':'02-123456789', 
             'te_id':self.patient.te_id, 
-            'missed_date':'2100-07-01 00:00:00'
+            'missed_date': today.strftime('%Y-%m-%d 00:00:00')
         })
         self.assertEquals(self.reload_patient().risk_profile, 1.0)
     
     def test_risk_profile_incremental_calculation(self):
+        yesterday = datetime.now() - timedelta(days=1)
+        two_days_ago = yesterday - timedelta(days=1)
         importDoneVisit(self.event, self.clinic, {
             'key_id':'02-123456701', 
             'te_id':self.patient.te_id, 
@@ -186,12 +193,12 @@ class PatientRiskProfileTestCase(TestCase):
         importMissedVisit(self.event, self.clinic, {
             'key_id':'02-123456703', 
             'te_id':self.patient.te_id, 
-            'missed_date':'2100-07-03 00:00:00'
+            'missed_date': yesterday.strftime('%Y-%m-%d 00:00:00')
         })
         self.assertAlmostEquals(self.reload_patient().risk_profile, 0.33, places=2)
         importMissedVisit(self.event, self.clinic, {
             'key_id':'02-123456704', 
             'te_id':self.patient.te_id, 
-            'missed_date':'2100-07-04 00:00:00'
+            'missed_date': two_days_ago.strftime('%Y-%m-%d 00:00:00')
         })
         self.assertAlmostEquals(self.reload_patient().risk_profile, 0.50, places=2)

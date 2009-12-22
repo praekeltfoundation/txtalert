@@ -166,28 +166,31 @@ class Importer(object):
                         te_visit_id=visit.key_id,
                         clinic=clinic,
                         patient=patient,
-                        date=missed_date
+                        date=missed_date,
+                        status='m' # m is for missed
                     )
                     logger.debug('Creating new Visit: %s' % local_visit.id)
-                
-                # if it is in the future it couldn't possible have been missed
-                # not sure why the original import has this
-                if missed_date > datetime.now().date():
-                    raise VisitException, 'tried to mark a future visit as missed'
-                
-                # if the missed date is still before the scheduled date
-                # consider it a reschedule of the date
-                if missed_date < local_visit.date:
-                    status = 'r'
                 else:
-                    status = 'm'
+                    # if it is in the future it couldn't possible have been missed
+                    # not sure why the original import has this
+                    if missed_date > datetime.now().date():
+                        raise VisitException, 'tried to mark a future visit as missed'
                 
-                logger.debug('Creating event for Visit:%s, date: %s, status: %s' % (
-                    local_visit.id,
-                    missed_date,
-                    status
-                ))
-                local_visit.events.create(date=missed_date, status=status)
+                    # if the missed date is still before the scheduled date
+                    # consider it a reschedule of the date
+                    if missed_date < local_visit.date:
+                        status = 'r'
+                    else:
+                        status = 'm'
+                
+                    logger.debug('Updating Visit:%s, date: %s, status: %s' % (
+                        local_visit.id,
+                        missed_date,
+                        status
+                    ))
+                    local_visit.date = missed_date
+                    local_visit.status = status
+                    local_visit.save()
                 
                 yield local_visit
             except IntegrityError, e:
@@ -222,19 +225,32 @@ class Importer(object):
                         te_visit_id=visit.key_id,
                         clinic=clinic,
                         patient=patient,
-                        date=scheduled_date
+                        date=scheduled_date,
+                        status='s', # s for scheduled, for some reason we don't
+                                    # have this visit registered, even though it
+                                    # is done, do as if we already had it and
+                                    # save it twice
                     )
-                    logger.debug('Creating new done Visit: %s' % local_visit.id)
                     
-                # done events we flag as a for 'attended', not sure why the orignal
-                # import script did a get_or_create here. Maybe an error or 
-                # maybe the TherapyEdge data is *really* wonky
-                logger.debug('Creating event for Visit:%s, date: %s, status: %s' % (
-                    local_visit.id,
-                    done_date,
-                    'a'
-                ))
-                local_visit.events.get_or_create(date=done_date, status='a')
+                    # save again, now with 'attended' status and the done date
+                    local_visit.date = done_date
+                    local_visit.status = 'a'
+                    local_visit.save()
+                    
+                    logger.debug('Creating new done Visit: %s' % local_visit.id)
+                
+                else:
+                    # done events we flag as a for 'attended', not sure why the orignal
+                    # import script did a get_or_create here. Maybe an error or 
+                    # maybe the TherapyEdge data is *really* wonky
+                    logger.debug('Updating Visit: %s, date: %s, status: %s' % (
+                        local_visit.id,
+                        done_date,
+                        'a'
+                    ))
+                    local_visit.date = done_date
+                    local_visit.status = 'a'
+                    local_visit.save()
                 
                 yield local_visit
             except IntegrityError, e:

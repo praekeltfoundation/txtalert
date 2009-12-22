@@ -16,7 +16,7 @@
 
 import re, errno, socket, time
 from xmlrpclib import ServerProxy, Error, ProtocolError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import logging
 
 from django.core import mail
@@ -240,12 +240,16 @@ def importComingVisit(event, clinic, record):
             visit = models.Visit.objects.get(te_visit_id=visit_id)
             if visit.date != date:
                 visit.date = date
+                visit.status = 's'
+                visit.save()
                 event.append("Visit '%s' had it's scheduled date updated." % (visit_id), 'update')
-                models.VisitEvent.objects.create(visit=visit, date=date, status='s')
         except ObjectDoesNotExist:
-            visit = models.Visit.objects.create(te_visit_id=visit_id, clinic=clinic, patient=patient, date=date)
+            visit = models.Visit.objects.create(te_visit_id=visit_id, 
+                                                clinic=clinic, 
+                                                patient=patient, 
+                                                date=date,
+                                                status='s')
             event.append("New visit with id '%s' created." % (visit_id), 'new')
-            models.VisitEvent.objects.create(visit=visit, date=date, status='s')
     return event
 
 
@@ -255,12 +259,21 @@ def importMissedVisit(event, clinic, record):
         patient = getPatient(patient_id, visit_id)
         try:
             visit = models.Visit.objects.get(te_visit_id=visit_id)
+            # if the new date is earlier than the existing date treat it as a 
+            # reschedule, otherwise a missed visit
+            visit.status = ('r' if date < visit.date else 'm') 
+            visit.date = date
+            visit.save()
+            
             event.append("Visit '%s' had it's status updated." % (visit_id), 'update')
         except ObjectDoesNotExist:
-            visit = models.Visit.objects.create(te_visit_id=visit_id, clinic=clinic, patient=patient, date=date)
+            visit = models.Visit.objects.create(te_visit_id=visit_id, 
+                                                clinic=clinic, 
+                                                patient=patient, 
+                                                date=date,
+                                                status='m'
+                                            )
             event.append("New visit with id '%s' created." % (visit_id), 'new')
-        status = 'r' if date < visit.date else 'm'
-        models.VisitEvent.objects.create(visit=visit, date=date, status=status)
     return event
 
 
@@ -270,11 +283,18 @@ def importDoneVisit(event, clinic, record):
         patient = getPatient(patient_id, visit_id)
         try:
             visit = models.Visit.objects.get(te_visit_id=visit_id)
+            visit.date = date
+            visit.status = 'a'
+            visit.save()
+            
             event.append("Visit '%s' was updated." % (visit_id), 'update')
         except ObjectDoesNotExist:
-            visit = models.Visit.objects.create(te_visit_id=visit_id, clinic=clinic, patient=patient, date=date)
+            visit = models.Visit.objects.create(te_visit_id=visit_id, 
+                                                clinic=clinic, 
+                                                patient=patient, 
+                                                date=date,
+                                                status='a')
             event.append("New visit with id '%s' created." % (visit_id), 'new')
-        models.VisitEvent.objects.get_or_create(visit=visit, date=date, status='a')
     return event
 
 

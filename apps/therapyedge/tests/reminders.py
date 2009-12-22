@@ -28,11 +28,16 @@ class RemindersI18NTestCase(TestCase):
             'clinic': kwargs.get('clinic', self.clinic),
             'visit_type': kwargs.get('visit_type', 'arv'),
         }
-        return [self.patient.visits.create(**args) for idx in \
+        return [self.patient.visit_set.create(**args) for idx in \
                                             range(0, kwargs.get('amount',1))]
     
     def mark_visits(self, visits, date, status):
-        return [v.events.create(date=date,status=status) for v in visits]
+        def update_attributes(visit):
+            visit.date = date
+            visit.status = status
+            visit.save()
+            return visit
+        return map(update_attributes, visits)
     
     def calculate_date(self,**kwargs):
         return datetime.now().date() + timedelta(**kwargs)
