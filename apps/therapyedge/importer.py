@@ -134,7 +134,7 @@ class Importer(object):
                         # not sure why the original version of the import script
                         # only updates the date and not the status
                         local_visit.date = scheduled_date
-                        local_visit.events.create(date=scheduled_date, status='s')
+                        local_visit.status = 's'
                         local_visit.save()
                 
                 yield local_visit
