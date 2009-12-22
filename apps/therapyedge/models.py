@@ -254,4 +254,3 @@ pre_save.connect(signals.find_clinic_for_please_call_me_handler, sender=PleaseCa
 
 post_save.connect(signals.track_please_call_me_handler, sender=OperaPleaseCallMe)
 post_save.connect(signals.calculate_risk_profile_handler, sender=Visit)
-# post_save.connect(signals.update_visit_status_handler, sender=VisitEvent)

@@ -83,14 +83,4 @@ def find_clinic_for_please_call_me(pcm):
         pcm.clinic = patient.get_last_clinic()
 
 
-def update_visit_status_handler(sender, **kwargs):
-    return update_visit_status(kwargs['instance'])
-
-def update_visit_status(visit_event):
-    # Fixme: magical slicing, unclear what's going on
-    visit = visit_event.visit
-    if visit_event.date == visit.events.order_by('-date')[:1][0].date:
-        visit.status = visit_event.status
-        visit.save()
-
     

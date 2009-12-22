@@ -24,8 +24,8 @@ def suggest(request):
         else:
             bp = BookingPatient.objects.get(pk=request.GET['patient_id'])
             treatment_cycle = int(request.GET.get('treatment_cycle',None) or bp.treatment_cycle)
-            if bp.visits.count():
-                last_visit = bp.visits.latest('date')
+            if bp.visit_set.count():
+                last_visit = bp.visit_set.latest('date')
                 # take last visit & calculate treatment_cycle amount of months forward
                 suggestion = last_visit.date + timedelta(treatment_cycle * 365 / 12)
             else:

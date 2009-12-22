@@ -64,8 +64,8 @@ def patient_import(request):
 @staff_member_required
 def patient_riskcalc(request):
     for patient in Patient.objects.all():
-        if patient.visits.count() > 0:
-            patient.risk_factor = float(patient.visits.filter(status='m').count()) / patient.visits.count()
+        if patient.visit_set.count() > 0:
+            patient.risk_factor = float(patient.visit_set.filter(status='m').count()) / patient.visit_set.count()
             patient.save()
 
     return render_to_response('admin/therapyedge/fake_base.html', {
