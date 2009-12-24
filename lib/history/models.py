@@ -85,6 +85,7 @@ class HistoricalRecords(object):
         """
         return {
             'ordering': ('-history_date',),
+            'get_latest_by': 'history_date'
         }
 
     def post_save(self, instance, created, **kwargs):

@@ -1,59 +1,11 @@
 from django.test import TestCase
-from collections import namedtuple
 from therapyedge.importer import Importer, SEX_MAP
 from therapyedge.models import Patient, MSISDN, Visit, Clinic
+from therapyedge.tests.utils import (PatientUpdate, ComingVisit, MissedVisit,
+                                        DoneVisit, DeletedVisit)
 from datetime import datetime, timedelta
 import random
 import iso8601
-
-# These classes are generated on the fly by the client, the client has
-# a call to class name map and reads the attribute names from the dict
-# returned by TherapyEdge's XML-RPC service
-PatientUpdate = namedtuple('PatientUpdate', [
-    'dr_site_name', 
-    'dr_site_id', 
-    'age', 
-    'sex', 
-    'celphone',  # TherapyEdge's typo
-    'dr_status', 
-    'te_id'
-])
-
-ComingVisit = namedtuple('ComingVisit', [
-    'dr_site_name',
-    'dr_site_id',
-    'dr_status',
-    'scheduled_visit_date',
-    'key_id',
-    'te_id'
-])
-
-MissedVisit = namedtuple('MissedVisit', [
-    'dr_site_name',
-    'dr_site_id',
-    'missed_date', 
-    'dr_status', 
-    'key_id', 
-    'te_id'
-])
-
-DoneVisit = namedtuple('DoneVisit', [
-    'done_date', 
-    'dr_site_id', 
-    'dr_status', 
-    'dr_site_name', 
-    'scheduled_date', 
-    'key_id', 
-    'te_id'
-])
-
-DeletedVisit = namedtuple('DeletedVisit', [
-    'key_id',
-    'dr_status',
-    'dr_site_id',
-    'te_id',
-    'dr_site_name'
-])
 
 class ImporterTestCase(TestCase):
     """Testing the TherapyEdge import loop"""
@@ -75,9 +27,9 @@ class ImporterTestCase(TestCase):
         data = [(
             '',                                 # dr_site_id
             '',                                 # dr_site_name
-            idx,                                # age
+            '%s' % idx,                         # age, as string
             random.choice(SEX_MAP.keys()),      # sex
-            '27012345678%s' % idx,              # celphone
+            '2712345678%s' % idx,              # celphone
             random.choice(('true','false')),    # dr_status
             '02-7012%s' % idx                   # te_id
         ) for idx in range(0,10)]
@@ -93,7 +45,7 @@ class ImporterTestCase(TestCase):
             self.assertTrue(msisdn in local_patient.msisdns.all())
             
             # check for age
-            self.assertEquals(local_patient.age, updated_patient.age)
+            self.assertEquals(local_patient.age, int(updated_patient.age))
             
             # check for sex
             self.assertEquals(local_patient.sex, SEX_MAP[updated_patient.sex])

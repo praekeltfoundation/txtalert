@@ -54,7 +54,8 @@ class Language(models.Model):
 class Clinic(models.Model):
     te_id = models.CharField('TE ID', max_length=2, unique=True)
     name = models.CharField('Name', max_length=100)
-    group = models.ForeignKey(Group, related_name='clinic', blank=True, null=True)
+    group = models.ForeignKey(Group, related_name='clinic', blank=True, 
+                                null=True)
     
     class Meta:
         verbose_name = 'Clinic'
@@ -88,14 +89,16 @@ class Patient(DirtyFieldsMixin,models.Model):
     
     te_id = models.CharField('MRS ID', max_length=10, unique=True)
     msisdns = models.ManyToManyField(MSISDN, related_name='contacts')
-    active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', null=True, blank=True)
+    active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', 
+                                        null=True, blank=True)
     
     age = models.IntegerField('Age')
     sex = models.CharField('Sex', max_length=3, choices=SEX_CHOICES)
     opted_in = models.BooleanField('Opted In', default=False)
     disclosed = models.BooleanField('Disclosed', default=False)
     deceased = models.BooleanField('Deceased', default=False)
-    last_clinic = models.ForeignKey(Clinic, verbose_name='Last Clinic', blank=True, null=True)
+    last_clinic = models.ForeignKey(Clinic, verbose_name='Last Clinic', 
+                                        blank=True, null=True)
     risk_profile = models.FloatField('Risk Profile', blank=True, null=True)
     language = models.ForeignKey(Language, verbose_name='Language', default=1)
     
@@ -160,12 +163,15 @@ class Visit(models.Model):
     )
     
     patient = models.ForeignKey(Patient)
-    te_visit_id = models.CharField('TE Visit id', max_length=20, unique=True, null=True)
+    te_visit_id = models.CharField('TE Visit id', max_length=20, unique=True,
+                                    null=True)
     date = models.DateField('Date')
-    status = models.CharField('Status', max_length=1, choices=VISIT_STATUS_CHOICES)
+    status = models.CharField('Status', max_length=1, 
+                                choices=VISIT_STATUS_CHOICES)
     comment = models.TextField('Reason', default='')
     clinic = models.ForeignKey(Clinic)
-    visit_type = models.CharField('Visit Type', blank=True, max_length=80, choices=VISIT_TYPES)
+    visit_type = models.CharField('Visit Type', blank=True, max_length=80, 
+                                    choices=VISIT_TYPES)
     
     # keep track of Visit changes over time
     history = HistoricalRecords()
@@ -180,42 +186,27 @@ class Visit(models.Model):
     
 
 
-# class VisitEvent(models.Model):
-#     visit = models.ForeignKey(Visit, related_name='events')
-#     date = models.DateField('Date')
-#     status = models.CharField('Status', max_length=1, choices=VISIT_STATUS_CHOICES, default='s')
-#     reason = models.TextField('Reason', default='')
+# class ImportEvent(models.Model):
+#     content_type = models.ForeignKey(ContentType)
+#     clinic = models.ForeignKey(Clinic, related_name='importevents')
+#     stamp = models.DateTimeField('Date & Time', auto_now_add=True)
+#     new = models.IntegerField('New Records')
+#     updated = models.IntegerField('Updated Records')
+#     errors = models.IntegerField('Errors')
+# 
+#     def __init__(self, *args, **kwargs):
+#         if 'events' in kwargs.keys():
+#             events = kwargs['events']
+#             del kwargs['events']
+#             kwargs.update({'new':events.new, 'updated':events.updated, 'errors':events.errors})
+#         super(ImportEvent, self).__init__(*args, **kwargs)
 # 
 #     class Meta:
-#         verbose_name = 'Visit Event'
-#         verbose_name_plural = 'Visit Events'
-#         ordering = ['date']
+#         verbose_name = 'Import Event'
+#         verbose_name_plural = 'Import Events'
 # 
 #     def __unicode__(self):
-#         return '%s (%s)' % (self.visit, self.status)
-
-
-class ImportEvent(models.Model):
-    content_type = models.ForeignKey(ContentType)
-    clinic = models.ForeignKey(Clinic, related_name='importevents')
-    stamp = models.DateTimeField('Date & Time', auto_now_add=True)
-    new = models.IntegerField('New Records')
-    updated = models.IntegerField('Updated Records')
-    errors = models.IntegerField('Errors')
-
-    def __init__(self, *args, **kwargs):
-        if 'events' in kwargs.keys():
-            events = kwargs['events']
-            del kwargs['events']
-            kwargs.update({'new':events.new, 'updated':events.updated, 'errors':events.errors})
-        super(ImportEvent, self).__init__(*args, **kwargs)
-
-    class Meta:
-        verbose_name = 'Import Event'
-        verbose_name_plural = 'Import Events'
-
-    def __unicode__(self):
-        return '%s - New: %s, Updated: %s, Errors: %s' % (self.stamp, self.new, self.updated, self.errors)
+#         return '%s - New: %s, Updated: %s, Errors: %s' % (self.stamp, self.new, self.updated, self.errors)
 
 
 class PleaseCallMe(models.Model):
