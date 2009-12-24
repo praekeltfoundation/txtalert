@@ -14,7 +14,7 @@
 #  along with TxtAlert.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from django.test import TestCase
 from therapyedge.models import *
 from therapyedge.importer import Importer, InvalidValueException
@@ -200,7 +200,7 @@ class VisitImportTestCase(TestCase):
         self.assertEquals(visit.te_visit_id, '02-123456789')
         self.assertEquals(visit.patient.te_id, '01-12345')
         self.assertEquals(visit.date, date(2100, 6, 1))
-
+    
     def testIndicateReschedule(self):
         """reschedule a visit"""
         visit = self.importer.update_local_missed_visit(
@@ -216,94 +216,151 @@ class VisitImportTestCase(TestCase):
                             'Changed')
         self.assertEquals(visit.status, 'r')
         self.assertEquals(visit.date, date(2100, 5, 1))
-
+    
     def testIndicateMissed(self):
-        # indicate a missed visit
-        event = importMissedVisit(self.event, self.clinic, {'key_id':'01-123456789', 'te_id':'01-12345', 'missed_date':'2100-06-01 00:00:00'})
-        self.assertEqual(event.type, 'update')
-        visit = models.Visit.objects.get(te_visit_id='01-123456789')
+        """indicate a missed visit"""
+        visit = self.importer.update_local_missed_visit(
+            self.clinic, 
+            create_instance(MissedVisit, {
+                'key_id': '01-123456789', 
+                'te_id': '01-12345', 
+                'missed_date': date.today().strftime('%Y-%m-%d 00:00:00')
+            })
+        )
+        visit = reload_record(visit)
+        # event = importMissedVisit(self.event, self.clinic, {'key_id':'01-123456789', 'te_id':'01-12345', 'missed_date':'2100-06-01 00:00:00'})
+        self.assertEqual(visit.history.latest().get_history_type_display(), 
+                            'Changed')
         self.assertEquals(visit.status, 'm')
-        self.assertEquals(visit.date, datetime(2100, 6, 1).date())
-
+        self.assertEquals(visit.date, date.today())
+    
     def testIndicateAttended(self):
-        # indicate a attended visit
-        event = importDoneVisit(self.event, self.clinic, {'key_id':'01-123456789', 'te_id':'01-12345', 'done_date':'2100-07-01 00:00:00'})
-        self.assertEqual(event.type, 'update')
-        visit = models.Visit.objects.get(te_visit_id='01-123456789')
+        """indicate an attended visit"""
+        visit = self.importer.update_local_done_visit(
+            self.clinic, 
+            create_instance(DoneVisit, {
+                'key_id': '01-123456789', 
+                'te_id': '01-12345', 
+                'done_date': '2100-07-01 00:00:00'
+            })
+        )
+        visit = reload_record(visit)
+        self.assertEquals(visit.history.latest().get_history_type_display(),
+                            'Changed')
         self.assertEquals(visit.status, 'a')
-        self.assertEquals(visit.date, datetime(2100, 7, 1).date())
-
+        self.assertEquals(visit.date, date(2100, 7, 1))
+    
     def testIndicateNewAttended(self):
-        # indicate a new attended visit
-        event = importDoneVisit(self.event, self.clinic, {'key_id':'02-123456789', 'te_id':'01-12345', 'done_date':'2100-07-01 00:00:00'})
-        self.assertEqual(event.type, 'new')
-        visit = models.Visit.objects.get(te_visit_id='02-123456789')
+        """indicate a new attended visit"""
+        visit = self.importer.update_local_done_visit(
+            self.clinic,
+            create_instance(DoneVisit, {
+                'key_id': '02-123456789', 
+                'te_id': '01-12345', 
+                'done_date': '2100-07-01 00:00:00'
+            })
+        )
+        visit = reload_record(visit)
+        self.assertEqual(visit.history.latest().get_history_type_display(), 
+                            'Created')
         self.assertEquals(visit.status, 'a')
-        self.assertEquals(visit.date, datetime(2100, 7, 1).date())
-
+        self.assertEquals(visit.date, date(2100, 7, 1))
+    
     def testIndicateNewMissed(self):
         # indicate a new attended visit
-        yesterday = datetime.now() - timedelta(days=1)
-        event = importMissedVisit(self.event, self.clinic, {
-            'key_id':'02-123456789', 
-            'te_id':'01-12345', 
-            'missed_date': yesterday.strftime('%Y-%m-%d 00:00:00')
-        })
-        self.assertEqual(event.type, 'new')
-        visit = models.Visit.objects.get(te_visit_id='02-123456789')
+        yesterday = date.today() - timedelta(days=1)
+        visit = self.importer.update_local_missed_visit(
+            self.clinic,
+            create_instance(MissedVisit, {
+                'key_id': '02-123456789', 
+                'te_id': '01-12345', 
+                'missed_date': yesterday.strftime('%Y-%m-%d 00:00:00')
+            })
+        )
+        visit = reload_record(visit)
+        self.assertEqual(visit.history.latest().get_history_type_display(), 
+                            'Created')
         self.assertEquals(visit.status, 'm')
-        self.assertEquals(visit.date, yesterday.date())
-
+        self.assertEquals(visit.date, yesterday)
+    
     def testDelete(self):
-        # delete an visit
-        event = importDeletedVisit(self.event, self.clinic, {'key_id':'01-123456789', 'te_id':'01-12345'})
-        self.assertEqual(event.type, 'update')
-        self.assertEqual(models.Visit.objects.count(), 0)
-
+        """delete a visit"""
+        visit = self.importer.update_local_deleted_visit(create_instance(DeletedVisit, {
+            'key_id': '01-123456789', 
+            'te_id': '01-12345'
+        }))
+        
+        self.assertEqual(visit.deleted, True)
+        self.assertEqual(visit.history.latest().get_history_type_display(), 
+                            'Changed')          # it is Changed because of the soft delete
+        self.assertRaises(Visit.DoesNotExist,   # exception
+                            Visit.objects.get,  # callback
+                            pk=visit.pk         # args
+                        )
+    
 
 class PatientRiskProfileTestCase(TestCase):
     fixtures = ['clinics.json', 'patients.json',]
     
     def setUp(self):
-        self.patient = models.Patient.objects.all()[0]
-        self.clinic = models.Clinic.objects.get(te_id='01')
-        self.event = ImportEvent()
-        
+        self.patient = Patient.objects.all()[0]
+        self.importer = Importer()
+        self.clinic = Clinic.objects.get(te_id='01')
+    
     def reload_patient(self):
-        return models.Patient.objects.get(pk=self.patient.id)
-
+        return reload_record(self.patient)
+    
     def test_risk_profile_calculation(self):
         today = datetime.now() - timedelta(days=1)
-        event = importMissedVisit(self.event, self.clinic, {
+        visit = self.importer.update_local_missed_visit(
+            self.clinic, 
+            create_instance(MissedVisit, {
             'key_id':'02-123456789', 
             'te_id':self.patient.te_id, 
             'missed_date': today.strftime('%Y-%m-%d 00:00:00')
-        })
+            })
+        )
         self.assertEquals(self.reload_patient().risk_profile, 1.0)
     
     def test_risk_profile_incremental_calculation(self):
         yesterday = datetime.now() - timedelta(days=1)
         two_days_ago = yesterday - timedelta(days=1)
-        importDoneVisit(self.event, self.clinic, {
-            'key_id':'02-123456701', 
-            'te_id':self.patient.te_id, 
-            'done_date':'2100-07-01 00:00:00'
-        })
-        importDoneVisit(self.event, self.clinic, {
-            'key_id':'02-123456702', 
-            'te_id':self.patient.te_id, 
-            'done_date':'2100-07-02 00:00:00'
-        })
+        
+        # attended
+        visit1 = self.importer.update_local_done_visit(
+            self.clinic,
+            create_instance(DoneVisit, {
+                'key_id': '02-123456701', 
+                'te_id': self.patient.te_id, 
+                'done_date': '2100-07-01 00:00:00'
+            }))
+        # attended
+        visit2 = self.importer.update_local_done_visit(
+            self.clinic, 
+            create_instance(DoneVisit, {
+                'key_id': '02-123456702', 
+                'te_id': self.patient.te_id, 
+                'done_date': '2100-07-02 00:00:00'
+            }))
+        # we've attended all our visits, our risk profile should be zero
         self.assertEquals(self.reload_patient().risk_profile, 0.0)
-        importMissedVisit(self.event, self.clinic, {
-            'key_id':'02-123456703', 
-            'te_id':self.patient.te_id, 
-            'missed_date': yesterday.strftime('%Y-%m-%d 00:00:00')
-        })
+        
+        # missed
+        visit3 = self.importer.update_local_missed_visit(
+            self.clinic, 
+            create_instance(MissedVisit, {
+                'key_id': '02-123456703', 
+                'te_id': self.patient.te_id, 
+                'missed_date': yesterday.strftime('%Y-%m-%d 00:00:00')
+            }))
+        # attended two out of three, 33% risk
         self.assertAlmostEquals(self.reload_patient().risk_profile, 0.33, places=2)
-        importMissedVisit(self.event, self.clinic, {
-            'key_id':'02-123456704', 
-            'te_id':self.patient.te_id, 
-            'missed_date': two_days_ago.strftime('%Y-%m-%d 00:00:00')
-        })
+        visit4 = self.importer.update_local_missed_visit(
+            self.clinic, 
+            create_instance(MissedVisit, {
+                'key_id': '02-123456704', 
+                'te_id': self.patient.te_id, 
+                'missed_date': two_days_ago.strftime('%Y-%m-%d 00:00:00')
+            }))
+        # attended two out of 4, 50% risk
         self.assertAlmostEquals(self.reload_patient().risk_profile, 0.50, places=2)

@@ -24,9 +24,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 from general.settings import Setting
 from models import MSISDN, Patient, PleaseCallMe
 from mobile.sms.models import SMSLog, SMSSendAction
-from importing import MSISDN_RE
+# from importing import MSISDN_RE
 
-import reminders, importing
+# import reminders, importing
 
 
 def test(request):

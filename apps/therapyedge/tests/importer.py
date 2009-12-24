@@ -124,19 +124,13 @@ class ImporterTestCase(TestCase):
         for done_visit in done_visits:
             local_visit = Visit.objects.get(te_visit_id=done_visit.key_id)
             
-            # the main event should have the same scheduled date
+            # the visit should have the same done date
             self.assertEquals(
                 iso8601.parse_date(done_visit.done_date).date(),
                 local_visit.date
             )
             
-            # the visit event itself should have the same done date
-            self.assertEquals(
-                iso8601.parse_date(done_visit.scheduled_date).date(),
-                local_visit.history.all()[1].date # there are two entries, get the last
-            )
-            
-            # the visit event should have the status of a, 'attended'
+            # the visit should have the status of a, 'attended'
             self.assertEquals(
                 local_visit.status,
                 'a'

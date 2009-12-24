@@ -173,6 +173,17 @@ class Visit(models.Model):
     visit_type = models.CharField('Visit Type', blank=True, max_length=80, 
                                     choices=VISIT_TYPES)
     
+    # soft delete & modification audit trail methods
+    deleted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # custom manager that excludes all deleted patients
+    objects = FilteredQuerySetManager(deleted=False)
+    
+    # normal custom manager, including deleted patients
+    all_objects = models.Manager()
+    
     # keep track of Visit changes over time
     history = HistoricalRecords()
     
@@ -180,6 +191,15 @@ class Visit(models.Model):
         verbose_name = 'Visit'
         verbose_name_plural = 'Visits'
         ordering = ['date']
+    
+    def delete(self):
+        """
+        Implementing soft delete, this isn't possible with signals as far
+        as I know since there isn't a way to cancel the delete to be executed
+        """
+        if not self.deleted:
+            self.deleted = True
+            self.save()
     
     def __unicode__(self):
         return self.get_visit_type_display()

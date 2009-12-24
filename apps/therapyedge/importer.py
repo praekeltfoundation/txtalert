@@ -226,6 +226,9 @@ class Importer(object):
             since,
             until
         ))
+        return self.update_local_missed_visits(clinic, missed_visits)
+    
+    def update_local_missed_visits(self, clinic, missed_visits):
         for visit in missed_visits:
             logger.debug('Processing missed Visit: %s' % visit._asdict())
             try:
@@ -280,54 +283,49 @@ class Importer(object):
         ))
         return self.update_local_done_visits(clinic, done_visits)
     
-    def update_local_done_visits(self, clinic, visits):
-        for visit in visits:
-            logger.debug('Processing done visit: %s' % visit._asdict())
+    def update_local_done_visits(self, clinic, remote_visits):
+        for remote_visit in remote_visits:
+            logger.debug('Processing done visit: %s' % remote_visit._asdict())
             try:
-                # get patient or raise error
-                patient = Patient.objects.get(te_id=visit.te_id)
-                local_visit = get_object_or_none(Visit, te_visit_id=visit.key_id)
-                done_date = iso8601.parse_date(visit.done_date).date()
-                scheduled_date = iso8601.parse_date(visit.scheduled_date).date()
-                
-                # make sure we have a visit for the change we're getting
-                if not local_visit:
-                    local_visit = Visit.objects.create(
-                        te_visit_id=visit.key_id,
-                        clinic=clinic,
-                        patient=patient,
-                        date=scheduled_date,
-                        status='s', # s for scheduled, for some reason we don't
-                                    # have this visit registered, even though it
-                                    # is done, do as if we already had it and
-                                    # save it twice
-                    )
-                    
-                    # save again, now with 'attended' status and the done date
-                    local_visit.date = done_date
-                    local_visit.status = 'a'
-                    local_visit.save()
-                    
-                    logger.debug('Creating new done Visit: %s' % local_visit.id)
-                
-                else:
-                    # done events we flag as a for 'attended', not sure why the orignal
-                    # import script did a get_or_create here. Maybe an error or 
-                    # maybe the TherapyEdge data is *really* wonky
-                    logger.debug('Updating Visit: %s, date: %s, status: %s' % (
-                        local_visit.id,
-                        done_date,
-                        'a'
-                    ))
-                    local_visit.date = done_date
-                    local_visit.status = 'a'
-                    local_visit.save()
-                
-                yield local_visit
+                yield self.update_local_done_visit(clinic, remote_visit)
             except IntegrityError, e:
                 logger.exception('Failed to create visit')
             except Patient.DoesNotExist, e:
                 logger.exception('Could not find Patient for Visit.te_id')
+        
+    
+    def update_local_done_visit(self, clinic, remote_visit):
+        # get patient or raise error
+        patient = Patient.objects.get(te_id=remote_visit.te_id)
+        visit = get_object_or_none(Visit, te_visit_id=remote_visit.key_id)
+        done_date = iso8601.parse_date(remote_visit.done_date).date()
+        
+        # make sure we have a visit for the change we're getting
+        if not visit:
+            visit = Visit.objects.create(
+                te_visit_id=remote_visit.key_id,
+                clinic=clinic,
+                patient=patient,
+                date=done_date,
+                status='a'
+            )
+            
+            logger.debug('Creating new done Visit: %s' % visit.id)
+        
+        else:
+            # done events we flag as a for 'attended', not sure why the orignal
+            # import script did a get_or_create here. Maybe an error or 
+            # maybe the TherapyEdge data is *really* wonky
+            logger.debug('Updating Visit: %s, date: %s, status: %s' % (
+                visit.id,
+                done_date,
+                'a'
+            ))
+            visit.date = done_date
+            visit.status = 'a'
+            visit.save()
+        
+        return visit
     
     def import_deleted_visits(self, since, until=''):
         deleted_visits = self.client.get_deleted_visits(since, until)
@@ -337,16 +335,19 @@ class Importer(object):
         ))
         return self.update_local_deleted_visits(deleted_visits)
     
-    def update_local_deleted_visits(self, visits):
-        for visit in visits:
-            logger.debug('Processing deleted visit: %s' % visit._asdict())
+    def update_local_deleted_visits(self, remote_visits):
+        for remote_visit in remote_visits:
+            logger.debug('Processing deleted visit: %s' % remote_visit._asdict())
             try:
-                local_visit = Visit.objects.get(te_visit_id=visit.key_id)
-                local_visit.delete()
-                logger.debug('Deleted Visit: %s' % local_visit.id)
-                yield local_visit
+                yield self.update_local_deleted_visit(remote_visit)
             except Visit.DoesNotExist, e:
                 logger.exception('Could not find Visit to delete')
+    
+    def update_local_deleted_visit(self, remote_visit):
+        visit = Visit.objects.get(te_visit_id=remote_visit.key_id)
+        visit.delete()
+        logger.debug('Deleted Visit: %s' % visit.id)
+        return visit
     
     def import_all_changes(self, clinic, since, until):
         # I set these because they all are generators, setting them forces
