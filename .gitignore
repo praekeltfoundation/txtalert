@@ -5,3 +5,4 @@ log/*.log
 .DS_Store
 db/*.db
 *.svn
+tmp/coverage/*
