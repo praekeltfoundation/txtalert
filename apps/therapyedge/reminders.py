@@ -20,128 +20,144 @@ from django.conf import settings
 from django.core import mail
 
 from general.settings.models import Setting
-from mobile.sms.models import SMSSendAction
-from models import Visit
+from gateway.models import SendSMS
+from therapyedge.models import Visit
 
 
 REMINDERS_EMAIL_TEXT = \
 """
-%s TXTAlert Messages Sent on %s
-Attened Yesterday: %s
-Missed Yesterday: %s (%.1f%%)
-Pending Tomorrow: %s
-Pending in 2 weeks: %s
+%(total)s TXTAlert Messages Sent on %(date)s
+Attened Yesterday: %(attended)s
+Missed Yesterday: %(missed)s (%(missed_percentage).1f%%)
+Pending Tomorrow: %(tomorrow)s
+Pending in 2 weeks: %(two_weeks)s
 """
 
 REMINDERS_SMS_TEXT = \
 """
-TXTAlert %s Messages Sent:
-Attended Yesterday - %s
-Missed Yesterday - %s (%.1f%%)
-Pending Tomorrow - %s
-Pending in 2 weeks- %s
+TXTAlert %(total)s Messages Sent:
+Attended Yesterday - %(attended)s
+Missed Yesterday - %(missed)s (%(missed_percentage).1f%%)
+Pending Tomorrow - %(tomorrow)s
+Pending in 2 weeks- %(two_weeks)s
 """
 
+
+from itertools import groupby
+def group_by_language(patients):
+    grouper = lambda patient: patient.language
+    return dict(
+        [(language, list(patients_per_language)) for \
+                language, patients_per_language in groupby(patients, grouper)]
+    )
 
 def send_stats(gateway, today):
     yesterday = today - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
     twoweeks = today + timedelta(weeks=2)
-
-    visits = Visit.objects.filter(patient__opted_in=True)
-    visitevents = VisitEvent.objects.filter(visit__patient__opted_in=True)
     
+    visits = Visit.objects.filter(patient__opted_in=True)
+    
+    # get stats for today's bulk of SMSs sent
     tomorrow_count = visits.filter(date__exact=tomorrow).count()
     twoweeks_count = visits.filter(date__exact=twoweeks).count()
-    attended_count = visitevents.filter(status__exact='a', date__exact=yesterday).count()
-    missed_count = visitevents.filter(status__exact='m', date__exact=yesterday).count()
+    attended_count = visits.filter(status__exact='a', date__exact=yesterday).count()
+    missed_count = visits.filter(status__exact='m', date__exact=yesterday).count()
+    
     yesterday_count = missed_count + attended_count
     if yesterday_count == 0: missed_percentage = 0
     else: missed_percentage = missed_count * (100.0 / yesterday_count)
-    total_count = 0
-    for action in SMSSendAction.objects.filter(start__gt=today):
-        total_count += action.smslogs.count()
-
+    
+    # for every SMS sent we have an entry of SendSMS
+    total_count = SendSMS.objects.filter(start__gt=today).count()
+    
     # send email with stats
     emails = Setting.objects.get(name='Stats Emails').value.split('\n')
-    message = REMINDERS_EMAIL_TEXT % (
-        total_count, today, attended_count,
-        missed_count, missed_percentage,
-        tomorrow_count, twoweeks_count
-    )
+    message = REMINDERS_EMAIL_TEXT % {
+        'total': total_count, 
+        'date': today, 
+        'attended': attended_count,
+        'missed': missed_count, 
+        'missed_percentage': missed_percentage,
+        'tomorrow': tomorrow_count, 
+        'two_weeks:' twoweeks_count
+    }
     mail.send_mail('[TxtAlert] Messages Sent Report', message, settings.SERVER_EMAIL, emails, fail_silently=True)
-
+    
     # send sms with stats
     msisdns = Setting.objects.get(name='Stats MSISDNs').value.split('\n')
-    message = REMINDERS_SMS_TEXT % (
-        total_count, attended_count,
-        missed_count, missed_percentage,
-        tomorrow_count, twoweeks_count,
-    )
+    message = REMINDERS_SMS_TEXT % {
+        'total': total_count, 
+        'attended': attended_count,
+        'missed': missed_count, 
+        'missed_percentage': missed_percentage,
+        'tomorrow': tomorrow_count, 
+        'two_weeks': twoweeks_count,
+    }
     gateway.sendSMS(msisdns, message)
     
 
-def send(gateway, message, *args, **kwargs):
-    if kwargs.has_key('visits'):
-        msisdns = [v.patient.active_msisdn.msisdn for v in kwargs['visits']]
-    elif kwargs.has_key('events'):
-        msisdns = [e.visit.patient.active_msisdns.msisdn for e in kwargs['events']]
-    if len(msisdns) > 0:
-        action = gateway.sendSMS(msisdns, message)
-        return action.smslogs.count()
-    else:
-        return 0
 
+def send_messages(gateway, message_key, patients, message_formatter=lambda x: x):
+    actions_per_language = {}
+    for language, patients in group_by_language(patients).items():
+        message = message_formatter(getattr(language, message_key))
+        msisdns = [patient.active_msisdn.msisdn for patient in patients]
+        actions_per_language[language] = gateway.sendSMS(msisdns, message)
+    return actions_per_language
 
 def tomorrow(gateway, visits, today):
     # send reminders for patients due tomorrow
     tomorrow = today + timedelta(days=1)
-    count = send(
+    visits_tomorrow = visits.filter(date__exact=tomorrow).select_related()
+    return send_messages(
         gateway,
-        Setting.objects.get(name='Tomorrow Visit Reminder').value,
-        visits=visits.filter(date__exact=tomorrow).select_related(),
+        message_key='tomorrow_message',
+        patients=[visit.patient for visit in visits_tomorrow]
     )
-    return count
 
 
 def two_weeks(gateway, visits, today):
     # send reminders for patients due in two weeks
     twoweeks = today + timedelta(weeks=2)
-    count = send(
+    visits_in_two_weeks = visits.filter(date__exact=twoweeks).select_related()
+    return send_messages(
         gateway,
-        (Setting.objects.get(name='Two Weeks Visit Reminder').value % {'date':twoweeks.strftime('%A %d %b')}),
-        visits=visits.filter(date__exact=twoweeks).select_related(),
+        message_key='twoweeks_message',
+        patients=[visit.patient for visit in visits_in_two_weeks],
+        message_formatter=lambda msg: msg % {'date': twoweeks.strftime('%A %d %b')}
     )
-    return count
 
 
-def attended(gateway, visitevents, today):
+def attended(gateway, visits, today):
     # send reminders to patients who attended their visits
     yesterday = today - timedelta(days=1)
-    count = send(
+    attended_yesterday = visits.filter(status__exact='a', \
+                                        date__exact=yesterday).select_related()
+    return send_messages(
         gateway,
-        Setting.objects.get(name='Attended Visit Message').value,
-        events=visitevents.filter(status__exact='a', date__exact=yesterday),
+        message_key='attended_message',
+        patients=[visit.patient for visit in attended_yesterday]
     )
-    return count
-    
 
-def missed(gateway, visitevents, today):
+
+def missed(gateway, visits, today):
     # send reminders to patients who missed their visits
     yesterday = today - timedelta(days=1)
-    count = send(
+    missed_yesterday = visits.filter(status__exact='m', \
+                                        date__exact=yesterday).select_related()
+    return send_messages(
         gateway,
-        Setting.objects.get(name='Missed Visit Message').value,
-        events=visitevents.filter(status__exact='m', date__exact=yesterday),
+        message_key='missed_message',
+        patients=[visit.patient for visit in missed_yesterday]
     )
-    return count
 
 
 def all(gateway):
     visits = Visit.objects.filter(patient__opted_in=True)
-    visitevents = VisitEvent.objects.filter(visit__patient__opted_in=True)
+    print "visits", visits
     today = datetime.now().date()
     tomorrow(gateway, visits, today)
     two_weeks(gateway, visits, today)
-    attended(gateway, visitevents, today)
-    missed(gateway, visitevents, today)
+    attended(gateway, visits, today)
+    missed(gateway, visits, today)
