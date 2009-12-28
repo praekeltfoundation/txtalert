@@ -12,10 +12,7 @@ class Command(BaseCommand):
             from coverage import coverage
             
             cov = coverage()
-            cov.exclude('django')
-            cov.exclude('_django')
-            
-            cov_log = join(settings.APP_ROOT, "tmp", "coverage")
+            cov_dir = join(settings.APP_ROOT, "tmp", "coverage")
             cov.start()
             
             from django.core.management.commands import test
@@ -23,7 +20,11 @@ class Command(BaseCommand):
             command.handle(*test_labels, **options)
             
             cov.stop()
-            cov.html_report(directory=cov_log)
+            cov.html_report(directory=cov_dir, omit_prefixes=[
+                'django',
+                'lib'
+            ])
+            print '\n\nCoverage report available at %s/index.html' % cov_dir
             
         except ImportError, e:
             print e
