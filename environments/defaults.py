@@ -99,9 +99,7 @@ ROOT_URLCONF = 'urls'
 
 INSTALLED_APPS = (
     'general.settings',
-    'general.cron',
     'general.jquery',
-    'mobile.sms',
     'therapyedge',
     'bookingtool',
     'gateway',
