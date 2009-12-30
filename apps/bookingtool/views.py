@@ -7,10 +7,11 @@ from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 
 from therapyedge.models import Visit
-from mobile.sms.models import OperaGateway
 from cal import *
 from datetime import date, datetime, timedelta
 from bookingtool.models import BookingPatient
+from gateway import gateway
+import logging
 
 
 def suggest(request):
@@ -81,15 +82,7 @@ def calendar(request, year, month):
     return render_to_response('calendar.html', locals())
 
 def verification(request):
-    try:
-        msisdn = request.POST.get('msisdn',None)
-        gateway = OperaGateway.objects.all()[0]
-        gateway.sendSMS([msisdn], 'Welcome to TxtAlert!')
-        response = "<span class='success'>SMS has been sent to %(msisdn)s</span>"
-    except Exception, e:
-        print "Exception in sendSMS code:"
-        print '-'*60
-        traceback.print_exc(file=sys.stdout)
-        print '-'*60
-        response = "<span class='fail'>Failed sending SMS verification to %(msisdn)s</span>"
-    return HttpResponse(response % {'msisdn': request.POST.get('msisdn', 'unknown')})
+    msisdn = request.POST.get('msisdn',None)
+    gateway.send_sms([msisdn], ['Welcome to TxtAlert!'])
+    response = "<span class='success'>SMS has been sent to %(msisdn)s</span>"
+    return HttpResponse(response)

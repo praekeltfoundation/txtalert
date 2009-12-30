@@ -1,9 +1,10 @@
 from django.test import TestCase
 from datetime import datetime, date, timedelta
-from therapyedge import reminders_i18n
+from therapyedge import reminders
 from therapyedge.models import *
-from therapyedge.tests.helpers import TestingGateway, random_string
-from mobile.sms.models import *
+from therapyedge.tests.utils import random_string
+import hashlib
+import gateway
 
 class RemindersI18NTestCase(TestCase):
     
@@ -14,8 +15,7 @@ class RemindersI18NTestCase(TestCase):
         self.patient.save()
         self.language = self.patient.language
         self.clinic = Clinic.objects.all()[0]
-        self.gateway = TestingGateway(name="testing",url="http://testingserver/")
-        self.gateway.save()
+        gateway.load_backend('gateway.backends.dummy')
     
     def tearDown(self):
         pass
@@ -43,8 +43,8 @@ class RemindersI18NTestCase(TestCase):
         return datetime.now().date() + timedelta(**kwargs)
     
     def send_reminders(self, _type):
-        fn = getattr(reminders_i18n, _type)
-        return fn(self.gateway, Visit.objects.all(), datetime.now().date())
+        fn = getattr(reminders, _type)
+        return fn(gateway.gateway, Visit.objects.all(), datetime.now().date())
     
     def test_tomorrow(self):
         tomorrow = self.calculate_date(days=1)
@@ -53,38 +53,34 @@ class RemindersI18NTestCase(TestCase):
         self.schedule_visits_for(tomorrow)
         
         # send reminders over dummy gateway
-        actions = self.send_reminders('tomorrow')
+        tomorrow_sms_set = self.send_reminders('tomorrow')
         
         # get stuff needed to test
-        tomorrow_message = self.language.tomorrow_message
-        tomorrow_queue = self.gateway.queue[tomorrow_message]
+        sms_set = tomorrow_sms_set[self.language]
         
         # test!
-        self.assertTrue(self.patient.active_msisdn.msisdn in tomorrow_queue)
+        self.assertTrue(self.patient.active_msisdn.msisdn in [sms.msisdn for sms in sms_set])
     
     def test_twoweeks(self):
         twoweeks = self.calculate_date(days=14)
         self.schedule_visits_for(twoweeks)
-        actions = self.send_reminders('two_weeks')
-        twoweeks_message = self.language.twoweeks_message % {'date': twoweeks.strftime('%A %d %b')}
-        twoweeks_queue = self.gateway.queue[twoweeks_message]
-        self.assertTrue(self.patient.active_msisdn.msisdn in twoweeks_queue)
+        twoweeks_sms_set = self.send_reminders('two_weeks')
+        sms_set = twoweeks_sms_set[self.language]
+        self.assertTrue(self.patient.active_msisdn.msisdn in [sms.msisdn for sms in sms_set])
     
     def test_attended(self):
         yesterday = self.calculate_date(days=-1)
         visits = self.schedule_visits_for(yesterday)
         events = self.mark_visits(visits, yesterday, 'a')
-        self.send_reminders('attended')
-        attended_message =self.language.attended_message
-        attended_queue = self.gateway.queue[attended_message]
-        self.assertTrue(self.patient.active_msisdn.msisdn in attended_queue)
+        attended_sms_set = self.send_reminders('attended')
+        sms_set = attended_sms_set[self.language]
+        self.assertTrue(self.patient.active_msisdn.msisdn in [sms.msisdn for sms in sms_set])
     
     def test_missed(self):
         yesterday = self.calculate_date(days=-1)
         visits = self.schedule_visits_for(yesterday)
         events = self.mark_visits(visits, yesterday, 'm')
-        self.send_reminders('missed')
-        missed_message = self.language.missed_message
-        missed_queue = self.gateway.queue[missed_message]
-        self.assertTrue(self.patient.active_msisdn.msisdn in missed_queue)
+        missed_sms_set = self.send_reminders('missed')
+        sms_set = missed_sms_set[self.language]
+        self.assertTrue(self.patient.active_msisdn.msisdn in [sms.msisdn for sms in sms_set])
     

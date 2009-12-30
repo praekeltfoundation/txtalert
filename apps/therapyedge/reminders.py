@@ -80,7 +80,7 @@ def send_stats(gateway, today):
         'missed': missed_count, 
         'missed_percentage': missed_percentage,
         'tomorrow': tomorrow_count, 
-        'two_weeks:' twoweeks_count
+        'two_weeks': twoweeks_count
     }
     mail.send_mail('[TxtAlert] Messages Sent Report', message, settings.SERVER_EMAIL, emails, fail_silently=True)
     
@@ -99,12 +99,15 @@ def send_stats(gateway, today):
 
 
 def send_messages(gateway, message_key, patients, message_formatter=lambda x: x):
-    actions_per_language = {}
+    send_sms_per_language = {}
     for language, patients in group_by_language(patients).items():
         message = message_formatter(getattr(language, message_key))
         msisdns = [patient.active_msisdn.msisdn for patient in patients]
-        actions_per_language[language] = gateway.sendSMS(msisdns, message)
-    return actions_per_language
+        send_sms_per_language[language] = gateway.send_sms(
+            msisdns, 
+            [message] * len(msisdns)
+        )
+    return send_sms_per_language
 
 def tomorrow(gateway, visits, today):
     # send reminders for patients due tomorrow
@@ -155,7 +158,6 @@ def missed(gateway, visits, today):
 
 def all(gateway):
     visits = Visit.objects.filter(patient__opted_in=True)
-    print "visits", visits
     today = datetime.now().date()
     tomorrow(gateway, visits, today)
     two_weeks(gateway, visits, today)

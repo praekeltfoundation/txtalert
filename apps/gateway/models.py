@@ -64,6 +64,7 @@ class SendSMS(models.Model):
             ('can_send_sms', 'Can send SMSs'),
             ('can_place_sms_receipt', 'Can place SMS receipt'),
         )
+        get_latest_by = 'delivery'
     
     def __unicode__(self):
         return u"SendSMS %s - %s" % (self.identifier, self.msisdn)

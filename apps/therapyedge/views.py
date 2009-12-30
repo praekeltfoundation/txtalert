@@ -22,11 +22,7 @@ from django.db import connection
 from django.contrib.admin.views.decorators import staff_member_required
 
 from general.settings import Setting
-from models import MSISDN, Patient, PleaseCallMe
-from mobile.sms.models import SMSLog, SMSSendAction
-# from importing import MSISDN_RE
-
-# import reminders, importing
+from therapyedge.models import MSISDN, Patient, PleaseCallMe
 
 
 def test(request):

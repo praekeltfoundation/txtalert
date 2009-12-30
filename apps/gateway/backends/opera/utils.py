@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 
 from gateway.models import SendSMS
 import iso8601
+import logging
 
 OPERA_TIMESTAMP_FORMAT = "%Y%m%dT%H:%M:%S"
 

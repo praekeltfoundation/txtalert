@@ -6,11 +6,15 @@ from django.utils.importlib import import_module
 
 def load_backend(backend):
     try:
-        return import_module('.backend', backend)
+        mod = sys.modules[__name__]
+        backend = import_module('.backend', backend)
+        setattr(mod, 'backend', backend)
+        setattr(mod, 'gateway', backend.gateway)
+        setattr(mod, 'sms_receipt_handler', backend.sms_receipt_handler)
+        return backend, backend.gateway, backend.sms_receipt_handler
     except ImportError, e:
         traceback.print_exc(file=sys.stdout)
         raise e
 
-backend = load_backend(settings.SMS_GATEWAY_CLASS)
-gateway = backend.gateway
-sms_receipt_handler = backend.sms_receipt_handler
+
+load_backend(settings.SMS_GATEWAY_CLASS)

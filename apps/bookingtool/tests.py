@@ -11,11 +11,10 @@ from django.core.urlresolvers import reverse
 from django.db.models.query import QuerySet
 from django.utils import simplejson
 from therapyedge.models import *
-from therapyedge.tests.helpers import TestingGateway
+from gateway.models import SendSMS
+from gateway import gateway
 from bookingtool.models import *
-from mobile.sms.models import OperaGateway
 from datetime import datetime, timedelta, date
-
 
 def create_booking_patient():
     booking_patient = BookingPatient()
@@ -146,38 +145,20 @@ class CalendarTestCase(TestCase):
 
 class VerificationTestCase(TestCase):
     def setUp(self):
-        
-        # monkey patching alert
-        def monkey_patched_sendSMS(_self, msisdns, message):
-            _self.queue[message] = msisdns
-            return _self.logAction(datetime.now(), datetime.now(), \
-                                            [(m, 'u') for m in msisdns], message)
-            
-        def monkey_patched_queue(_self):
-            if not hasattr(_self, '_queue'):
-                _self._queue = {}
-            return _self._queue
-        
-        
-        OperaGateway.queue = property(monkey_patched_queue)
-        OperaGateway.sendSMS = monkey_patched_sendSMS
-        
-        self.gateway = OperaGateway(method='send', service='123', password='bla', \
-                                        channel='123', name='test', \
-                                        url='http://testserver.com')
-        self.gateway.save()
         self.client = Client()
     
     
     def test_verification_sms(self):
         msisdn = '27761234567'
+        self.assertRaises(
+            SendSMS.DoesNotExist,
+            SendSMS.objects.get,
+            msisdn=msisdn
+        )
         response = self.client.post(reverse('verification-sms'), {
             'msisdn': msisdn
         })
+        
         self.assertEquals(response.status_code, 200)
-        # ugh sorry, hairy database schema
-        gateway = OperaGateway.objects.all()[0]
-        action = gateway.smssendactions.all()[0]
-        smslog = action.smslogs.all()[0]
-        self.assertTrue(smslog.contact.msisdn == msisdn)
+        self.failUnless(SendSMS.objects.get(msisdn=msisdn))
     

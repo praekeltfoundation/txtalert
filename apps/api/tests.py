@@ -13,38 +13,8 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 import base64
 import iso8601
-
-class TestingGateway(object):
-    """Dummy gateway we used to monkey patch the real RPC gateway so we can write
-    our test code against something we control"""
-    
-    def use_identifier(self, identifier):
-        """specify what identifier to return, this way we can tell what we'd 
-        expect back from Opera"""
-        self.identifier = identifier
-    
-    
-    def send_sms(self, msisdns, smstexts, delivery=None, expiry=None,
-                        priority='standard', receipt='Y'):
-        delivery = delivery or datetime.now()
-        expiry = expiry or (datetime.now() + timedelta(days=1))
-        send_sms_ids = [SendSMS.objects.create(msisdn=msisdn, \
-                                        smstext=smstext, \
-                                        delivery=delivery, \
-                                        expiry=expiry, \
-                                        priority=priority, \
-                                        receipt=receipt, \
-                                        identifier=self.identifier).pk
-                            for (msisdn, smstext) in zip(msisdns, smstexts)]
-        # Return a Django QuerySet instead of a list of Django objects
-        # allowing us to chain the QS later on
-        return SendSMS.objects.filter(pk__in=send_sms_ids)
-
-# Specify that we want to use the TestingGateway instead of the one specified
-# by default, still a bit too hackish for my liking
 import gateway
-gateway.gateway = TestingGateway()
-from gateway import gateway
+backend, gateway, receipt_handler = gateway.load_backend('gateway.backends.dummy')
 
 def basic_auth_string(username, password):
     """
@@ -73,12 +43,8 @@ class OperaTestCase(TestCase):
         self.user.save()
     
     def test_send_sms(self):
-        """we've hijacked the EAPIGateway and tell it what to return as the 
-        identifier. The SendSMS object should store that identifier after 
-        communicating with the RPC gateway"""
-        gateway.use_identifier('12345678')
         [send_sms,] = gateway.send_sms(['27764493806'],['testing'])
-        self.assertEqual(send_sms.identifier, '12345678')
+        self.failUnless(SendSMS.objects.filter(msisdn='27764493806'))
     
     def test_receipt_processing(self):
         """Test the receipt XML we get back from Opera when a message has been 
@@ -111,8 +77,11 @@ class OperaTestCase(TestCase):
         receipts = map(element_to_namedtuple, tree.findall('receipt'))
         
         for receipt in receipts:
-            gateway.use_identifier(receipt.reference)
-            gateway.send_sms([receipt.msisdn], ['testing %s' % receipt.reference])
+            [send_sms] = gateway.send_sms([receipt.msisdn], ['testing %s' % receipt.reference])
+            # manually specifiy the identifier so we can compare it later with the
+            # posted receipt
+            send_sms.identifier = receipt.reference
+            send_sms.save()
         
         # mimick POSTed receipt from Opera
         add_perms_to_user('user','can_place_sms_receipt')
@@ -154,7 +123,6 @@ class OperaTestCase(TestCase):
     
     def test_send_sms_json_response(self):
         add_perms_to_user('user', 'can_send_sms')
-        gateway.use_identifier('a' * 8)
         response = self.client.post(reverse('api-sms',kwargs={'emitter_format':'json'}), simplejson.dumps({
                 'msisdns': ['27123456789'],
                 'smstext': 'hello'
@@ -167,11 +135,10 @@ class OperaTestCase(TestCase):
         data = simplejson.loads(response.content)
         self.assertTrue(len(data),1)
         receipt = data[0]
-        self.assertEquals(receipt['identifier'], 'a' * 8)
+        self.assertEquals(receipt['msisdn'], '27123456789')
     
     def test_send_multiple_sms_response(self):
         add_perms_to_user('user', 'can_send_sms')
-        gateway.use_identifier('b' * 8)
         response = self.client.post(reverse('api-sms',kwargs={'emitter_format':'json'}), simplejson.dumps({
             'msisdns': ['27123456789', '27123456781'],
             'smstext': 'bla bla bla'
@@ -184,11 +151,10 @@ class OperaTestCase(TestCase):
         data = simplejson.loads(response.content)
         self.assertTrue(len(data),2)
         for receipt in data:
-            self.assertEquals(receipt['identifier'], 'b' * 8)
+            self.assertTrue(receipt['msisdn'] in ['27123456789', '27123456781'])
     
     def test_send_too_large_sms(self):
         add_perms_to_user('user', 'can_send_sms')
-        gateway.use_identifier('c' * 8)
         
         response = self.client.post(reverse('api-sms',kwargs={'emitter_format':'json'}), simplejson.dumps({
                 'msisdns': ['27123456789'],
