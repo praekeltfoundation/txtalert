@@ -5,7 +5,6 @@ from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.utils import simplejson
 from django.db.models.signals import post_save
-
 from gateway.backends.opera.utils import element_to_namedtuple, OPERA_TIMESTAMP_FORMAT
 from gateway.models import SendSMS, PleaseCallMe
 
@@ -34,7 +33,6 @@ def add_perms_to_user(username, permission): # perms as in permissions, not the 
 
 
 class OperaTestCase(TestCase):
-    """Testing the opera gateway interactions"""
     
     def setUp(self):
         self.user = User.objects.create_user(username='user', \
@@ -42,9 +40,34 @@ class OperaTestCase(TestCase):
                                                 password='password')
         self.user.save()
     
-    def test_send_sms(self):
-        [send_sms,] = gateway.send_sms(['27764493806'],['testing'])
-        self.failUnless(SendSMS.objects.filter(msisdn='27764493806'))
+    def test_gateway(self):
+        from gateway.backends.opera.backend import Gateway
+        gateway = Gateway(url="http://testserver/xmlrpc",
+                            service_id='dummy_service_id',
+                            password='dummy_password',
+                            channel='dummy_channel',
+                            verbose=True    # putting it on verbose because this 
+                                            # gateway should never do any real 
+                                            # http calls as part of the test,
+                                            # if it is, we'll see it and we'll
+                                            # know something is wrong
+                        )
+        
+        class MockedEAPIGateway(object):
+            """Mocked XMLRPC interface"""
+            def SendSMS(msisdns, smstexts, delivery=None, expiry=None,
+                                priority='standard', receipt='Y'):
+                return {
+                    'Identifier': 'a' * 8
+                }
+        
+        setattr(gateway.proxy, 'EAPIGateway', MockedEAPIGateway())
+        sent_smss = gateway.send_sms(['27123456789'],['testing hello'])
+        self.assertEquals(sent_smss.count(), 1)
+        self.assertEquals(sent_smss[0].identifier, 'a' * 8)
+        self.assertEquals(sent_smss[0].msisdn, '27123456789')
+        self.assertEquals(sent_smss[0].smstext, 'testing hello')
+        
     
     def test_receipt_processing(self):
         """Test the receipt XML we get back from Opera when a message has been 
@@ -85,8 +108,21 @@ class OperaTestCase(TestCase):
         
         # mimick POSTed receipt from Opera
         add_perms_to_user('user','can_place_sms_receipt')
-        response = self.client.post(reverse('api-sms-receipt',kwargs={'emitter_format':'json'}), raw_xml_post.strip(), \
-                                    content_type='text/xml', HTTP_AUTHORIZATION=basic_auth_string('user','password'))
+        
+        from django.http import HttpRequest
+        request = HttpRequest()
+        request.method = 'POST'
+        request.raw_post_data = raw_xml_post.strip()
+        request.META['CONTENT_TYPE'] = 'text/xml'
+        request.META['HTTP_AUTHORIZATION'] = basic_auth_string('user', 'password')
+        request.user = User.objects.get(username='user')
+        
+        # ugly monkey patching to avoid us having to use a URL to test the opera
+        # backend
+        from gateway.backends.opera.views import sms_receipt_handler
+        from api.handlers import SMSReceiptHandler
+        SMSReceiptHandler.create = sms_receipt_handler
+        response = SMSReceiptHandler().create(request)
         
         # it should return a JSON response
         self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
@@ -105,6 +141,21 @@ class OperaTestCase(TestCase):
             send_sms = SendSMS.objects.get(msisdn=receipt.msisdn, identifier=receipt.reference)
             self.assertEquals(send_sms.delivery_timestamp, datetime.strptime(receipt.timestamp, OPERA_TIMESTAMP_FORMAT))
             self.assertEquals(send_sms.status, 'D')
+    
+    
+
+class SmsGatewayTestCase(TestCase):
+    """Testing the opera gateway interactions"""
+    
+    def setUp(self):
+        self.user = User.objects.create_user(username='user', \
+                                                email='user@domain.com', \
+                                                password='password')
+        self.user.save()
+    
+    def test_send_sms(self):
+        [send_sms,] = gateway.send_sms(['27764493806'],['testing'])
+        self.failUnless(SendSMS.objects.filter(msisdn='27764493806'))
     
     def test_json_sms_statistics_auth(self):
         response = self.client.get(reverse('api-sms',kwargs={'emitter_format':'json'}), 

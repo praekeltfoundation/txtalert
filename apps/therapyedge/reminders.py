@@ -69,7 +69,8 @@ def send_stats(gateway, today):
     else: missed_percentage = missed_count * (100.0 / yesterday_count)
     
     # for every SMS sent we have an entry of SendSMS
-    total_count = SendSMS.objects.filter(start__gt=today).count()
+    total_count = SendSMS.objects.filter(delivery__gte=today).count()
+    print 'total_count', total_count
     
     # send email with stats
     emails = Setting.objects.get(name='Stats Emails').value.split('\n')
@@ -94,7 +95,7 @@ def send_stats(gateway, today):
         'tomorrow': tomorrow_count, 
         'two_weeks': twoweeks_count,
     }
-    gateway.sendSMS(msisdns, message)
+    gateway.send_sms(msisdns, [message] * len(msisdns))
     
 
 

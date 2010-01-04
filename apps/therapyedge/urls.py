@@ -16,13 +16,5 @@
 
 from django.conf.urls.defaults import *
 
-
 urlpatterns = patterns('therapyedge.views',
-    (r'test/$', 'test'),
-    (r'pcm/$', 'pcm'),
-    (r'patient/import/$', 'patient_import'),
-    (r'patient/riskcalc/$', 'patient_riskcalc'),
-    (r'visit/import/$', 'visit_import'),
-    (r'action/(?P<action>[^/]*)/??$', 'action'),
-    (r'stats/$', 'stats'),
 )

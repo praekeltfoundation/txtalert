@@ -6,3 +6,4 @@ log/*.log
 db/*.db
 *.svn
 tmp/coverage/*
+.coverage

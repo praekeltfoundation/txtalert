@@ -1,7 +1,11 @@
-from datetime import datetime, timedelta
 from django.http import HttpResponse
+from django.utils import simplejson
+from django.contrib.auth.decorators import permission_required
+
 from gateway.models import SendSMS
+
 from therapyedge.tests.utils import random_string
+from datetime import datetime, timedelta
 
 class Gateway(object):
     """Dummy gateway we used to monkey patch the real RPC gateway so we can write
@@ -24,7 +28,11 @@ class Gateway(object):
         return SendSMS.objects.filter(pk__in=send_sms_ids)
 
 
-# yuck
-from gateway.backends.opera.backend import sms_receipt_handler
 gateway = Gateway()
 
+# @permission_required('gateway.can_place_sms_receipt')
+def sms_receipt_handler(self, request):
+    return HttpResponse(simplejson.dumps({
+        'success': [],
+        'fail': []
+    }), status=201, content_type='application/json; charset=utf-8')

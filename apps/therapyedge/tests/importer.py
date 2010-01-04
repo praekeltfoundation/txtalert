@@ -1,5 +1,6 @@
 from django.test import TestCase
 from therapyedge.importer import Importer, SEX_MAP
+from therapyedge.xmlrpc import client
 from therapyedge.models import Patient, MSISDN, Visit, Clinic
 from therapyedge.tests.utils import (PatientUpdate, ComingVisit, MissedVisit,
                                         DoneVisit, DeletedVisit)
@@ -54,11 +55,6 @@ class ImporterTestCase(TestCase):
             self.assertEquals(local_patient.te_id, updated_patient.te_id)
     
     def test_update_local_coming_visits(self):
-        # from therapyedge.xmlrpc import client
-        # client.introspect(clinic_id='02',
-        #     since=datetime.now() - timedelta(days=3),
-        #     until=datetime.now() + timedelta(days=10)
-        # )
         data = [(
             '',                             # dr_site_name 
             '',                             # dr_site_id
@@ -174,4 +170,57 @@ class ImporterTestCase(TestCase):
                 Visit.objects.filter(te_visit_id=deleted_visit.key_id).count(), 
                 0
             )
+    
+
+
+class PatchedClient(client.Client):
+    
+    def __init__(self, **kwargs):
+        self.patches = kwargs
+    
+    def rpc_call(self, request, *args, **kwargs):
+        """Mocking the response we get from TherapyEdge for a patients_update
+        call"""
+        print 'patched rpc_call called with: %s, %s, %s' % (request, args, kwargs)
+        if request in self.patches:
+            print 'returning patched value for', request
+            return self.patches[request]
+        else:
+            return super(PatchedClient, self).rpc_call(request, *args, **kwargs)
+
+class ImporterXmlRpcClientTestCase(TestCase):
+    
+    fixtures = ['patients', 'clinics']
+    
+    def setUp(self):
+        self.importer = Importer()
+        self.clinic = Clinic.objects.all()[0]
+    
+    def tearDown(self):
+        pass
+    
+    def test_import_updated_patients(self):
+        """The xmlrpc client is largely some boilterplate code and some little
+        helpers that transform the returned Dict into class instances. We're
+        testing that functionality here. Since all the stuff uses the same boiler
+        plate code we're only testing it for one method call.
+        """
+        patched_client = PatchedClient(patients_update=[{
+            'dr_site_name': '',
+            'dr_site_id': '',
+            'age': '2%s' % i,
+            'sex': random.choice(['Male', 'Female']),
+            'celphone': '2712345678%s' % i,
+            'dr_status': '',
+            'te_id': '01-1234%s' % i,
+        } for i in range(0,10)])
+        self.importer.client.rpc_call = patched_client.rpc_call
+        updated_patients = self.importer.import_updated_patients(
+            clinic=self.clinic, 
+            since=(datetime.now() - timedelta(days=1)),
+            until=datetime.now()
+        )
+        updated_patients = list(updated_patients)
+        self.assertTrue(len(updated_patients) == 10)
+        self.assertTrue(isinstance(updated_patients[0], Patient))
     

@@ -3,6 +3,7 @@ from datetime import datetime, date, timedelta
 from therapyedge import reminders
 from therapyedge.models import *
 from therapyedge.tests.utils import random_string
+from gateway.models import SendSMS
 import hashlib
 import gateway
 
@@ -84,3 +85,81 @@ class RemindersI18NTestCase(TestCase):
         sms_set = missed_sms_set[self.language]
         self.assertTrue(self.patient.active_msisdn.msisdn in [sms.msisdn for sms in sms_set])
     
+    def test_send_stats(self):
+        today = datetime.now()
+        one_day = timedelta(days=1)
+        one_week = timedelta(weeks=1)
+        yesterday = today - one_day
+        tomorrow = today + one_day
+        two_weeks = today + (one_week * 2)
+        
+        # These settings are needed by the reminder script
+        from general.settings.models import Setting
+        Setting.objects.create(
+            name='Stats Emails',
+            type='t',
+            text_value='simon@soocial.com'
+        )
+        
+        Setting.objects.create(
+            name='Stats MSISDNs',
+            type='t',
+            text_value='27123456789'
+        )
+        
+        def create_visit(status, date):
+            """helper function for creating visits easily"""
+            return Visit.objects.create(
+                patient=self.patient, 
+                status=status,
+                clinic=self.clinic,
+                date=date
+            )
+        
+        # setup visits to test
+        visit_yesterday_attended = create_visit('a', yesterday)
+        visit_yesterday_missed = create_visit('m', yesterday)
+        visit_tomorrow_scheduled = create_visit('s', tomorrow)
+        visit_tomorrow_rescheduled = create_visit('r', tomorrow)
+        visit_two_weeks_scheduled = create_visit('s', two_weeks)
+        visit_two_weeks_rescheduled = create_visit('r', two_weeks)
+        
+        # send the SMSs over the dummy gateway
+        # FIXME: rename `all` method to something more explicit
+        reminders.all(gateway.gateway)
+        # send the stats
+        reminders.send_stats(gateway.gateway, today.date())
+        
+        # test the emails being sent out
+        from django.core import mail
+        self.assertEquals(len(mail.outbox), 1)
+        # our stats message is the only one in the outbox
+        message = mail.outbox[0]
+        # we're expecting it to have the following body, based on the visits
+        # created earlier
+        expecting_mail_body = reminders.REMINDERS_EMAIL_TEXT % {
+            'total': 6,
+            'date': today.date(),
+            'attended': 1,
+            'missed': 1,
+            'missed_percentage': (1.0/2.0 * 100), # 1 out of 2 visits was missed
+            'tomorrow': 2,
+            'two_weeks': 2
+        }
+        # check if this is so
+        self.assertEquals(message.body, expecting_mail_body)
+        self.assertTrue('simon@soocial.com' in message.to)
+        
+        # the latest SMS sent should be the stats SMS
+        stat_sms = SendSMS.objects.latest()
+        expecting_sms_text = reminders.REMINDERS_SMS_TEXT % {
+            'total': 6, 
+            'attended': 1,
+            'missed': 1, 
+            'missed_percentage': (1.0/2.0 * 100),
+            'tomorrow': 2, 
+            'two_weeks': 2,
+        }
+        self.assertEquals(stat_sms.smstext, expecting_sms_text)
+        self.assertEquals(stat_sms.msisdn, '27123456789')
+        

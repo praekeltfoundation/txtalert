@@ -1,34 +1,43 @@
 from django.core.management.base import BaseCommand
-from django.conf import settings
 from os.path import join
-from django.core.management.commands import test
+import commands
 
 class Command(BaseCommand):
-    option_list = test.Command.option_list
+    # option_list = test.Command.option_list
     help = 'Runs the test suite for the specified applications, or the entire ' \
     'site if no apps are specified and generate coverage report'
-    args = '[appname ...]'
     
     def handle(self, *test_labels, **options):
-        try:
-            
-            from coverage import coverage
-            
-            cov = coverage()
-            cov_dir = join(settings.APP_ROOT, "tmp", "coverage")
-            cov.start()
-            
-            command = test.Command()
-            command.handle(*test_labels, **options)
-            
-            cov.stop()
-            cov.html_report(directory=cov_dir, omit_prefixes=[
-                'django',
-                'lib'
-            ])
-            print '\n\nCoverage report available at %s/index.html' % cov_dir
-            
-        except ImportError, e:
-            print e
-            print "Coverage (http://nedbatchelder.com/code/coverage/) " \
-                    "is needed for code coverage"
+        """
+        Running coverage as an external tool to make sure that it is the first
+        lib that is loaded and properly checks all code from that point on. If
+        coverage is started at a later point the analysis can be incomplete.
+        """
+        
+        from django.conf import settings
+        
+        cov_dir = join(settings.APP_ROOT, "tmp", "coverage")
+        omit_dirs = [
+            'django',
+            'lib', 
+            'manage.py',
+        ]
+        
+        print 'Erasing previously collected coverage.py data'
+        status, output = commands.getstatusoutput("coverage erase")
+        print 'Running tests with coverage.py'
+        status, output = commands.getstatusoutput("coverage run ./manage.py test")
+        
+        if status is not 0:
+            print "Something went wrong running the tests:"
+            print output
+        else:
+            print 'Creating coverage.py html report, omitting directories: %s' % ', '.join(omit_dirs)
+            status, _ = commands.getstatusoutput("coverage html " +
+                                                    "-d %s " % cov_dir +
+                                                    "--omit=%s " % ','.join(omit_dirs))
+            if status is not 0:
+                print "Something went wrong generating the html report:"
+                print output
+            else:
+                print 'Coverage report available at %s/index.html' % cov_dir

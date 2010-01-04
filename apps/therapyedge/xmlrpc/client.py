@@ -75,6 +75,7 @@ class Client(object):
     
     def call_method(self, request, *args, **kwargs):
         """Call a method on the XML-RPC service, returning them as named tuples"""
+        print 'call_method called with: %s, %s, %s' % (request, args, kwargs)
         result_list = self.rpc_call(request, *args, **kwargs)
         if result_list:
             # convert 'patients_update' to 'PatientUpdate'
@@ -110,41 +111,41 @@ class Client(object):
     
 
 
-def introspect(client, *args, **kwargs):
-    methods = [
-        'get_all_patients',
-        'get_updated_patients',
-        'get_coming_visits',
-        'get_missed_visits',
-        'get_done_visits',
-        'get_deleted_visits'
-    ]
-    for method in methods:
-        try:
-            meth = getattr(client, method)
-            results = meth(*args, **kwargs)
-            if results:
-                print 'method:', method, 'records:', len(results), 'of type:', results[0]
-            else:
-                print method, 'returned an empty set'
-        except ProtocolError, e:
-            print method, 'raised a ProtocolError', e
-
-
-if __name__ == '__main__':
-    import os
-    from datetime import datetime, timedelta
-    uri = 'https://%s:%s@196.36.218.99/tools/ws/sms/patients/server.php' % (
-        os.environ['THERAPYEDGE_USERNAME'],
-        os.environ['THERAPYEDGE_PASSWORD']
-    )
-    
-    kwargs = {
-        'clinic_id': '02',  # magical I know, i think this is the Themba Lethu Clinic
-        'since': datetime.now() - timedelta(days=2),
-        'until': datetime.now() + timedelta(days=2)
-    }
-    
-    print "Introspecting with uri: %s" % uri
-    print "                  args: %s" % kwargs
-    introspect(Client(uri), **kwargs)
+# def introspect(client, *args, **kwargs):
+#     methods = [
+#         'get_all_patients',
+#         'get_updated_patients',
+#         'get_coming_visits',
+#         'get_missed_visits',
+#         'get_done_visits',
+#         'get_deleted_visits'
+#     ]
+#     for method in methods:
+#         try:
+#             meth = getattr(client, method)
+#             results = meth(*args, **kwargs)
+#             if results:
+#                 print 'method:', method, 'records:', len(results), 'of type:', results[0]
+#             else:
+#                 print method, 'returned an empty set'
+#         except ProtocolError, e:
+#             print method, 'raised a ProtocolError', e
+# 
+# 
+# if __name__ == '__main__':
+#     import os
+#     from datetime import datetime, timedelta
+#     uri = 'https://%s:%s@196.36.218.99/tools/ws/sms/patients/server.php' % (
+#         os.environ['THERAPYEDGE_USERNAME'],
+#         os.environ['THERAPYEDGE_PASSWORD']
+#     )
+#     
+#     kwargs = {
+#         'clinic_id': '02',  # magical I know, i think this is the Themba Lethu Clinic
+#         'since': datetime.now() - timedelta(days=2),
+#         'until': datetime.now() + timedelta(days=2)
+#     }
+#     
+#     print "Introspecting with uri: %s" % uri
+#     print "                  args: %s" % kwargs
+#     introspect(Client(uri), **kwargs)
