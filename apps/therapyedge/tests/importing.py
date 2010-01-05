@@ -79,6 +79,8 @@ class PatientImportTestCase(TestCase):
     
     def testAlterDetails(self):
         """duplicate 'te_id' import with altered details"""
+        original_patient = Patient.objects.get(te_id='02-12345')
+        original_history_count = original_patient.history.count()
         patient = self.importer.update_local_patient(create_instance(PatientUpdate, {
             'te_id': '02-12345', 
             'age': '35', 
@@ -93,7 +95,7 @@ class PatientImportTestCase(TestCase):
         self.assertEquals(patient.age, 35)
         self.assertEquals(patient.sex, 'f')
         self.assertEquals(patient.msisdns.latest('id').msisdn, '27821234321')
-        self.assertEquals(patient.history.count(), 2) # this is an update, should have 2 items in history
+        self.assertEquals(patient.history.count(), original_history_count + 1) # this is an update, should have a new history item
     
     def testDuplicateMsisdnImport(self):
         """duplicate 'msisdn' import"""

@@ -75,7 +75,6 @@ class Client(object):
     
     def call_method(self, request, *args, **kwargs):
         """Call a method on the XML-RPC service, returning them as named tuples"""
-        print 'call_method called with: %s, %s, %s' % (request, args, kwargs)
         result_list = self.rpc_call(request, *args, **kwargs)
         if result_list:
             # convert 'patients_update' to 'PatientUpdate'

@@ -17,6 +17,7 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Group
+from django.db.models.signals import post_save, pre_save
 from dirtyfields import DirtyFieldsMixin
 from history.models import HistoricalRecords
 
@@ -123,18 +124,6 @@ class Patient(DirtyFieldsMixin,models.Model):
     def __unicode__(self):
         return self.te_id
     
-    # Fixme: ugly on so many levels
-    def save(self, *args, **kwargs):
-        # save so that we have a PK
-        if self.is_dirty(): super(Patient, self).save(*args, **kwargs)
-        # Update the patients active_msisdn with the first in the list
-        # of available options if none have been set yet
-        if not self.active_msisdn and self.msisdns.count():
-            # there is no ordering, depend on the database to specify
-            # auto incrementing primary keys
-            self.active_msisdn = self.msisdns.latest('id')
-            self.save()
-    
     def delete(self):
         """
         Implementing soft delete, this isn't possible with signals as far
@@ -206,29 +195,6 @@ class Visit(models.Model):
     
 
 
-# class ImportEvent(models.Model):
-#     content_type = models.ForeignKey(ContentType)
-#     clinic = models.ForeignKey(Clinic, related_name='importevents')
-#     stamp = models.DateTimeField('Date & Time', auto_now_add=True)
-#     new = models.IntegerField('New Records')
-#     updated = models.IntegerField('Updated Records')
-#     errors = models.IntegerField('Errors')
-# 
-#     def __init__(self, *args, **kwargs):
-#         if 'events' in kwargs.keys():
-#             events = kwargs['events']
-#             del kwargs['events']
-#             kwargs.update({'new':events.new, 'updated':events.updated, 'errors':events.errors})
-#         super(ImportEvent, self).__init__(*args, **kwargs)
-# 
-#     class Meta:
-#         verbose_name = 'Import Event'
-#         verbose_name_plural = 'Import Events'
-# 
-#     def __unicode__(self):
-#         return '%s - New: %s, Updated: %s, Errors: %s' % (self.stamp, self.new, self.updated, self.errors)
-
-
 class PleaseCallMe(models.Model):
     REASON_CHOICES = (
         ('nc', 'Not Called'),
@@ -256,12 +222,11 @@ class PleaseCallMe(models.Model):
 
 
 # signals
-from django.db.models.signals import post_save, pre_save
 from therapyedge import signals
-from gateway.models import PleaseCallMe as OperaPleaseCallMe
+from gateway.models import PleaseCallMe as GatewayPleaseCallMe
 
 pre_save.connect(signals.check_for_opt_in_changes_handler, sender=Patient)
 pre_save.connect(signals.find_clinic_for_please_call_me_handler, sender=PleaseCallMe)
-
-post_save.connect(signals.track_please_call_me_handler, sender=OperaPleaseCallMe)
+pre_save.connect(signals.update_active_msisdn_handler, sender=Patient)
+post_save.connect(signals.track_please_call_me_handler, sender=GatewayPleaseCallMe)
 post_save.connect(signals.calculate_risk_profile_handler, sender=Visit)

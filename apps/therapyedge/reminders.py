@@ -70,7 +70,6 @@ def send_stats(gateway, today):
     
     # for every SMS sent we have an entry of SendSMS
     total_count = SendSMS.objects.filter(delivery__gte=today).count()
-    print 'total_count', total_count
     
     # send email with stats
     emails = Setting.objects.get(name='Stats Emails').value.split('\n')

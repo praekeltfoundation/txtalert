@@ -6,6 +6,7 @@ from therapyedge.tests.utils import (PatientUpdate, ComingVisit, MissedVisit,
                                         DoneVisit, DeletedVisit)
 from datetime import datetime, timedelta
 import random
+import logging
 import iso8601
 
 class ImporterTestCase(TestCase):
@@ -30,12 +31,12 @@ class ImporterTestCase(TestCase):
             '',                                 # dr_site_name
             '%s' % idx,                         # age, as string
             random.choice(SEX_MAP.keys()),      # sex
-            '2712345678%s' % idx,              # celphone
+            '2712345678%s' % idx,               # celphone
             random.choice(('true','false')),    # dr_status
             '02-7012%s' % idx                   # te_id
-        ) for idx in range(0,10)]
+        ) for idx in range(0, 10)]
         updated_patients = map(PatientUpdate._make, data)
-        local_patients = set(self.importer.update_local_patients(updated_patients))
+        local_patients = list(self.importer.update_local_patients(updated_patients))
         self.assertEquals(len(local_patients), 10)
         
         for updated_patient in updated_patients:
@@ -181,11 +182,11 @@ class PatchedClient(client.Client):
     def rpc_call(self, request, *args, **kwargs):
         """Mocking the response we get from TherapyEdge for a patients_update
         call"""
-        print 'patched rpc_call called with: %s, %s, %s' % (request, args, kwargs)
         if request in self.patches:
-            print 'returning patched value for', request
+            logging.debug('Mocked rpc_call called with: %s, %s, %s' % (request, args, kwargs))
             return self.patches[request]
         else:
+            print 'request not patched', request
             return super(PatchedClient, self).rpc_call(request, *args, **kwargs)
 
 class ImporterXmlRpcClientTestCase(TestCase):
@@ -194,7 +195,57 @@ class ImporterXmlRpcClientTestCase(TestCase):
     
     def setUp(self):
         self.importer = Importer()
-        self.clinic = Clinic.objects.all()[0]
+        
+        # patching the client to automatically return our specified result
+        # sets without doing an XML-RPC call
+        patched_client = PatchedClient(
+            patients_update=[{
+                    'dr_site_name': '',
+                    'dr_site_id': '',
+                    'age': '2%s' % i,
+                    'sex': random.choice(['Male', 'Female']),
+                    'celphone': '2712345678%s' % i,
+                    'dr_status': '',
+                    'te_id': patient.te_id,
+                } for i, patient in enumerate(Patient.objects.all())],
+            comingvisits=[{
+                    'dr_site_name': '',
+                    'dr_site_id': '',
+                    'dr_status': '',
+                    'scheduled_visit_date': str(datetime.now() + timedelta(days=2)),
+                    'key_id': '02-1234%s' % i,
+                    'te_id': patient.te_id,
+                } for i, patient in enumerate(Patient.objects.all())],
+            missedvisits=[{
+                    'dr_site_name': '',
+                    'dr_site_id': '',
+                    'missed_date': str(datetime.now() - timedelta(days=2)), 
+                    'dr_status': '', 
+                    'key_id': '03-1234%s' % i, 
+                    'te_id': patient.te_id
+                } for i, patient in enumerate(Patient.objects.all())],
+            donevisits=[{
+                    'done_date': str(datetime.now() - timedelta(days=2)), 
+                    'dr_site_id': '', 
+                    'dr_status': '', 
+                    'dr_site_name': '', 
+                    'scheduled_date': str(datetime.now() - timedelta(days=2)), 
+                    'key_id': '04-1234%s' % i, 
+                    'te_id': patient.te_id
+                } for i, patient in enumerate(Patient.objects.all())],
+            deletedvisits=[{
+                    'key_id': '02-1234%s' % i,
+                    'dr_status': '',
+                    'dr_site_id': '',
+                    'te_id': patient.te_id,
+                    'dr_site_name': ''
+                } for i, patient in enumerate(Patient.objects.all())]
+        )
+        # monkey patching
+        self.importer.client.rpc_call = patched_client.rpc_call
+        
+        self.clinic = Clinic.objects.all()[0] # make sure we have a clinic
+        self.assertTrue(Patient.objects.count()) # make sure our fixtures aren't empty
     
     def tearDown(self):
         pass
@@ -205,22 +256,57 @@ class ImporterXmlRpcClientTestCase(TestCase):
         testing that functionality here. Since all the stuff uses the same boiler
         plate code we're only testing it for one method call.
         """
-        patched_client = PatchedClient(patients_update=[{
-            'dr_site_name': '',
-            'dr_site_id': '',
-            'age': '2%s' % i,
-            'sex': random.choice(['Male', 'Female']),
-            'celphone': '2712345678%s' % i,
-            'dr_status': '',
-            'te_id': '01-1234%s' % i,
-        } for i in range(0,10)])
-        self.importer.client.rpc_call = patched_client.rpc_call
         updated_patients = self.importer.import_updated_patients(
             clinic=self.clinic, 
             since=(datetime.now() - timedelta(days=1)),
             until=datetime.now()
         )
         updated_patients = list(updated_patients)
-        self.assertTrue(len(updated_patients) == 10)
+        self.assertTrue(len(updated_patients), Patient.objects.count())
         self.assertTrue(isinstance(updated_patients[0], Patient))
     
+    def test_import_coming_visits(self):
+        coming_visits = self.importer.import_coming_visits(
+            clinic=self.clinic,
+            since=(datetime.now() - timedelta(days=1)),
+            until=datetime.now()
+        )
+        coming_visits = list(coming_visits)
+        self.assertEquals(len(coming_visits), Patient.objects.count())
+        self.assertTrue(isinstance(coming_visits[0], Visit))
+    
+    def test_missed_visits(self):
+        missed_visits = self.importer.import_missed_visits(
+            clinic=self.clinic,
+            since=(datetime.now() - timedelta(days=1)),
+            until=datetime.now()
+        )
+        missed_visits = list(missed_visits)
+        self.assertEquals(len(missed_visits), Patient.objects.count())
+        self.assertTrue(isinstance(missed_visits[0], Visit))
+    
+    def test_done_visits(self):
+        done_visits = self.importer.import_done_visits(
+            clinic=self.clinic,
+            since=(datetime.now() - timedelta(days=1)),
+            until=datetime.now()
+        )
+        done_visits = list(done_visits)
+        self.assertEquals(len(done_visits), Patient.objects.count())
+        self.assertTrue(isinstance(done_visits[0], Visit))
+    
+    def test_deleted_visits(self):
+        # first have some coming visits
+        coming_visits = list(self.importer.import_coming_visits(
+            clinic=self.clinic,
+            since=(datetime.now() - timedelta(days=1)),
+            until=datetime.now()
+        ))
+        # then mark them as deleted, they're matched because they
+        # have the same key_id
+        deleted_visits = list(self.importer.import_deleted_visits(
+            since=(datetime.now() - timedelta(days=1)),
+            until=datetime.now()
+        ))
+        self.assertEquals(len(deleted_visits), Patient.objects.count())
+        self.assertTrue(isinstance(deleted_visits[0], Visit))

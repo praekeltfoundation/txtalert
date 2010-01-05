@@ -33,7 +33,7 @@ def add_perms_to_user(username, permission): # perms as in permissions, not the 
 
 
 class OperaTestCase(TestCase):
-    
+    """FIXME: This should really be part of the gateway test suite"""
     def setUp(self):
         self.user = User.objects.create_user(username='user', \
                                                 email='user@domain.com', \

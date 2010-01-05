@@ -151,7 +151,6 @@ class Importer(object):
                                     age = Age(remote_patient.age),
                                     sex = Sex(remote_patient.sex)
                                 ).save()
-        
         if created:
             logger.debug('Patient created: %s' % patient)
         else:

@@ -1,5 +1,4 @@
-from therapyedge.models import PleaseCallMe, MSISDN, Visit
-from gateway import gateway
+from therapyedge.models import PleaseCallMe, MSISDN, Visit, Patient
 from datetime import datetime
 from django.db.models import Q
 
@@ -14,11 +13,10 @@ def track_please_call_me(opera_pcm):
     tricky because MSISDNs in txtAlert are involved in all sorts of ManyToMany 
     relationships."""
     msisdn, _ = MSISDN.objects.get_or_create(msisdn=opera_pcm.sender_msisdn)
-    contacts = Contact.objects.filter(active_msisdn=msisdn) or \
+    patients = Patient.objects.filter(active_msisdn=msisdn) or \
                 msisdn.contacts.all()
-    if contacts.count() == 1:
-        contact = contacts[0]
-        patient = contact.patient
+    if patients.count() == 1:
+        patient = patients[0]
         clinic = patient.last_clinic or patient.get_last_clinic()
         
         pcm = PleaseCallMe.objects.create(msisdn=msisdn, \
@@ -27,8 +25,9 @@ def track_please_call_me(opera_pcm):
         msg = 'Thank you for your Please Call me to %s. ' % clinic.name + \
                 'An administrator will phone you back within 24 hours ' + \
                 'to offer assistance.'
+        from gateway import gateway
         gateway.send_sms([msisdn.msisdn],[msg])
-    elif contacts.count() == 0:
+    elif patients.count() == 0:
         # not sure what to do in this situation yet
         logger.error('track_please_call_me: No contacts found for MSISDN: %s' % msisdn)
     else:
@@ -43,21 +42,16 @@ def calculate_risk_profile(visit):
     """Calculate the risk profile of the patient after the latest visit has been
     saved to the database. This MUST be a post_save signal handler otherwise 
     the calculation will always be one visit short."""
-    # FIXME, the main argument should be the Patient not the Visit, this method
-    #        is being too clever
     patient = visit.patient
-    if patient.visit_set.count() == 0:
-        patient.last_clinic = visit.clinic
+    patient.last_clinic = patient.get_last_clinic()
+    missed_visits = Visit.history.filter(patient=patient, status='m').count()
+    attended_visits = Visit.history.filter(patient=patient, status='a').count()
+    total_visits = missed_visits + attended_visits
+    if total_visits == 0:
+        patient.risk_profile = 0
     else:
-        patient.last_clinic = patient.get_last_clinic()
-        missed_visits = Visit.history.filter(patient=patient, status='m').count()
-        attended_visits = Visit.history.filter(patient=patient, status='a').count()
-        total_visits = missed_visits + attended_visits
-        if total_visits == 0:
-            patient.risk_profile = 0
-        else:
-            patient.risk_profile =  float(missed_visits) / total_visits
-        patient.save()
+        patient.risk_profile =  float(missed_visits) / total_visits
+    patient.save()
 
 
 def check_for_opt_in_changes_handler(sender, **kwargs):
@@ -83,4 +77,15 @@ def find_clinic_for_please_call_me(pcm):
         pcm.clinic = patient.get_last_clinic()
 
 
-    
+def update_active_msisdn_handler(sender, **kwargs):
+    return update_active_msisdn(kwargs['instance'])
+
+def update_active_msisdn(patient):
+    # only continue if we have a primary key set
+    if patient.pk:
+        # continue if nothing set as active, but we do have a list of options
+        if not patient.active_msisdn and patient.msisdns.count():
+            # there is no ordering, depend on the database to specify
+            # auto incrementing primary keys
+            patient.active_msisdn = patient.msisdns.latest('id')
+        
