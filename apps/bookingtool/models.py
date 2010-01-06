@@ -30,7 +30,7 @@ class BookingPatient(Patient):
     @property
     def appointments(self):
         midnight = datetime.now().date()
-        return self.visit_set.filter(date__gte=midnight)
+        return Visit.objects.filter(patient=self, date__gte=midnight)
     
     def determine_year_of_birth(self):
         year_of_birth = datetime.now().year - self.age

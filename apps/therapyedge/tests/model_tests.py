@@ -50,7 +50,7 @@ class ModelTestCase(TestCase):
     def test_patient_clinics(self):
         patient = Patient.objects.all()[0]
         self.assertEquals(patient.get_last_clinic(), None)
-        self.assertEquals(patient.clinics(), [])
+        self.assertEquals(patient.clinics(), set([]))
         
         visit = patient.visit_set.create(
             clinic=Clinic.objects.all()[0],

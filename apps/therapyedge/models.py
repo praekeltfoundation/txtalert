@@ -68,9 +68,6 @@ class Clinic(models.Model):
 
 
 class FilteredQuerySetManager(models.Manager):
-    
-    use_for_related_fields = True
-    
     def __init__(self, *args, **kwargs):
         super(FilteredQuerySetManager, self).__init__()
         self.args = args
@@ -136,11 +133,13 @@ class Patient(DirtyFieldsMixin,models.Model):
             self.save()
     
     def clinics(self):
-        return [visit.clinic for visit in self.visit_set.order_by('-date')]
+        return set([visit.clinic for visit in \
+                        Visit.objects.filter(patient=self).order_by('-date')])
     
     def get_last_clinic(self):
-        if self.visit_set.count(): 
-            return self.visit_set.latest('date').clinic
+        visit_qs = Visit.objects.filter(patient=self)
+        if visit_qs.count(): 
+            return visit_qs.latest('date').clinic
         return None
     
 
