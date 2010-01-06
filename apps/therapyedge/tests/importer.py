@@ -182,12 +182,8 @@ class PatchedClient(client.Client):
     def rpc_call(self, request, *args, **kwargs):
         """Mocking the response we get from TherapyEdge for a patients_update
         call"""
-        if request in self.patches:
-            logging.debug('Mocked rpc_call called with: %s, %s, %s' % (request, args, kwargs))
-            return self.patches[request]
-        else:
-            print 'request not patched', request
-            return super(PatchedClient, self).rpc_call(request, *args, **kwargs)
+        logging.debug('Mocked rpc_call called with: %s, %s, %s' % (request, args, kwargs))
+        return self.patches[request]
 
 class ImporterXmlRpcClientTestCase(TestCase):
     

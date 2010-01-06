@@ -64,7 +64,7 @@ def check_for_opt_in_changes(patient):
     if 'opted_in' in patient.get_dirty_fields():
         # here we should notify api client of the change in opt-in status 
         # mb via an HTTP push
-        pass
+        logger.debug('I should push changes somewhere')
     
 
 

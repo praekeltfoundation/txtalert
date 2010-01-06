@@ -30,9 +30,5 @@ class Gateway(object):
 
 gateway = Gateway()
 
-# @permission_required('gateway.can_place_sms_receipt')
-def sms_receipt_handler(self, request):
-    return HttpResponse(simplejson.dumps({
-        'success': [],
-        'fail': []
-    }), status=201, content_type='application/json; charset=utf-8')
+# no sms receipt handling for dummy gateway
+sms_receipt_handler = None

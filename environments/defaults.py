@@ -118,6 +118,6 @@ SMS_GATEWAY_CLASS = 'gateway.backends.opera'
 BOOKING_TOOL_RISK_LEVELS = {
     # pc is for patient count
     'high': lambda pc: pc > 100,
-    'medium': lambda pc: 50 <= pc < 100,
+    'medium': lambda pc: 50 <= pc <= 100,
     'low': lambda pc: pc < 50,
 }

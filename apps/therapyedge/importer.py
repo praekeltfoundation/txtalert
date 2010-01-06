@@ -47,13 +47,6 @@ class Validator(object):
         return klass.test(regex.match, 'does not match pattern %s' % pattern)
     
     @classmethod
-    def choice(klass, choices):
-        """Raises an InvalidValueException if the given input is not one of the
-        given choices"""
-        return klass.test(lambda value: value in choices, 
-                            'not one of the available choices: %s' % choices)
-    
-    @classmethod
     def lookup(klass, dictionary):
         def tester(value):
             if value not in dictionary:
@@ -81,13 +74,6 @@ Msisdn = Validator.regex(r'(0|[+]?27)([0-9]{9})')
 # to be normalized to one single format before entering the DB
 # MSISDNS_RE = re.compile(r'^([+]?(0|27)[0-9]{9}/?)+$')
 MSISDN_RE = re.compile(r'[+]?(0|27)([0-9]{9})')
-
-def get_object_or_none(model, *args, **kwargs):
-    """Like get_object_or_404 but then returns None instead of raising Http404"""
-    try:
-        return model.objects.get(*args, **kwargs)
-    except model.DoesNotExist, e:
-        return None
 
 class VisitException(Exception): pass
 
@@ -192,30 +178,18 @@ class Importer(object):
         # in the Visit object, if not - raise hell
         patient = Patient.objects.get(te_id=remote_visit.te_id)
         
-        visit = get_object_or_none(Visit, te_visit_id=remote_visit.key_id)
-        
-        # If the visit doesn't exist assume it's a new one
-        if not visit:
-            visit = Visit.objects.create(
-                te_visit_id=remote_visit.key_id,
-                clinic=clinic,
-                patient=patient,
-                date=iso8601.parse_date(remote_visit.scheduled_visit_date)
-            )
+        visit, created = Update(Visit) \
+                            .get(te_visit_id=remote_visit.key_id) \
+                            .update_attributes(
+                                clinic=clinic,
+                                patient=patient,
+                                date=iso8601.parse_date(remote_visit.scheduled_visit_date),
+                                status='s' # scheduled
+                            ).save()
+        if created:
             logger.debug('Creating new Visit: %s' % visit.id)
         else:
-            # if the dates differ between the existing date and the 
-            # date we're receiving from TherapyEdge then our data needs
-            # to be updated
-            scheduled_date = iso8601.parse_date(remote_visit.scheduled_visit_date)
-            if visit.date != scheduled_date:
-                logger.debug('Updating existing Visit: %s' % visit.id)
-                # not sure why the original version of the import script
-                # only updates the date and not the status
-                visit.date = scheduled_date
-                visit.status = 's'
-                visit.save()
-                
+            logger.debug('Updating existing Visit: %s' % visit.id)
         return visit
     
     def import_missed_visits(self, clinic, since, until=''):
@@ -242,7 +216,6 @@ class Importer(object):
     def update_local_missed_visit(self, clinic, remote_visit):
         # get the patient or raise error
         patient = Patient.objects.get(te_id=remote_visit.te_id)
-        visit = get_object_or_none(Visit, te_visit_id=remote_visit.key_id)
         missed_date = iso8601.parse_date(remote_visit.missed_date).date()
         
         # future missed dates are reschedules
@@ -251,15 +224,15 @@ class Importer(object):
         else:
             status = 'm' # missed
         
-        # make sure we have the visit which is going to be marked as missed
-        if not visit:
-            visit = Visit.objects.create(
-                te_visit_id=remote_visit.key_id,
-                clinic=clinic,
-                patient=patient,
-                date=missed_date,
-                status=status
-            )
+        visit, created = Update(Visit) \
+                            .get(te_visit_id=remote_visit.key_id) \
+                            .update_attributes(
+                                clinic=clinic,
+                                patient=patient,
+                                date=missed_date,
+                                status=status
+                            ).save()
+        if created:
             logger.debug('Creating new Visit: %s' % visit.id)
         else:
             logger.debug('Updating Visit:%s, date: %s, status: %s' % (
@@ -267,9 +240,6 @@ class Importer(object):
                 missed_date,
                 status
             ))
-            visit.date = missed_date
-            visit.status = status
-            visit.save()
         
         return visit
     
@@ -296,21 +266,20 @@ class Importer(object):
     def update_local_done_visit(self, clinic, remote_visit):
         # get patient or raise error
         patient = Patient.objects.get(te_id=remote_visit.te_id)
-        visit = get_object_or_none(Visit, te_visit_id=remote_visit.key_id)
         done_date = iso8601.parse_date(remote_visit.done_date).date()
         
-        # make sure we have a visit for the change we're getting
-        if not visit:
-            visit = Visit.objects.create(
-                te_visit_id=remote_visit.key_id,
-                clinic=clinic,
-                patient=patient,
-                date=done_date,
-                status='a'
-            )
-            
-            logger.debug('Creating new done Visit: %s' % visit.id)
+        visit, created = Update(Visit) \
+                            .get(te_visit_id=remote_visit.key_id) \
+                            .update_attributes(
+                                clinic=clinic,
+                                patient=patient,
+                                date=done_date,
+                                status='a'
+                            ).save()
         
+        # make sure we have a visit for the change we're getting
+        if created:
+            logger.debug('Creating new done Visit: %s' % visit.id)
         else:
             # done events we flag as a for 'attended', not sure why the orignal
             # import script did a get_or_create here. Maybe an error or 
@@ -320,10 +289,6 @@ class Importer(object):
                 done_date,
                 'a'
             ))
-            visit.date = done_date
-            visit.status = 'a'
-            visit.save()
-        
         return visit
     
     def import_deleted_visits(self, since, until=''):
@@ -349,12 +314,12 @@ class Importer(object):
         return visit
     
     def import_all_changes(self, clinic, since, until):
-        # I set these because they all are generators, setting them forces
+        # I set these because they all are generators, listing them forces
         # them to be iterated over
-        set(self.import_updated_patients(clinic, since, until))
-        set(self.import_coming_visits(clinic, since, until))
-        set(self.import_missed_visits(clinic, since, until))
-        set(self.import_done_visits(clinic, since, until))
-        set(self.import_deleted_visits(since, until))
+        list(self.import_updated_patients(clinic, since, until))
+        list(self.import_coming_visits(clinic, since, until))
+        list(self.import_missed_visits(clinic, since, until))
+        list(self.import_done_visits(clinic, since, until))
+        list(self.import_deleted_visits(since, until))
     
     

@@ -1,8 +1,10 @@
-import sys, traceback
-
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.importlib import import_module
+import sys
+import logging
+
+class GatewayException(Exception): pass
 
 def load_backend(backend):
     try:
@@ -13,8 +15,9 @@ def load_backend(backend):
         setattr(mod, 'sms_receipt_handler', backend.sms_receipt_handler)
         return backend, backend.gateway, backend.sms_receipt_handler
     except ImportError, e:
-        traceback.print_exc(file=sys.stdout)
-        raise e
+        logging.exception('ImportError while trying to load SMS gateway backend: %s'
+                            % backend)
+        raise GatewayException, 'SMS Backend %s does not exist' % backend
 
 
 load_backend(settings.SMS_GATEWAY_CLASS)

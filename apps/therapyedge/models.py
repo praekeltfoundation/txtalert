@@ -69,6 +69,8 @@ class Clinic(models.Model):
 
 class FilteredQuerySetManager(models.Manager):
     
+    use_for_related_fields = True
+    
     def __init__(self, *args, **kwargs):
         super(FilteredQuerySetManager, self).__init__()
         self.args = args

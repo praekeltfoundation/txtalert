@@ -25,8 +25,8 @@ def suggest(request):
         else:
             bp = BookingPatient.objects.get(pk=request.GET['patient_id'])
             treatment_cycle = int(request.GET.get('treatment_cycle',None) or bp.treatment_cycle)
-            if bp.visit_set.count():
-                last_visit = bp.visit_set.latest('date')
+            if Visit.objects.filter(patient=bp).count():
+                last_visit = Visit.objects.filter(patient=bp).latest('date')
                 # take last visit & calculate treatment_cycle amount of months forward
                 suggestion = last_visit.date + timedelta(treatment_cycle * 365 / 12)
             else:
@@ -41,10 +41,7 @@ def risk(request):
     if 'date' in request.GET:
         year, month, day = map(int, request.GET.get('date', None).split('-'))
         level = risk_on_date(date(year, month, day))
-        if level:
-            return HttpResponse(dumps({'risk': level}))
-        else:
-            return HttpResponse(dumps({'risk': 'unknown'}))
+        return HttpResponse(dumps({'risk': level}))
     else:
         raise Http404
 

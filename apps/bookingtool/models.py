@@ -1,5 +1,7 @@
 from django.db import models
+from django.db.models.signals import pre_save
 from therapyedge.models import Patient, Visit
+from bookingtool import signals
 from datetime import datetime
 
 class BookingPatient(Patient):
@@ -34,20 +36,8 @@ class BookingPatient(Patient):
         year_of_birth = datetime.now().year - self.age
         return datetime(day=1, month=1, year=year_of_birth)
     
-    def save(self, *args, **kwargs):
-        """If the date_of_birth isn't set, we automatically pin the date of 
-        birth based on the year, assuming the 1st of january."""
-        if not self.date_of_birth:
-            self.date_of_birth = self.determine_year_of_birth()
-        
-        """If the patient was opted in and our opt_status hasn't been set yet
-        automatically set it to 'opt-in' based on the patient record"""
-        if self.opted_in and not self.opt_status:
-            self.opt_status = 'opt-in'
-        
-        """and the other way around as well"""
-        if self.opt_status == 'opt-in' and not self.opted_in:
-            self.opted_in = True
-        
-        return super(Patient, self).save(*args, **kwargs)
 
+pre_save.connect(
+    receiver=signals.pre_save_booking_patient_handler, 
+    sender=BookingPatient
+)

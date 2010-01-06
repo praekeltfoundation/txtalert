@@ -67,12 +67,7 @@ class SendSMS(models.Model):
         get_latest_by = 'delivery'
     
     def __unicode__(self):
-        return u"SendSMS %s - %s" % (self.identifier, self.msisdn)
-    
-    @models.permalink
-    def get_absolute_url(self):
-        return ('SendSMS', [self.id])
-    
+        return u"SendSMS: %s - %s" % (self.identifier, self.msisdn)
 
 
 class PleaseCallMe(models.Model):
@@ -94,7 +89,3 @@ class PleaseCallMe(models.Model):
     def __unicode__(self):
         return u"PleaseCallMe: %s" % self.sender_msisdn
 
-    @models.permalink
-    def get_absolute_url(self):
-        return ('PleaseCallMe', [self.id])
-    

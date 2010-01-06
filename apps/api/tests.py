@@ -69,7 +69,7 @@ class OperaTestCase(TestCase):
         self.assertEquals(sent_smss[0].smstext, 'testing hello')
         
     
-    def test_receipt_processing(self):
+    def test_good_receipt_processing(self):
         """Test the receipt XML we get back from Opera when a message has been 
         sent successfully"""
         raw_xml_post = """
@@ -142,7 +142,83 @@ class OperaTestCase(TestCase):
             self.assertEquals(send_sms.delivery_timestamp, datetime.strptime(receipt.timestamp, OPERA_TIMESTAMP_FORMAT))
             self.assertEquals(send_sms.status, 'D')
     
+    def test_bad_receipt_processing(self):
+        """Test behaviour when we receive a receipt that doesn't match
+        anything we know"""
+        raw_xml_post = """
+        <?xml version="1.0"?>
+        <!DOCTYPE receipts>
+        <receipts>
+          <receipt>
+            <msgid>26567958</msgid>
+            <reference>001efc31</reference>
+            <msisdn>+44727204592</msisdn>
+            <status>D</status>
+            <timestamp>20080831T15:59:24</timestamp>
+            <billed>NO</billed>
+          </receipt>
+          <receipt>
+            <msgid>26750677</msgid>
+            <reference>001f4041</reference>
+            <msisdn>+44733476814</msisdn>
+            <status>D</status>
+            <timestamp>20080907T09:42:28</timestamp>
+            <billed>NO</billed>
+          </receipt>
+        </receipts>
+        """
+        
+        # fake us having sent SMSs and having stored the proper identifiers
+        tree = ET.fromstring(raw_xml_post.strip())
+        receipts = map(element_to_namedtuple, tree.findall('receipt'))
+        
+        for receipt in receipts:
+            [send_sms] = gateway.send_sms([receipt.msisdn], ['testing %s' % receipt.reference])
+            # manually specifiy the identifier so we can compare it later with the
+            # posted receipt
+            send_sms.identifier = 'a-bad-id' # this is going to cause a failure
+            send_sms.save()
+        
+        # mimick POSTed receipt from Opera
+        add_perms_to_user('user','can_place_sms_receipt')
+        
+        from django.http import HttpRequest
+        request = HttpRequest()
+        request.method = 'POST'
+        request.raw_post_data = raw_xml_post.strip()
+        request.META['CONTENT_TYPE'] = 'text/xml'
+        request.META['HTTP_AUTHORIZATION'] = basic_auth_string('user', 'password')
+        request.user = User.objects.get(username='user')
+        
+        # ugly monkey patching to avoid us having to use a URL to test the opera
+        # backend
+        from gateway.backends.opera.views import sms_receipt_handler
+        from api.handlers import SMSReceiptHandler
+        SMSReceiptHandler.create = sms_receipt_handler
+        response = SMSReceiptHandler().create(request)
+        
+        # it should return a JSON response
+        self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
+        
+        # test the json response
+        from django.utils import simplejson
+        data = simplejson.loads(response.content)
+        self.assertTrue(data.keys(), ['fail','success'])
+        # all should've failed
+        self.assertEquals(len(data['fail']), 2)
+        # we should get the dict back representing the receipt
+        self.assertEquals([r._asdict() for r in receipts], data['fail'])
+        
+        # check database state
+        for receipt in receipts:
+            self.assertRaises(
+                SendSMS.DoesNotExist,   # exception expected
+                SendSMS.objects.get,    # callback
+                msisdn=receipt.msisdn,  # args
+                identifier=receipt.reference
+            )
     
+
 
 class SmsGatewayTestCase(TestCase):
     """Testing the opera gateway interactions"""
@@ -154,8 +230,8 @@ class SmsGatewayTestCase(TestCase):
         self.user.save()
     
     def test_send_sms(self):
-        [send_sms,] = gateway.send_sms(['27764493806'],['testing'])
-        self.failUnless(SendSMS.objects.filter(msisdn='27764493806'))
+        [send_sms,] = gateway.send_sms(['27123456789'],['testing'])
+        self.failUnless(SendSMS.objects.filter(msisdn='27123456789'))
     
     def test_json_sms_statistics_auth(self):
         response = self.client.get(reverse('api-sms',kwargs={'emitter_format':'json'}), 
@@ -171,6 +247,52 @@ class SmsGatewayTestCase(TestCase):
         
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
+    
+    def test_json_sms_statistics_bad_request(self):
+        add_perms_to_user('user', 'can_view_sms_statistics')
+        response = self.client.get(
+            reverse('api-sms', kwargs={'emitter_format':'json'}), 
+            {}, # not providing the `since` parameter, should return a bad request
+            HTTP_AUTHORIZATION=basic_auth_string('user','password')
+        )
+        
+        self.assertEquals(response.status_code, 400) # Bad request
+        self.assertEquals(response['Content-Type'], 'text/plain')
+    
+    def test_json_sms_statistics_with_msisdn_and_identifier(self):
+        add_perms_to_user('user', 'can_view_sms_statistics')
+        
+        # this should raise an error becasue the SendSMS with these attributes
+        # doesn't exist yet
+        def do_request():
+            return self.client.get(
+                reverse('api-sms', kwargs={
+                    'emitter_format': 'json',
+                    'identifier': 'a' * 8,
+                    'msisdn': '27123456789'
+                }),
+                {},
+                HTTP_AUTHORIZATION=basic_auth_string('user', 'password')
+            )
+        response = do_request()
+        self.assertEquals(response.status_code, 500) 
+        
+        # now create it and repeat
+        sms = SendSMS.objects.create(
+            identifier='a' * 8, 
+            msisdn='27123456789',
+            delivery=datetime.now(),
+            expiry=datetime.now(),
+            smstext='',
+            priority='Standard',
+            receipt='Y',
+        )
+        response = do_request()
+        self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
+        data = simplejson.loads(response.content)
+        self.assertEquals(data['status'], sms.status)
+        self.assertEquals(data['msisdn'], sms.msisdn)
+        self.assertEquals(data['identifier'], 'a' * 8)
     
     def test_send_sms_json_response(self):
         add_perms_to_user('user', 'can_send_sms')
@@ -261,6 +383,21 @@ class PcmAutomationTestCase(TestCase):
         for key, value in parameters.items():
             self.assertEquals(getattr(pcm, key), value)
     
+    def test_pcm_receiving_bad_request(self):
+        add_perms_to_user('user', 'can_place_pcm')
+        
+        parameters = {
+            # no parameters, should raise an error
+        }
+        
+        response = self.client.post(
+            reverse('api-pcm', kwargs={'emitter_format':'json'}),
+            parameters,
+            HTTP_AUTHORIZATION=basic_auth_string('user','password')
+        )
+        
+        self.assertEquals(response.status_code, 400) # Bad Request
+    
     def test_pcm_statistics(self):
         response = self.client.get(reverse('api-pcm', kwargs={'emitter_format':'json'}), 
                                 HTTP_AUTHORIZATION=basic_auth_string('invalid', 'user'))
@@ -302,6 +439,17 @@ class PcmAutomationTestCase(TestCase):
         # test the fields exposed by the PCMHandler
         for key in ('sms_id', 'sender_msisdn', 'recipient_msisdn'):
             self.assertEquals(parameters[key], first_item[key])
+    
+    def test_pcm_statistics_bad_request(self):
+        add_perms_to_user('user', 'can_place_pcm')
+        add_perms_to_user('user', 'can_view_pcm_statistics')
+        response = self.client.get(
+            reverse('api-pcm', kwargs={'emitter_format':'json'}), 
+            {}, # missing `since` parameter should raise error
+            HTTP_AUTHORIZATION=basic_auth_string('user','password')
+        )
+        
+        self.assertEquals(response.status_code, 400)
     
 
         
