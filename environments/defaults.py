@@ -98,6 +98,7 @@ TEMPLATE_DIRS = (
 ROOT_URLCONF = 'urls'
 
 INSTALLED_APPS = (
+    'core',
     'general.settings',
     'general.jquery',
     'therapyedge',

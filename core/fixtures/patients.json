@@ -18,9 +18,7 @@
             "sex":"m",
             "opted_in":true,
             "disclosed":true,
-            "deceased":false,
-			"created_at": "1977-12-12",
-			"updated_at": "1977-12-12"
+            "deceased":false
         }
     },
 
@@ -42,9 +40,7 @@
             "sex":"f",
             "opted_in":true,
             "disclosed":true,
-            "deceased":false,
-			"created_at": "1977-12-12",
-			"updated_at": "1977-12-12"
+            "deceased":false
         }
     }
 

@@ -1,20 +1,20 @@
 [{
     "pk": 1,
-    "model": "therapyedge.msisdn",
+    "model": "core.msisdn",
     "fields": {
         "msisdn": "27821111111"
     }
 },
 {
     "pk": 2,
-    "model": "therapyedge.msisdn",
+    "model": "core.msisdn",
     "fields": {
         "msisdn": "27822222222"
     }
 },
 {
     "pk": 1,
-    "model": "therapyedge.language",
+    "model": "core.language",
     "fields": {
         "tomorrow_message": "See you at the clinic tomorrow morning.",
         "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
@@ -25,7 +25,7 @@
 },
 {
     "pk": 2,
-    "model": "therapyedge.language",
+    "model": "core.language",
     "fields": {
         "tomorrow_message": "See you at the clinic tomorrow morning.",
         "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
@@ -36,7 +36,7 @@
 },
 {
     "pk": 3,
-    "model": "therapyedge.language",
+    "model": "core.language",
     "fields": {
         "tomorrow_message": "See you at the clinic tomorrow morning.",
         "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
@@ -47,7 +47,7 @@
 },
 {
     "pk": 4,
-    "model": "therapyedge.language",
+    "model": "core.language",
     "fields": {
         "tomorrow_message": "See you at the clinic tomorrow morning.",
         "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
@@ -58,7 +58,7 @@
 },
 {
     "pk": 5,
-    "model": "therapyedge.language",
+    "model": "core.language",
     "fields": {
         "tomorrow_message": "See you at the clinic tomorrow morning.",
         "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
@@ -69,7 +69,7 @@
 },
 {
     "pk": 6,
-    "model": "therapyedge.language",
+    "model": "core.language",
     "fields": {
         "tomorrow_message": "See you at the clinic tomorrow morning.",
         "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
@@ -80,7 +80,7 @@
 },
 {
     "pk": 7,
-    "model": "therapyedge.language",
+    "model": "core.language",
     "fields": {
         "tomorrow_message": "See you at the clinic tomorrow morning.",
         "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
@@ -91,7 +91,7 @@
 },
 {
     "pk": 8,
-    "model": "therapyedge.language",
+    "model": "core.language",
     "fields": {
         "tomorrow_message": "See you at the clinic tomorrow morning.",
         "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
@@ -102,7 +102,7 @@
 },
 {
     "pk": 9,
-    "model": "therapyedge.language",
+    "model": "core.language",
     "fields": {
         "tomorrow_message": "See you at the clinic tomorrow morning.",
         "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
@@ -113,7 +113,7 @@
 },
 {
     "pk": 10,
-    "model": "therapyedge.language",
+    "model": "core.language",
     "fields": {
         "tomorrow_message": "See you at the clinic tomorrow morning.",
         "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
@@ -124,7 +124,7 @@
 },
 {
     "pk": 11,
-    "model": "therapyedge.language",
+    "model": "core.language",
     "fields": {
         "tomorrow_message": "See you at the clinic tomorrow morning.",
         "attended_message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
@@ -135,7 +135,7 @@
 },
 {
     "pk": 2,
-    "model": "therapyedge.clinic",
+    "model": "core.clinic",
     "fields": {
         "group": null,
         "name": "Crosby",
@@ -144,7 +144,7 @@
 },
 {
     "pk": 1,
-    "model": "therapyedge.clinic",
+    "model": "core.clinic",
     "fields": {
         "group": null,
         "name": "Test Clinic",
@@ -153,7 +153,7 @@
 },
 {
     "pk": 1,
-    "model": "therapyedge.patient",
+    "model": "core.patient",
     "fields": {
         "msisdns": [1],
 		"active_msisdn": null,
@@ -172,7 +172,7 @@
 },
 {
     "pk": 2,
-    "model": "therapyedge.patient",
+    "model": "core.patient",
     "fields": {
         "msisdns": [1],
 		"active_msisdn": null,
@@ -191,7 +191,7 @@
 },
 {
     "pk": 3,
-    "model": "therapyedge.patient",
+    "model": "core.patient",
     "fields": {
         "msisdns": [1],
 		"active_msisdn": null,
@@ -210,7 +210,7 @@
 },
 {
     "pk": 436,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -222,7 +222,7 @@
 },
 {
     "pk": 427,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -234,7 +234,7 @@
 },
 {
     "pk": 428,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -246,7 +246,7 @@
 },
 {
     "pk": 429,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -258,7 +258,7 @@
 },
 {
     "pk": 430,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -270,7 +270,7 @@
 },
 {
     "pk": 431,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -282,7 +282,7 @@
 },
 {
     "pk": 432,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -294,7 +294,7 @@
 },
 {
     "pk": 433,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -306,7 +306,7 @@
 },
 {
     "pk": 434,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -318,7 +318,7 @@
 },
 {
     "pk": 435,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -330,7 +330,7 @@
 },
 {
     "pk": 476,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -342,7 +342,7 @@
 },
 {
     "pk": 477,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -354,7 +354,7 @@
 },
 {
     "pk": 478,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -366,7 +366,7 @@
 },
 {
     "pk": 479,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -378,7 +378,7 @@
 },
 {
     "pk": 480,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -390,7 +390,7 @@
 },
 {
     "pk": 481,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -402,7 +402,7 @@
 },
 {
     "pk": 482,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -414,7 +414,7 @@
 },
 {
     "pk": 483,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -426,7 +426,7 @@
 },
 {
     "pk": 484,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -438,7 +438,7 @@
 },
 {
     "pk": 485,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -450,7 +450,7 @@
 },
 {
     "pk": 486,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -462,7 +462,7 @@
 },
 {
     "pk": 487,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -474,7 +474,7 @@
 },
 {
     "pk": 437,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -486,7 +486,7 @@
 },
 {
     "pk": 438,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -498,7 +498,7 @@
 },
 {
     "pk": 439,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -510,7 +510,7 @@
 },
 {
     "pk": 440,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -522,7 +522,7 @@
 },
 {
     "pk": 441,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -534,7 +534,7 @@
 },
 {
     "pk": 442,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -546,7 +546,7 @@
 },
 {
     "pk": 443,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -558,7 +558,7 @@
 },
 {
     "pk": 444,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -570,7 +570,7 @@
 },
 {
     "pk": 445,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -582,7 +582,7 @@
 },
 {
     "pk": 446,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -594,7 +594,7 @@
 },
 {
     "pk": 447,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -606,7 +606,7 @@
 },
 {
     "pk": 448,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -618,7 +618,7 @@
 },
 {
     "pk": 449,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -630,7 +630,7 @@
 },
 {
     "pk": 450,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -642,7 +642,7 @@
 },
 {
     "pk": 451,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -654,7 +654,7 @@
 },
 {
     "pk": 452,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -666,7 +666,7 @@
 },
 {
     "pk": 453,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -678,7 +678,7 @@
 },
 {
     "pk": 454,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -690,7 +690,7 @@
 },
 {
     "pk": 455,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -702,7 +702,7 @@
 },
 {
     "pk": 456,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -714,7 +714,7 @@
 },
 {
     "pk": 457,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -726,7 +726,7 @@
 },
 {
     "pk": 458,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -738,7 +738,7 @@
 },
 {
     "pk": 459,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -750,7 +750,7 @@
 },
 {
     "pk": 460,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -762,7 +762,7 @@
 },
 {
     "pk": 461,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -774,7 +774,7 @@
 },
 {
     "pk": 462,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -786,7 +786,7 @@
 },
 {
     "pk": 463,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -798,7 +798,7 @@
 },
 {
     "pk": 464,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -810,7 +810,7 @@
 },
 {
     "pk": 466,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -822,7 +822,7 @@
 },
 {
     "pk": 465,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -834,7 +834,7 @@
 },
 {
     "pk": 467,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -846,7 +846,7 @@
 },
 {
     "pk": 468,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -858,7 +858,7 @@
 },
 {
     "pk": 469,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -870,7 +870,7 @@
 },
 {
     "pk": 470,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -882,7 +882,7 @@
 },
 {
     "pk": 471,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -894,7 +894,7 @@
 },
 {
     "pk": 472,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -906,7 +906,7 @@
 },
 {
     "pk": 473,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -918,7 +918,7 @@
 },
 {
     "pk": 474,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -930,7 +930,7 @@
 },
 {
     "pk": 475,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -942,7 +942,7 @@
 },
 {
     "pk": 548,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -954,7 +954,7 @@
 },
 {
     "pk": 549,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -966,7 +966,7 @@
 },
 {
     "pk": 550,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -978,7 +978,7 @@
 },
 {
     "pk": 551,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -990,7 +990,7 @@
 },
 {
     "pk": 552,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1002,7 +1002,7 @@
 },
 {
     "pk": 553,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1014,7 +1014,7 @@
 },
 {
     "pk": 554,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1026,7 +1026,7 @@
 },
 {
     "pk": 555,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1038,7 +1038,7 @@
 },
 {
     "pk": 556,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1050,7 +1050,7 @@
 },
 {
     "pk": 557,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1062,7 +1062,7 @@
 },
 {
     "pk": 558,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1074,7 +1074,7 @@
 },
 {
     "pk": 559,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1086,7 +1086,7 @@
 },
 {
     "pk": 560,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1098,7 +1098,7 @@
 },
 {
     "pk": 561,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1110,7 +1110,7 @@
 },
 {
     "pk": 562,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1122,7 +1122,7 @@
 },
 {
     "pk": 563,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1134,7 +1134,7 @@
 },
 {
     "pk": 564,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1146,7 +1146,7 @@
 },
 {
     "pk": 565,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1158,7 +1158,7 @@
 },
 {
     "pk": 566,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1170,7 +1170,7 @@
 },
 {
     "pk": 567,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1182,7 +1182,7 @@
 },
 {
     "pk": 568,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1194,7 +1194,7 @@
 },
 {
     "pk": 569,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1206,7 +1206,7 @@
 },
 {
     "pk": 570,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1218,7 +1218,7 @@
 },
 {
     "pk": 571,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1230,7 +1230,7 @@
 },
 {
     "pk": 572,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1242,7 +1242,7 @@
 },
 {
     "pk": 573,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1254,7 +1254,7 @@
 },
 {
     "pk": 574,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1266,7 +1266,7 @@
 },
 {
     "pk": 575,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1278,7 +1278,7 @@
 },
 {
     "pk": 576,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1290,7 +1290,7 @@
 },
 {
     "pk": 577,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1302,7 +1302,7 @@
 },
 {
     "pk": 578,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1314,7 +1314,7 @@
 },
 {
     "pk": 579,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1326,7 +1326,7 @@
 },
 {
     "pk": 580,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1338,7 +1338,7 @@
 },
 {
     "pk": 581,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1350,7 +1350,7 @@
 },
 {
     "pk": 582,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1362,7 +1362,7 @@
 },
 {
     "pk": 583,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1374,7 +1374,7 @@
 },
 {
     "pk": 584,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1386,7 +1386,7 @@
 },
 {
     "pk": 585,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1398,7 +1398,7 @@
 },
 {
     "pk": 586,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1410,7 +1410,7 @@
 },
 {
     "pk": 587,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1422,7 +1422,7 @@
 },
 {
     "pk": 588,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1434,7 +1434,7 @@
 },
 {
     "pk": 488,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1446,7 +1446,7 @@
 },
 {
     "pk": 489,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1458,7 +1458,7 @@
 },
 {
     "pk": 490,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1470,7 +1470,7 @@
 },
 {
     "pk": 491,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1482,7 +1482,7 @@
 },
 {
     "pk": 492,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1494,7 +1494,7 @@
 },
 {
     "pk": 493,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1506,7 +1506,7 @@
 },
 {
     "pk": 494,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1518,7 +1518,7 @@
 },
 {
     "pk": 495,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1530,7 +1530,7 @@
 },
 {
     "pk": 496,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1542,7 +1542,7 @@
 },
 {
     "pk": 497,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1554,7 +1554,7 @@
 },
 {
     "pk": 498,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1566,7 +1566,7 @@
 },
 {
     "pk": 499,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1578,7 +1578,7 @@
 },
 {
     "pk": 500,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1590,7 +1590,7 @@
 },
 {
     "pk": 501,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1602,7 +1602,7 @@
 },
 {
     "pk": 502,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1614,7 +1614,7 @@
 },
 {
     "pk": 503,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1626,7 +1626,7 @@
 },
 {
     "pk": 504,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1638,7 +1638,7 @@
 },
 {
     "pk": 505,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1650,7 +1650,7 @@
 },
 {
     "pk": 506,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1662,7 +1662,7 @@
 },
 {
     "pk": 507,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1674,7 +1674,7 @@
 },
 {
     "pk": 508,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1686,7 +1686,7 @@
 },
 {
     "pk": 509,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1698,7 +1698,7 @@
 },
 {
     "pk": 510,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1710,7 +1710,7 @@
 },
 {
     "pk": 511,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1722,7 +1722,7 @@
 },
 {
     "pk": 512,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1734,7 +1734,7 @@
 },
 {
     "pk": 513,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1746,7 +1746,7 @@
 },
 {
     "pk": 514,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1758,7 +1758,7 @@
 },
 {
     "pk": 515,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1770,7 +1770,7 @@
 },
 {
     "pk": 516,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1782,7 +1782,7 @@
 },
 {
     "pk": 517,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1794,7 +1794,7 @@
 },
 {
     "pk": 518,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1806,7 +1806,7 @@
 },
 {
     "pk": 519,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1818,7 +1818,7 @@
 },
 {
     "pk": 520,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1830,7 +1830,7 @@
 },
 {
     "pk": 521,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1842,7 +1842,7 @@
 },
 {
     "pk": 522,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1854,7 +1854,7 @@
 },
 {
     "pk": 523,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1866,7 +1866,7 @@
 },
 {
     "pk": 524,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1878,7 +1878,7 @@
 },
 {
     "pk": 525,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1890,7 +1890,7 @@
 },
 {
     "pk": 526,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1902,7 +1902,7 @@
 },
 {
     "pk": 527,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1914,7 +1914,7 @@
 },
 {
     "pk": 528,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1926,7 +1926,7 @@
 },
 {
     "pk": 529,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1938,7 +1938,7 @@
 },
 {
     "pk": 530,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1950,7 +1950,7 @@
 },
 {
     "pk": 531,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1962,7 +1962,7 @@
 },
 {
     "pk": 532,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1974,7 +1974,7 @@
 },
 {
     "pk": 533,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1986,7 +1986,7 @@
 },
 {
     "pk": 534,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -1998,7 +1998,7 @@
 },
 {
     "pk": 535,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2010,7 +2010,7 @@
 },
 {
     "pk": 536,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2022,7 +2022,7 @@
 },
 {
     "pk": 537,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2034,7 +2034,7 @@
 },
 {
     "pk": 538,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2046,7 +2046,7 @@
 },
 {
     "pk": 539,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2058,7 +2058,7 @@
 },
 {
     "pk": 540,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2070,7 +2070,7 @@
 },
 {
     "pk": 541,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2082,7 +2082,7 @@
 },
 {
     "pk": 542,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2094,7 +2094,7 @@
 },
 {
     "pk": 543,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2106,7 +2106,7 @@
 },
 {
     "pk": 544,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2118,7 +2118,7 @@
 },
 {
     "pk": 545,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2130,7 +2130,7 @@
 },
 {
     "pk": 546,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2142,7 +2142,7 @@
 },
 {
     "pk": 547,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "m",
         "patient": 3,
@@ -2154,7 +2154,7 @@
 },
 {
     "pk": 1,
-    "model": "therapyedge.visit",
+    "model": "core.visit",
     "fields": {
         "status": "s",
         "patient": 1,

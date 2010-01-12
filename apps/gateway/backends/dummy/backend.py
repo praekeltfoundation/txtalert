@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import permission_required
 
 from gateway.models import SendSMS
 
-from therapyedge.tests.utils import random_string
+from core.utils import random_string
 from datetime import datetime, timedelta
 
 class Gateway(object):

@@ -7,9 +7,7 @@
             "patient":"1",
             "te_visit_id":"01-123456789",
             "date":"2100-06-01",
-            "status":"s",
-			"created_at": "1977-12-12",
-			"updated_at": "1977-12-12"
+            "status":"s"
         }
     }
 ]

@@ -19,7 +19,7 @@ from django.db import models
 from django.contrib import admin
 from bookingtool.models import BookingPatient
 from bookingtool import widgets
-from therapyedge.models import Visit
+from core.models import Visit
 
 class VisitInlineAdmin(admin.TabularInline):
     model =  Visit
