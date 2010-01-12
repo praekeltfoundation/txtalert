@@ -1,7 +1,7 @@
 from django.test import TestCase
 from datetime import datetime, date, timedelta
 from therapyedge import reminders
-from therapyedge.models import *
+from core.models import *
 from therapyedge.tests.utils import random_string
 from gateway.models import SendSMS
 import hashlib

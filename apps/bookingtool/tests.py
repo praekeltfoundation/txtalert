@@ -10,12 +10,14 @@ from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.db.models.query import QuerySet
 from django.utils import simplejson
-from therapyedge.models import *
+from core.models import *
 from gateway.models import SendSMS
-from gateway import gateway
+
 from bookingtool.models import *
 from datetime import datetime, timedelta, date
-
+import gateway
+_, gateway, sms_receipt_handler = gateway.load_backend('gateway.backends.dummy')
+                            
 def create_booking_patient():
     booking_patient = BookingPatient()
     

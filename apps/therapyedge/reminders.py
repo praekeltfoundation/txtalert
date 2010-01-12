@@ -21,7 +21,7 @@ from django.core import mail
 
 from general.settings.models import Setting
 from gateway.models import SendSMS
-from therapyedge.models import Visit
+from core.models import Visit
 
 
 REMINDERS_EMAIL_TEXT = \
