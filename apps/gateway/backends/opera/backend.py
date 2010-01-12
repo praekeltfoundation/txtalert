@@ -49,9 +49,9 @@ class Gateway(object):
 
 # FIXME, this is hideous
 gateway = Gateway('https://dragon.sa.operatelecom.com:1089/Gateway', 
-                    settings.get('OPERA_SERVICE', os.environ['OPERA_SERVICE']), 
-                    settings.get('OPERA_PASSWORD', os.environ['OPERA_PASSWORD']), 
-                    settings.get('OPERA_CHANNEL', os.environ['OPERA_CHANNEL']), 
+                    getattr(settings, 'OPERA_SERVICE', os.environ['OPERA_SERVICE']), 
+                    getattr(settings, 'OPERA_PASSWORD', os.environ['OPERA_PASSWORD']), 
+                    getattr(settings, 'OPERA_CHANNEL', os.environ['OPERA_CHANNEL']), 
                     verbose=True)
 
 from views import sms_receipt_handler
