@@ -1,15 +1,13 @@
 [
     {
         "pk":"1",
-        "model":"core.visit",
+        "model":"therapyedge.visit",
         "fields":{
             "clinic":"1",
             "patient":"1",
             "te_visit_id":"01-123456789",
             "date":"2100-06-01",
-            "status":"s",
-            "created_at": "1975-12-12",
-            "updated_at": "1975-12-12"
+            "status":"s"
         }
     }
 ]

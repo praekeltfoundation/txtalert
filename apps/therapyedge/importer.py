@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 from therapyedge.xmlrpc.client import Client
-from txtalert.core.models import Patient, MSISDN, Visit, Clinic
+from therapyedge.models import Patient, MSISDN, Visit, Clinic
 
 import iso8601
 import re

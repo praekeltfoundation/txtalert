@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models.signals import pre_save
-from txtalert.core.models import Patient, Visit
+from therapyedge.models import Patient, Visit
 from bookingtool import signals
 from datetime import datetime
 
