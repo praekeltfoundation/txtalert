@@ -1,5 +1,5 @@
 from django.test import TestCase
-from core.models import *
+from txtalert.core.models import *
 from datetime import datetime
 
 class ModelTestCase(TestCase):
@@ -64,7 +64,7 @@ class ModelTestCase(TestCase):
 
 from django.test import TestCase
 from gateway.models import PleaseCallMe as GatewayPleaseCallMe
-from core.models import PleaseCallMe, Patient, Clinic, MSISDN
+from txtalert.core.models import PleaseCallMe, Patient, Clinic, MSISDN
 from datetime import datetime, timedelta
 
 class PleaseCallMeTestCase(TestCase):

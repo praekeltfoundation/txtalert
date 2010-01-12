@@ -10,7 +10,7 @@ from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.db.models.query import QuerySet
 from django.utils import simplejson
-from core.models import *
+from txtalert.core.models import *
 from gateway.models import SendSMS
 
 from bookingtool.models import *

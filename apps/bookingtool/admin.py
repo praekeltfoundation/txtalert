@@ -19,7 +19,7 @@ from django.db import models
 from django.contrib import admin
 from bookingtool.models import BookingPatient
 from bookingtool import widgets
-from core.models import Visit
+from txtalert.core.models import Visit
 
 class VisitInlineAdmin(admin.TabularInline):
     model =  Visit
