@@ -2,6 +2,7 @@ import os
 from xmlrpclib import ServerProxy
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from gateway.models import SendSMS
 
 class Gateway(object):
@@ -48,9 +49,9 @@ class Gateway(object):
 
 # FIXME, this is hideous
 gateway = Gateway('https://dragon.sa.operatelecom.com:1089/Gateway', 
-                    os.environ['OPERA_SERVICE'], 
-                    os.environ['OPERA_PASSWORD'], 
-                    os.environ['OPERA_CHANNEL'], 
+                    settings.get('OPERA_SERVICE', os.environ['OPERA_SERVICE']), 
+                    settings.get('OPERA_PASSWORD', os.environ['OPERA_PASSWORD']), 
+                    settings.get('OPERA_CHANNEL', os.environ['OPERA_CHANNEL']), 
                     verbose=True)
 
 from views import sms_receipt_handler
