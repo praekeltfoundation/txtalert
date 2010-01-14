@@ -3,4 +3,3 @@
 #
 # e.g.  python manage.py --settings=environments.production
 #       python manage.py --settings=environments.testing
-from environments.development import *
