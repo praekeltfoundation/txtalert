@@ -25,7 +25,7 @@ PROJECT_NAME = os.path.basename(APP_ROOT)
 
 # Initialize logger that's rotated daily
 LOG_FORMAT = '[%(name)s] %(asctime)s %(levelname)s %(message)s'
-LOG_FILE = join(APP_ROOT, 'log/%s.log' % PROJECT_NAME)
+LOG_FILE = join(APP_ROOT, 'logs/%s.log' % PROJECT_NAME)
 
 LOGGER = logging.getLogger()
 LOGGER.name = PROJECT_NAME
