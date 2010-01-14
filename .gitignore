@@ -1,7 +1,7 @@
 *~
 *.pyc
 ./config.py
-log/*.log
+logs/*.log
 .DS_Store
 db/*.db
 *.svn
