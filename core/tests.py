@@ -48,7 +48,7 @@ class ModelTestCase(TestCase):
         self.assertEquals(patient, Patient.all_objects.get(pk=patient.pk))
     
     def test_patient_clinics(self):
-        patient = Patient.objects.all()[0]
+        patient = Patient.objects.filter(last_clinic=None)[0]
         self.assertEquals(patient.get_last_clinic(), None)
         self.assertEquals(patient.clinics(), set([]))
         

@@ -117,6 +117,7 @@ class Patient(DirtyFieldsMixin,models.Model):
     history = HistoricalRecords()
     
     class Meta:
+	ordering = ['created_at']
         verbose_name = 'Patient'
         verbose_name_plural = 'Patients'
     
