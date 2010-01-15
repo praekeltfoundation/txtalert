@@ -41,6 +41,11 @@ class OperaTestCase(TestCase):
         self.user.save()
     
     def test_gateway(self):
+        # FIXME: this is hideous
+        from django.conf import settings
+        settings.OPERA_SERVICE = 'dummy'
+        settings.OPERA_PASSWORD = 'passwd'
+        settings.OPERA_CHANNEL = 'dummy'
         from gateway.backends.opera.backend import Gateway
         gateway = Gateway(url="http://testserver/xmlrpc",
                             service_id='dummy_service_id',
