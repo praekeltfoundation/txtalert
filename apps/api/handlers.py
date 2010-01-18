@@ -29,7 +29,9 @@ class SMSHandler(BaseHandler):
     
     def _read_list(self, request):
         if 'since' in request.GET:
-            since = iso8601.parse_date(request.GET['since'])
+            # remove timezone info since MySQL is not able to handle that
+            # assume input it UTC
+            since = iso8601.parse_date(request.GET['since']).replace(tzinfo=None)
             return SendSMS.objects.filter(delivery__gte=since)
         else:
             return rc.BAD_REQUEST
@@ -71,7 +73,9 @@ class PCMHandler(BaseHandler):
         in the `since` parameter.
         """
         if 'since' in request.GET:
-            since = iso8601.parse_date(request.GET['since'])
+            # remove timezone info since MySQL is not able to handle that
+            # assume input it UTC
+            since = iso8601.parse_date(request.GET['since']).replace(tzinfo=None)
             return PleaseCallMe.objects.filter(created_at__gte=since)
         else:
             return rc.BAD_REQUEST
