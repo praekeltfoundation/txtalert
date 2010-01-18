@@ -84,8 +84,8 @@ class HistoricalRecords(object):
         the Meta inner class of the historical record model.
         """
         return {
-            'ordering': ('-history_date',),
-            'get_latest_by': 'history_date'
+            'ordering': ('-history_id',),
+            'get_latest_by': 'history_id'
         }
 
     def post_save(self, instance, created, **kwargs):
