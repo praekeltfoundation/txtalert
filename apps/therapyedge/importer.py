@@ -112,7 +112,7 @@ class Importer(object):
         raise NotImplemented, 'all these are failing for me, without any '\
                                 'documentation I am unable to continue'
     
-    def import_updated_patients(self, clinic, since, until=''):
+    def import_updated_patients(self, clinic, since, until):
         updated_patients = self.client.get_updated_patients(clinic.id, since, until)
         logger.info('Receiving updated patients for %s between %s and %s' % (
             clinic.name,
@@ -154,7 +154,7 @@ class Importer(object):
             
         
     
-    def import_coming_visits(self, clinic, since, until=''):
+    def import_coming_visits(self, clinic, since, until):
         coming_visits = self.client.get_coming_visits(clinic.id, since, until)
         logger.info('Receiving coming visits for %s between %s and %s' % (
             clinic.name,
@@ -192,7 +192,7 @@ class Importer(object):
             logger.debug('Updating existing Visit: %s' % visit.id)
         return visit
     
-    def import_missed_visits(self, clinic, since, until=''):
+    def import_missed_visits(self, clinic, since, until):
         missed_visits = self.client.get_missed_visits(clinic.id, since, until)
         logger.info('Receiving missed visits for %s between %s and %s' % (
             clinic.name,
@@ -243,7 +243,7 @@ class Importer(object):
         
         return visit
     
-    def import_done_visits(self, clinic, since, until=''):
+    def import_done_visits(self, clinic, since, until):
         done_visits = self.client.get_done_visits(clinic.id, since, until)
         logger.info('Receiving done visits for %s between %s and %s' % (
             clinic.name,
@@ -291,8 +291,8 @@ class Importer(object):
             ))
         return visit
     
-    def import_deleted_visits(self, since, until=''):
-        deleted_visits = self.client.get_deleted_visits(since, until)
+    def import_deleted_visits(self, clinic, since, until):
+        deleted_visits = self.client.get_deleted_visits(clinic.id, since, until)
         logger.info('Receiving deleted visits between %s and %s' % (
             since,
             until
@@ -321,7 +321,7 @@ class Importer(object):
             'coming_visits': list(self.import_coming_visits(clinic, since, until)),
             'missed_visits': list(self.import_missed_visits(clinic, since, until)),
             'done_visits': list(self.import_done_visits(clinic, since, until)),
-            'deleted_visits': list(self.import_deleted_visits(since, until))
+            'deleted_visits': list(self.import_deleted_visits(clinic, since, until))
         }
     
     

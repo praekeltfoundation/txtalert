@@ -301,6 +301,7 @@ class ImporterXmlRpcClientTestCase(TestCase):
         # then mark them as deleted, they're matched because they
         # have the same key_id
         deleted_visits = list(self.importer.import_deleted_visits(
+            clinic=self.clinic,
             since=(datetime.now() - timedelta(days=1)),
             until=datetime.now()
         ))

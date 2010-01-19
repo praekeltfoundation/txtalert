@@ -22,7 +22,7 @@ class Command(BaseCommand):
                 minute=0,
                 second=0,
                 microsecond=0
-            )
+            ) - timedelta(days=1)
             # until 24 hrs later
             until = since + timedelta(days=1)
             print clinic.name, 'from', since, 'until', until
