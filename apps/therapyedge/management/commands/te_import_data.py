@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from general.settings.models import Setting
@@ -24,7 +24,12 @@ class Command(BaseCommand):
                 microsecond=0
             ) - timedelta(days=1)
             # until 24 hrs later
-            until = since + timedelta(days=1)
+            until = datetime.now().replace(
+                hour=0,
+                minute=0,
+                second=0,
+                microsecond=0
+            )
             print clinic.name, 'from', since, 'until', until
             for key, value in importer.import_all_changes(
                     clinic, 

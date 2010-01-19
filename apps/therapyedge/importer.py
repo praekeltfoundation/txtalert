@@ -104,7 +104,7 @@ class Importer(object):
         self.client = Client(uri, verbose)
     
     def import_all_patients(self, clinic):
-        # all_patients = self.client.get_all_patients(clinic.id)
+        # all_patients = self.client.get_all_patients(clinic.te_id)
         # return all_patients
         # not sure what this returns since they all the RPC calls are failing
         # for me ATM
@@ -113,7 +113,7 @@ class Importer(object):
                                 'documentation I am unable to continue'
     
     def import_updated_patients(self, clinic, since, until):
-        updated_patients = self.client.get_updated_patients(clinic.id, since, until)
+        updated_patients = self.client.get_updated_patients(clinic.te_id, since, until)
         logger.info('Receiving updated patients for %s between %s and %s' % (
             clinic.name,
             since,
@@ -145,17 +145,19 @@ class Importer(object):
         # `celphone` typo is TherapyEdge's
         for msisdn in remote_patient.celphone.split('/'):
             # FIXME: this normalization seems sketchy at best
-            phone_number = '27' + MSISDN_RE.match(msisdn).groups()[1]
-            msisdn, created = MSISDN.objects.get_or_create(msisdn=phone_number)
-            if msisdn not in patient.msisdns.all():
-                patient.msisdns.add(msisdn)
+            match = MSISDN_RE.match(msisdn)
+            if match:
+                phone_number = '27' + match.groups()[1]
+                msisdn, created = MSISDN.objects.get_or_create(msisdn=phone_number)
+                if msisdn not in patient.msisdns.all():
+                    patient.msisdns.add(msisdn)
         
         return patient
             
         
     
     def import_coming_visits(self, clinic, since, until):
-        coming_visits = self.client.get_coming_visits(clinic.id, since, until)
+        coming_visits = self.client.get_coming_visits(clinic.te_id, since, until)
         logger.info('Receiving coming visits for %s between %s and %s' % (
             clinic.name,
             since,
@@ -193,7 +195,7 @@ class Importer(object):
         return visit
     
     def import_missed_visits(self, clinic, since, until):
-        missed_visits = self.client.get_missed_visits(clinic.id, since, until)
+        missed_visits = self.client.get_missed_visits(clinic.te_id, since, until)
         logger.info('Receiving missed visits for %s between %s and %s' % (
             clinic.name,
             since,
@@ -244,7 +246,7 @@ class Importer(object):
         return visit
     
     def import_done_visits(self, clinic, since, until):
-        done_visits = self.client.get_done_visits(clinic.id, since, until)
+        done_visits = self.client.get_done_visits(clinic.te_id, since, until)
         logger.info('Receiving done visits for %s between %s and %s' % (
             clinic.name,
             since,
@@ -292,7 +294,7 @@ class Importer(object):
         return visit
     
     def import_deleted_visits(self, clinic, since, until):
-        deleted_visits = self.client.get_deleted_visits(clinic.id, since, until)
+        deleted_visits = self.client.get_deleted_visits(clinic.te_id, since, until)
         logger.info('Receiving deleted visits between %s and %s' % (
             since,
             until
@@ -317,6 +319,7 @@ class Importer(object):
         # I set these because they all are generators, listing them forces
         # them to be iterated over
         return {
+            # 'all_patients': list(self.import_all_patients(clinic)),
             'updated_patients': list(self.import_updated_patients(clinic, since, until)),
             'coming_visits': list(self.import_coming_visits(clinic, since, until)),
             'missed_visits': list(self.import_missed_visits(clinic, since, until)),
