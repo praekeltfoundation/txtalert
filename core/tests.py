@@ -82,7 +82,7 @@ class PleaseCallMeTestCase(TestCase):
         # create a number of visits for this patient at a clinic
         for i in range(0,10):
             self.patient.visit_set.create(
-                clinic=Clinic.objects.all()[0],
+                clinic=Clinic.objects.get(name='Crosby'),
                 date=datetime.now() + timedelta(days=i),
                 status='s'
             )
@@ -120,7 +120,7 @@ class PleaseCallMeTestCase(TestCase):
         )
         # the signals should track the clinic for this pcm if it hasn't
         # been specified automatically yet
-        self.assertEquals(pcm.clinic, Clinic.objects.all()[0])
+        self.assertEquals(pcm.clinic, Clinic.objects.get(name='Crosby'))
     
     def test_pcm_for_nonexistent_msisdn(self):
         # verify this nr doesn't exist in the db

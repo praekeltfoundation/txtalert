@@ -140,7 +140,7 @@ class Patient(DirtyFieldsMixin,models.Model):
     def get_last_clinic(self):
         visit_qs = Visit.objects.filter(patient=self)
         if visit_qs.count(): 
-            return visit_qs.latest('date').clinic
+            return visit_qs.latest('id').clinic
         return None
     
 
@@ -183,6 +183,7 @@ class Visit(models.Model):
         verbose_name = 'Visit'
         verbose_name_plural = 'Visits'
         ordering = ['date']
+        get_latest_by = 'id'
     
     def delete(self):
         """
