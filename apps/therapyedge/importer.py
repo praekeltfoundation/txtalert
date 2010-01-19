@@ -316,10 +316,12 @@ class Importer(object):
     def import_all_changes(self, clinic, since, until):
         # I set these because they all are generators, listing them forces
         # them to be iterated over
-        list(self.import_updated_patients(clinic, since, until))
-        list(self.import_coming_visits(clinic, since, until))
-        list(self.import_missed_visits(clinic, since, until))
-        list(self.import_done_visits(clinic, since, until))
-        list(self.import_deleted_visits(since, until))
+        return {
+            'updated_patients': list(self.import_updated_patients(clinic, since, until)),
+            'coming_visits': list(self.import_coming_visits(clinic, since, until)),
+            'missed_visits': list(self.import_missed_visits(clinic, since, until)),
+            'done_visits': list(self.import_done_visits(clinic, since, until)),
+            'deleted_visits': list(self.import_deleted_visits(since, until))
+        }
     
     
