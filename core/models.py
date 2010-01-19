@@ -151,6 +151,7 @@ class Visit(models.Model):
         ('medical', 'Medical'), 
         ('counselor', 'Counselor'),
         ('pediatric', 'Pediatric'),
+        ('unknown', 'Unknown'),
     )
     
     patient = models.ForeignKey(Patient)
