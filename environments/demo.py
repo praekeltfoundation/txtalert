@@ -23,3 +23,5 @@ DATABASE_NAME = join(APP_ROOT, 'db', 'txtalert_demo.db')
 DATABASE_USER = ''
 DATABASE_PASSWORD = ''
 DATABASE_PORT = ''
+
+SMS_GATEWAY_CLASS = 'gateway.backends.ummy'
