@@ -56,12 +56,12 @@ TEMPLATE_DEBUG = DEBUG
 TEST_DATABASE_CHARSET = 'utf8'
 
 ADMINS = (
-    ('Joe Developer', 'a@b.xyz'),
+    # ('Joe Developer', 'a@b.xyz'),
 )
 
 MANAGERS = ADMINS
 
-SERVER_EMAIL = 'a@b.xyz'
+SERVER_EMAIL = 'txtalert@localhost'
 
 EMAIL_SUBJECT_PREFIX = '[TxtAlert] '
 EMAIL_HOST = 'localhost'
