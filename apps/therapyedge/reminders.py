@@ -22,6 +22,9 @@ from django.core import mail
 from general.settings.models import Setting
 from gateway.models import SendSMS
 from core.models import Visit
+import logging
+
+logger = logging.getLogger("reminders")
 
 
 REMINDERS_EMAIL_TEXT = \
@@ -82,6 +85,8 @@ def send_stats(gateway, today):
         'tomorrow': tomorrow_count, 
         'two_weeks': twoweeks_count
     }
+    logger.info('Sending stat emails to: %s' % ', '.join(emails))
+    logger.debug(message)
     mail.send_mail('[TxtAlert] Messages Sent Report', message, settings.SERVER_EMAIL, emails, fail_silently=True)
     
     # send sms with stats
@@ -94,6 +99,8 @@ def send_stats(gateway, today):
         'tomorrow': tomorrow_count, 
         'two_weeks': twoweeks_count,
     }
+    logger.info('Sending stat SMSs to: %s' % ', '.join(msisdns))
+    logger.debug(message)
     gateway.send_sms(msisdns, [message] * len(msisdns))
     
 
@@ -159,7 +166,11 @@ def missed(gateway, visits, today):
 def all(gateway):
     visits = Visit.objects.filter(patient__opted_in=True)
     today = datetime.now().date()
+    logger.debug('Sending reminders for: tomorrow')
     tomorrow(gateway, visits, today)
+    logger.debug('Sending reminders for: two weeks')
     two_weeks(gateway, visits, today)
+    logger.debug('Sending reminders for: attended yesterday')
     attended(gateway, visits, today)
+    logger.debug('Sending reminders for: missed yesterday')
     missed(gateway, visits, today)

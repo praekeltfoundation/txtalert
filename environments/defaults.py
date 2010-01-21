@@ -64,11 +64,11 @@ MANAGERS = ADMINS
 SERVER_EMAIL = 'a@b.xyz'
 
 EMAIL_SUBJECT_PREFIX = '[TxtAlert] '
-EMAIL_HOST = 'smtp.somehost.xyz'
+EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'email_user'
-EMAIL_HOST_PASSWORD = 'email_user_password'
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'email_user'
+# EMAIL_HOST_PASSWORD = 'email_user_password'
 
 TIME_ZONE = 'Africa/Johannesburg'
 LANGUAGE_CODE = 'en-us'
