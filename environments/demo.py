@@ -24,4 +24,4 @@ DATABASE_USER = ''
 DATABASE_PASSWORD = ''
 DATABASE_PORT = ''
 
-SMS_GATEWAY_CLASS = 'gateway.backends.ummy'
+SMS_GATEWAY_CLASS = 'gateway.backends.dummy'

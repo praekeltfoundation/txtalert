@@ -19,14 +19,15 @@ Getting the source-code
     ..
     
         ~$ git clone git://github.com/praekelt/txtalert.git
+    
+    The configuration files for txtAlert can be found in the `environments` directory. For this installation we'll be using the configuration file `demoy.py`
 
-3. The configuration files for txtAlert can be found in the `environments` directory. 
-
-3. Set up your preferred database. This installation will assume you are using SQLite since it is shipped as part of Python version 2.5.
+3. Set up your preferred database. The file configuration `demo.py` is setup for using SQLite which is shipped as part of Python version 2.5.
 
     ..
     
-        
+        ~$ cd ./txtalert
+        ~$ ./manage.py syncdb --settings=environments.demo
 
 
 .. _`Git`: http://www.git-scm.com 
