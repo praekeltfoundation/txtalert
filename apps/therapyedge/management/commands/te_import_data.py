@@ -13,7 +13,7 @@ class Command(BaseCommand):
                 Setting.objects.get(name='THERAPYEDGE_USERNAME').value,
                 Setting.objects.get(name='THERAPYEDGE_PASSWORD').value
             ),
-            verbose=settings.DEBUG
+            verbose=True
         )
         for clinic in Clinic.objects.all():
             # from midnight
