@@ -75,7 +75,7 @@ def send_stats(gateway, today):
     total_count = SendSMS.objects.filter(delivery__gte=today).count()
     
     # send email with stats
-    emails = Setting.objects.get(name='Stats Emails').value.split('\n')
+    emails = Setting.objects.get(name='Stats Emails').value.split('\r\n')
     message = REMINDERS_EMAIL_TEXT % {
         'total': total_count, 
         'date': today, 
@@ -90,7 +90,7 @@ def send_stats(gateway, today):
     mail.send_mail('[TxtAlert] Messages Sent Report', message, settings.SERVER_EMAIL, emails, fail_silently=True)
     
     # send sms with stats
-    msisdns = Setting.objects.get(name='Stats MSISDNs').value.split('\n')
+    msisdns = Setting.objects.get(name='Stats MSISDNs').value.split('\r\n')
     message = REMINDERS_SMS_TEXT % {
         'total': total_count, 
         'attended': attended_count,
