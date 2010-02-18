@@ -17,19 +17,15 @@ class Command(BaseCommand):
         )
         for clinic in Clinic.objects.all():
             # from midnight
-            since = datetime.now().replace(
-                hour=0,
-                minute=0,
-                second=0,
-                microsecond=0
-            ) - timedelta(days=1)
-            # until 24 hrs later
-            until = datetime.now().replace(
+            midnight = datetime.now().replace(
                 hour=0,
                 minute=0,
                 second=0,
                 microsecond=0
             )
+            since = midnight - timedelta(days=1)
+            # until 30 days later
+            until = midnight + timedelta(days=30)
             print clinic.name, 'from', since, 'until', until
             for key, value in importer.import_all_changes(
                     clinic, 
