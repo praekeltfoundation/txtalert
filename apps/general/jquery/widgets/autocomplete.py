@@ -22,16 +22,17 @@ from django.forms.util import flatatt
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_unicode
 from django.core.urlresolvers import reverse
+from django.conf import settings
 from . import plist_from_dict
 
 
 class AutoCompleteWidget(forms.Widget):
     class Media:
         js = (
-            '/media/jquery/js/jquery.js',
-            '/media/jquery/js/jquery.james.min.js',
+            '%sjquery/js/jquery.js' % settings.MEDIA_URL,
+            '%sjquery/js/jquery.james.min.js' % settings.MEDIA_URL,
         )
-        css = {'all':('/media/jquery/css/autocomplete.css',),}
+        css = {'all':('%sjquery/css/autocomplete.css' % settings.MEDIA_URL,),}
 
     def __init__(self, model, field, limit=10, options={}, attrs=None):
         super(AutoCompleteWidget, self).__init__(attrs)
