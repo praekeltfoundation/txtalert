@@ -109,7 +109,9 @@ def send_messages(gateway, message_key, patients, message_formatter=lambda x: x)
     send_sms_per_language = {}
     for language, patients in group_by_language(patients).items():
         message = message_formatter(getattr(language, message_key))
-        msisdns = [patient.active_msisdn.msisdn for patient in patients]
+        # we make a set out of it to avoid having duplicate MSISDNs, this can
+        # happen if a patient has two different visits on the same day
+        msisdns = set([patient.active_msisdn.msisdn for patient in patients])
         send_sms_per_language[language] = gateway.send_sms(
             msisdns, 
             [message] * len(msisdns)
