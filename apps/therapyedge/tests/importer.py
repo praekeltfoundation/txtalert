@@ -105,6 +105,30 @@ class ImporterTestCase(TestCase):
     def test_update_local_reschedules_from_missed(self):
         """missed visits in the future are reschedules"""
         future_date = date.today() + timedelta(days=7) # one week ahead
+        # first plan the scheduleds
+        data = [(
+            '',                             # dr_site_name 
+            '',                             # dr_site_id
+            'false',                        # dr_status 
+            '2009-11-1%s 00:00:00' % idx,   # scheduled_visit_date
+            '02-00089421%s' % idx,          # key_id
+            patient.te_id,                  # te_id
+        ) for idx, patient in enumerate(Patient.objects.all())]
+        coming_visits = map(ComingVisit._make, data)
+        
+        local_visits = set(self.importer.update_local_coming_visits(
+            self.clinic, 
+            coming_visits
+        ))
+        self.assertEquals(len(local_visits), Patient.objects.count())
+        
+        for coming_visit in coming_visits:
+            # don't need to test this as Django does this for us
+            local_visit = Visit.objects.get(te_visit_id=coming_visit.key_id)
+            self.assertEquals('s', local_visit.status)
+        
+        
+        # now plan the future misseds, should be reschedules
         data = [(
             '',                                 # dr_site_name
             '',                                 # dr_site_id

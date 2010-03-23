@@ -224,7 +224,7 @@ class VisitImportTestCase(TestCase):
         visit = self.importer.update_local_missed_visit(
             self.clinic, 
             create_instance(MissedVisit, {
-                'key_id': '01-123456789', 
+                'key_id': '01-123456799', 
                 'te_id': '01-12345', 
                 'missed_date': date.today().strftime('%Y-%m-%d 00:00:00')
             })
@@ -232,7 +232,7 @@ class VisitImportTestCase(TestCase):
         visit = reload_record(visit)
         # event = importMissedVisit(self.event, self.clinic, {'key_id':'01-123456789', 'te_id':'01-12345', 'missed_date':'2100-06-01 00:00:00'})
         self.assertEqual(visit.history.latest().get_history_type_display(), 
-                            'Changed')
+                            'Created')
         self.assertEquals(visit.status, 'm')
         self.assertEquals(visit.date, date.today())
     
@@ -322,6 +322,8 @@ class PatientRiskProfileTestCase(TestCase):
             'missed_date': today.strftime('%Y-%m-%d 00:00:00')
             })
         )
+        self.assertEquals(visit.status, 'm') # make sure it's flagged as missed
+                                            # otherwise this won't make sense
         self.assertEquals(self.reload_patient().risk_profile, 1.0)
     
     def test_risk_profile_incremental_calculation(self):

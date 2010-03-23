@@ -168,7 +168,7 @@ class Importer(object):
     
     def update_local_coming_visits(self, clinic, visits):
         for visit in visits:
-            logger.debug('Processing Visit %s' % visit._asdict())
+            logger.debug('Processing coming Visit %s' % visit._asdict())
             try:
                 yield self.update_local_coming_visit(clinic, visit)
             except IntegrityError, e:
@@ -244,27 +244,50 @@ class Importer(object):
         patient = Patient.objects.get(te_id=remote_visit.te_id)
         missed_date = iso8601.parse_date(remote_visit.missed_date).date()
         
-        # future missed dates are reschedules
-        if missed_date > date.today():
-            status = 'r' # rescheduled
-        else:
-            status = 'm' # missed
+        try:
+            visit = Visit.objects.get(te_visit_id=remote_visit.key_id)
+            created = False
+        except Visit.DoesNotExist:
+            visit = Visit(te_visit_id=remote_visit.key_id)
+            created = True
         
-        visit, created = Update(Visit) \
-                            .get(te_visit_id=remote_visit.key_id) \
-                            .update_attributes(
-                                clinic=clinic,
-                                patient=patient,
-                                date=missed_date,
-                                status=status
-                            ).save()
+        print 'visit.date:', visit.date
+        print 'missed_date:', missed_date
+        if visit.date and missed_date is not visit.date:
+            visit.status = 'r' # if the dates differ then it's a reschedule
+        else:
+            visit.status = 'm' # if they match then it's a missed appointment
+        print 'visit.status:', visit.status
+        print '*' * 10
+        print ''
+        
+        visit.clinic = clinic
+        visit.patient = patient
+        visit.date = missed_date
+        if visit.is_dirty():
+            visit.save()
+        
+        # # future missed dates are reschedules
+        # if missed_date > date.today():
+        #     status = 'r' # rescheduled
+        # else:
+        #     status = 'm' # missed
+        
+        # visit, created = Update(Visit) \
+        #                     .get(te_visit_id=remote_visit.key_id) \
+        #                     .update_attributes(
+        #                         clinic=clinic,
+        #                         patient=patient,
+        #                         date=missed_date,
+        #                         status=status
+        #                     ).save()
         if created:
             logger.debug('Creating new Visit: %s' % visit.id)
         else:
             logger.debug('Updating Visit:%s, date: %s, status: %s' % (
                 visit.id,
                 missed_date,
-                status
+                visit.status
             ))
         
         return visit
@@ -280,7 +303,7 @@ class Importer(object):
     
     def update_local_done_visits(self, clinic, remote_visits):
         for remote_visit in remote_visits:
-            logger.debug('Processing done visit: %s' % remote_visit._asdict())
+            logger.debug('Processing done Visit: %s' % remote_visit._asdict())
             try:
                 yield self.update_local_done_visit(clinic, remote_visit)
             except IntegrityError, e:
@@ -327,7 +350,7 @@ class Importer(object):
     
     def update_local_deleted_visits(self, remote_visits):
         for remote_visit in remote_visits:
-            logger.debug('Processing deleted visit: %s' % remote_visit._asdict())
+            logger.debug('Processing deleted Visit: %s' % remote_visit._asdict())
             try:
                 yield self.update_local_deleted_visit(remote_visit)
             except Visit.DoesNotExist, e:
