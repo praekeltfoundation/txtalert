@@ -138,7 +138,9 @@ class RemindersI18NTestCase(TestCase):
         # we're expecting it to have the following body, based on the visits
         # created earlier
         expecting_mail_body = reminders.REMINDERS_EMAIL_TEXT % {
-            'total': 6,
+            'total': 4, # because the scheduleds & rescheduleds are on the same they
+                        # we'll only be sending them 1 sms instead of 2, resulting in
+                        # a total of 4 instead of 6 messages being sent.
             'date': today.date(),
             'attended': 1,
             'missed': 1,
@@ -153,7 +155,7 @@ class RemindersI18NTestCase(TestCase):
         # the latest SMS sent should be the stats SMS
         stat_sms = SendSMS.objects.latest()
         expecting_sms_text = reminders.REMINDERS_SMS_TEXT % {
-            'total': 6, 
+            'total': 4, 
             'attended': 1,
             'missed': 1, 
             'missed_percentage': (1.0/2.0 * 100),

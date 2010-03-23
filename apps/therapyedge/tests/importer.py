@@ -4,7 +4,7 @@ from therapyedge.xmlrpc import client
 from core.models import Patient, MSISDN, Visit, Clinic
 from therapyedge.tests.utils import (PatientUpdate, ComingVisit, MissedVisit,
                                         DoneVisit, DeletedVisit)
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import random
 import logging
 import iso8601
@@ -101,6 +101,66 @@ class ImporterTestCase(TestCase):
                 iso8601.parse_date(missed_visit.missed_date).date(),
                 local_visit.date
             )
+    
+    def test_update_local_reschedules_from_missed(self):
+        """missed visits in the future are reschedules"""
+        future_date = date.today() + timedelta(days=7) # one week ahead
+        data = [(
+            '',                                 # dr_site_name
+            '',                                 # dr_site_id
+            '%s 00:00:00' % future_date,        # missed_date
+            '',                                 # dr_status
+            '02-00089421%s' % idx,              # key_id
+            patient.te_id,                      # te_id
+        ) for idx, patient in enumerate(Patient.objects.all())]
+        rescheduled_visits = map(MissedVisit._make, data)
+        local_visits = set(self.importer.update_local_missed_visits(
+            self.clinic,
+            rescheduled_visits
+        ))
+        self.assertEquals(len(local_visits), Patient.objects.count())
+        for rescheduled_visit in rescheduled_visits:
+            local_visit = Visit.objects.get(te_visit_id=rescheduled_visit.key_id)
+            self.assertEquals(local_visit.status, 'r')
+    
+    def test_update_local_reschedules_from_coming(self):
+        """future visits that get a new date in the future are reschedules"""
+        data = [(
+            '',                             # dr_site_name 
+            '',                             # dr_site_id
+            'false',                        # dr_status 
+            '2009-11-1%s 00:00:00' % idx,   # scheduled_visit_date
+            '02-00089421%s' % idx,          # key_id
+            patient.te_id,                  # te_id
+        ) for idx, patient in enumerate(Patient.objects.all())]
+        coming_visits = map(ComingVisit._make, data)
+        
+        local_visits = set(self.importer.update_local_coming_visits(
+            self.clinic, 
+            coming_visits
+        ))
+        self.assertEquals(len(local_visits), Patient.objects.count())
+        
+        for coming_visit in coming_visits:
+            # don't need to test this as Django does this for us
+            local_visit = Visit.objects.get(te_visit_id=coming_visit.key_id)
+            self.assertEquals('s', local_visit.status)
+        
+        # send in a batch of future coming visits to mimick reschedules
+        future_date = date.today() + timedelta(days=7) # one week ahead
+        data = [(
+            '',                             # dr_site_name 
+            '',                             # dr_site_id
+            'false',                        # dr_status 
+            '%s 00:00:00' % future_date,    # scheduled_visit_date
+            '02-00089421%s' % idx,          # key_id
+            patient.te_id,                  # te_id
+        ) for idx, patient in enumerate(Patient.objects.all())]
+        coming_visits = map(ComingVisit._make, data)
+        set(self.importer.update_local_coming_visits(self.clinic, coming_visits))
+        for coming_visit in coming_visits:
+            local_visit = Visit.objects.get(te_visit_id=coming_visit.key_id)
+            self.assertEquals('r', local_visit.status)
     
     def test_update_local_done_visits(self):
         data = [(

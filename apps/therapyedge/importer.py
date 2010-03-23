@@ -5,7 +5,7 @@ from core.models import Patient, MSISDN, Visit, Clinic
 import iso8601
 import re
 import logging
-from datetime import datetime
+from datetime import datetime, date
 
 logger = logging.getLogger("importer")
 
@@ -180,14 +180,28 @@ class Importer(object):
         # in the Visit object, if not - raise hell
         patient = Patient.objects.get(te_id=remote_visit.te_id)
         
-        visit, created = Update(Visit) \
-                            .get(te_visit_id=remote_visit.key_id) \
-                            .update_attributes(
-                                clinic=clinic,
-                                patient=patient,
-                                date=iso8601.parse_date(remote_visit.scheduled_visit_date),
-                                status='s' # scheduled
-                            ).save()
+        try:
+            visit = Visit.objects.get(te_visit_id=remote_visit.key_id)
+            visit.status = 'r'
+            created = False
+        except Visit.DoesNotExist:
+            visit = Visit(te_visit_id=remote_visit.key_id)
+            visit.status = 's'
+            created = True
+        
+        visit.clinic = clinic
+        visit.patient = patient
+        visit.date = iso8601.parse_date(remote_visit.scheduled_visit_date)
+        visit.save()
+        
+        # visit, created = Update(Visit) \
+        #                     .get(te_visit_id=remote_visit.key_id) \
+        #                     .update_attributes(
+        #                         clinic=clinic,
+        #                         patient=patient,
+        #                         date=iso8601.parse_date(remote_visit.scheduled_visit_date),
+        #                         status='s' # scheduled
+        #                     ).save()
         if created:
             logger.debug('Creating new Visit: %s' % visit.id)
         else:
@@ -221,7 +235,7 @@ class Importer(object):
         missed_date = iso8601.parse_date(remote_visit.missed_date).date()
         
         # future missed dates are reschedules
-        if missed_date > datetime.now().date():
+        if missed_date > date.today():
             status = 'r' # rescheduled
         else:
             status = 'm' # missed

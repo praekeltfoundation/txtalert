@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.conf import settings
 from os.path import join
 import commands
 
@@ -26,7 +27,7 @@ class Command(BaseCommand):
         print 'Erasing previously collected coverage.py data'
         status, output = commands.getstatusoutput("coverage erase")
         print 'Running tests with coverage.py'
-        status, output = commands.getstatusoutput("coverage run ./manage.py test")
+        status, output = commands.getstatusoutput("coverage run ./manage.py test --settings=%s" % settings.SETTINGS_MODULE)
         
         if status is not 0:
             print "Something went wrong running the tests:"
