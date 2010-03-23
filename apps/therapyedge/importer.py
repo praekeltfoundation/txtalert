@@ -200,7 +200,8 @@ class Importer(object):
         visit.clinic = clinic
         visit.patient = patient
         visit.date = visit_date
-        visit.save()
+        if visit.is_dirty():
+            visit.save()
         
         # visit, created = Update(Visit) \
         #                     .get(te_visit_id=remote_visit.key_id) \
