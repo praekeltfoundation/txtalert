@@ -251,15 +251,10 @@ class Importer(object):
             visit = Visit(te_visit_id=remote_visit.key_id)
             created = True
         
-        print 'visit.date:', visit.date
-        print 'missed_date:', missed_date
         if visit.date and missed_date is not visit.date:
             visit.status = 'r' # if the dates differ then it's a reschedule
         else:
             visit.status = 'm' # if they match then it's a missed appointment
-        print 'visit.status:', visit.status
-        print '*' * 10
-        print ''
         
         visit.clinic = clinic
         visit.patient = patient
