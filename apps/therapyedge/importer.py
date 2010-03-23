@@ -213,7 +213,7 @@ class Importer(object):
         if created:
             logger.debug('Creating new Visit: %s' % visit.id)
         else:
-            logger.debug('Updating existing Visit: %s / (%s)' % (visit.id, visit.get_dirty_fields()))
+            logger.debug('Updating existing Visit: %s / (%s vs %s)' % (visit.id, visit.get_dirty_fields(), visit._original_state))
         return visit
     
     def import_missed_visits(self, clinic, since, until):
