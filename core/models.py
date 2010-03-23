@@ -144,7 +144,7 @@ class Patient(DirtyFieldsMixin,models.Model):
         return None
     
 
-class Visit(models.Model):
+class Visit(DirtyFieldsMixin,models.Model):
     
     VISIT_TYPES = (
         ('arv', 'ARV'),

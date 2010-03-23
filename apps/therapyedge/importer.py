@@ -179,10 +179,18 @@ class Importer(object):
         # I'm assuming we'll always have the patient being referenced
         # in the Visit object, if not - raise hell
         patient = Patient.objects.get(te_id=remote_visit.te_id)
+        visit_date = iso8601.parse_date(remote_visit.scheduled_visit_date)
         
         try:
             visit = Visit.objects.get(te_visit_id=remote_visit.key_id)
-            visit.status = 'r'
+            
+            # if the date's the same then the status should be scheduled
+            # if not, it means it's been rescheduled
+            if visit.date == visit_date:
+                visit.status = 's'
+            else:
+                visit.status = 'r'
+            
             created = False
         except Visit.DoesNotExist:
             visit = Visit(te_visit_id=remote_visit.key_id)
@@ -191,7 +199,7 @@ class Importer(object):
         
         visit.clinic = clinic
         visit.patient = patient
-        visit.date = iso8601.parse_date(remote_visit.scheduled_visit_date)
+        visit.date = visit_date
         visit.save()
         
         # visit, created = Update(Visit) \
@@ -205,7 +213,7 @@ class Importer(object):
         if created:
             logger.debug('Creating new Visit: %s' % visit.id)
         else:
-            logger.debug('Updating existing Visit: %s' % visit.id)
+            logger.debug('Updating existing Visit: %s / (%s)' % (visit.id, visit.get_dirty_fields()))
         return visit
     
     def import_missed_visits(self, clinic, since, until):
