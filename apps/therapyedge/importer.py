@@ -95,7 +95,8 @@ class Update(object):
         return self
     
     def save(self):
-        self.instance.save()
+        if self.instance.is_dirty():
+            self.instance.save()
         return self.instance, self.created
 
 class Importer(object):
