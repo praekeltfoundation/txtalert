@@ -185,6 +185,10 @@ class Visit(DirtyFieldsMixin,models.Model):
         ordering = ['date']
         get_latest_by = 'id'
     
+    
+    def really_delete(self, *args, **kwargs):
+        super(self, Visit).delete(*args, **kwargs)
+    
     def delete(self):
         """
         Implementing soft delete, this isn't possible with signals as far
