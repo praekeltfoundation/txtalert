@@ -204,14 +204,6 @@ class Importer(object):
         if visit.is_dirty():
             visit.save()
         
-        # visit, created = Update(Visit) \
-        #                     .get(te_visit_id=remote_visit.key_id) \
-        #                     .update_attributes(
-        #                         clinic=clinic,
-        #                         patient=patient,
-        #                         date=iso8601.parse_date(remote_visit.scheduled_visit_date),
-        #                         status='s' # scheduled
-        #                     ).save()
         if created:
             logger.debug('Creating new Visit: %s' % visit.id)
         else:
@@ -262,20 +254,6 @@ class Importer(object):
         if visit.is_dirty():
             visit.save()
         
-        # # future missed dates are reschedules
-        # if missed_date > date.today():
-        #     status = 'r' # rescheduled
-        # else:
-        #     status = 'm' # missed
-        
-        # visit, created = Update(Visit) \
-        #                     .get(te_visit_id=remote_visit.key_id) \
-        #                     .update_attributes(
-        #                         clinic=clinic,
-        #                         patient=patient,
-        #                         date=missed_date,
-        #                         status=status
-        #                     ).save()
         if created:
             logger.debug('Creating new Visit: %s' % visit.id)
         else:
