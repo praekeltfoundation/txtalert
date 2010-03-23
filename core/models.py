@@ -187,7 +187,7 @@ class Visit(DirtyFieldsMixin,models.Model):
     
     
     def really_delete(self, *args, **kwargs):
-        super(self, Visit).delete(*args, **kwargs)
+        super(Visit, self).delete(*args, **kwargs)
     
     def delete(self):
         """
