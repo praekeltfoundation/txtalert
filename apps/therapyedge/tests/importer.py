@@ -3,7 +3,7 @@ from therapyedge.importer import Importer, SEX_MAP
 from therapyedge.xmlrpc import client
 from core.models import Patient, MSISDN, Visit, Clinic
 from therapyedge.tests.utils import (PatientUpdate, ComingVisit, MissedVisit,
-                                        DoneVisit, DeletedVisit)
+                                        DoneVisit, DeletedVisit, create_instance)
 from datetime import datetime, timedelta, date
 import random
 import logging
@@ -109,8 +109,10 @@ class ImporterTestCase(TestCase):
         data = [(
             '',                             # dr_site_name 
             '',                             # dr_site_id
-            'false',                        # dr_status 
-            '2009-11-1%s 00:00:00' % idx,   # scheduled_visit_date
+            'false',                        # dr_status
+            # scheduled_visit_date, force to start one day ahead of today 
+            # to make sure they're always future dates
+            '%s 00:00:00' % (date.today() + timedelta(days=(idx+1))),
             '02-00089421%s' % idx,          # key_id
             patient.te_id,                  # te_id
         ) for idx, patient in enumerate(Patient.objects.all())]
@@ -152,8 +154,10 @@ class ImporterTestCase(TestCase):
         data = [(
             '',                             # dr_site_name 
             '',                             # dr_site_id
-            'false',                        # dr_status 
-            '2009-11-1%s 00:00:00' % idx,   # scheduled_visit_date
+            'false',                        # dr_status
+            # scheduled_visit_date, force to start one day ahead of today 
+            # to make sure they're always future dates
+            '%s 00:00:00' % (date.today() + timedelta(days=(idx+1))),
             '02-00089421%s' % idx,          # key_id
             patient.te_id,                  # te_id
         ) for idx, patient in enumerate(Patient.objects.all())]
@@ -256,8 +260,77 @@ class ImporterTestCase(TestCase):
                 0
             )
     
-
-
+    def test_for_history_duplication(self):
+        """
+        Test for history duplication happening after numerous imports over time
+        
+        The data for this test has been gleaned from the txtalert log being 
+        used in production. For some reason imports that should be 'missed' 
+        are set as 'rescheduled' and eventhough nothing changes in the 
+        appointment, a historical visit is still saved.
+        """
+        
+        # create the patient for which we'll get the visits
+        patient = Patient.objects.create(te_id='02-82088', age=29, sex='m')
+        
+        # importer
+        importer = Importer()
+        # [importer] 2010-03-18 08:00:37,705 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        # [importer] 2010-03-18 08:01:39,354 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        # [importer] 2010-03-19 08:00:36,876 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        # [importer] 2010-03-19 08:01:36,747 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        # [importer] 2010-03-20 08:00:29,600 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        # [importer] 2010-03-20 08:01:30,926 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        # [importer] 2010-03-21 08:00:28,052 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        # [importer] 2010-03-21 08:01:33,909 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        # [importer] 2010-03-22 08:00:27,711 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        # [importer] 2010-03-22 08:01:33,549 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        # [importer] 2010-03-23 08:00:26,453 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        # [importer] 2010-03-23 08:01:36,731 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        # [importer] 2010-03-25 09:00:41,774 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        # [importer] 2010-03-25 09:00:41,850 DEBUG Updating existing Visit: 37361 / ({'date': datetime.date(2010, 3, 24), 'updated_at': datetime.datetime(2010, 3, 23, 8, 1, 36)} vs {'status': u'r', 'comment': u'', 'visit_type': u'', 'deleted': 0, 'created_at': datetime.datetime(2010, 3, 18, 8, 0, 37), 'updated_at': datetime.datetime(2010, 3, 23, 8, 1, 36), 'te_visit_id': u'02-091967084', 'date': datetime.date(2010, 3, 24), 'id': 37361L})
+        # [importer] 2010-03-25 09:01:40,902 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
+        missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        
+        visit = patient.visit_set.latest()
+        
+        self.assertEquals(visit.status, 'm')
+        self.assertEquals(visit.history.count(), 1)
+        
+        done_visit = create_instance(DoneVisit, {'dr_site_name': '', 'dr_site_id': '', 'done_date': '2010-03-24 00:00:00', 'scheduled_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
+        local_done_visit = importer.update_local_done_visit(self.clinic, done_visit)
+        
+        visit = patient.visit_set.latest()
+        self.assertEquals(visit.status, 'a')
+        self.assertEquals(visit.history.count(), 2)
+        
 class PatchedClient(client.Client):
     
     def __init__(self, **kwargs):

@@ -205,19 +205,24 @@ class VisitImportTestCase(TestCase):
     
     def testIndicateReschedule(self):
         """reschedule a visit"""
+        missed_future_date = date(2200,5,1)
+        # make sure we have a visit to reschedule
+        original_visit = Visit.objects.get(te_visit_id='01-123456789')
+        # make sure the updated date is actually in the future
+        self.assertTrue(original_visit.date < missed_future_date)
         visit = self.importer.update_local_missed_visit(
             self.clinic,
             create_instance(MissedVisit, {
                 'key_id': '01-123456789', 
                 'te_id': '01-12345', 
-                'missed_date': '2100-05-01 00:00:00' # future date should be seen as a reschedule
+                'missed_date': '%s 00:00:00' % missed_future_date # future date should be seen as a reschedule
             })
         )
         visit = reload_record(visit)
         self.assertEqual(visit.history.latest().get_history_type_display(), 
                             'Changed')
         self.assertEquals(visit.status, 'r')
-        self.assertEquals(visit.date, date(2100, 5, 1))
+        self.assertEquals(visit.date, date(2200, 5, 1))
     
     def testIndicateMissed(self):
         """indicate a missed visit"""

@@ -78,7 +78,23 @@ class FilteredQuerySetManager(models.Manager):
                 .get_query_set() \
                 .filter(*self.args, **self.kwargs)
 
-class Patient(DirtyFieldsMixin,models.Model):
+class SoftDeleteMixin(object):
+    
+    def really_delete(self, *args, **kwargs):
+        super(SoftDeleteMixin, self).delete(*args, **kwargs)
+    
+    def delete(self):
+        """
+        Implementing soft delete, this isn't possible with signals as far
+        as I know since there isn't a way to cancel the delete to be executed
+        """
+        if not self.deleted:
+            self.deleted = True
+            self.save()
+    
+
+
+class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     SEX_CHOICES = (
         ('m', 'male'),
         ('f', 'female'),
@@ -102,8 +118,10 @@ class Patient(DirtyFieldsMixin,models.Model):
     risk_profile = models.FloatField('Risk Profile', blank=True, null=True)
     language = models.ForeignKey(Language, verbose_name='Language', default=1)
     
-    # soft delete & modification audit trail methods
+    # soft delete
     deleted = models.BooleanField(default=False)
+    
+    # modification audit trail methods
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -124,15 +142,6 @@ class Patient(DirtyFieldsMixin,models.Model):
     def __unicode__(self):
         return self.te_id
     
-    def delete(self):
-        """
-        Implementing soft delete, this isn't possible with signals as far
-        as I know since there isn't a way to cancel the delete to be executed
-        """
-        if not self.deleted:
-            self.deleted = True
-            self.save()
-    
     def clinics(self):
         return set([visit.clinic for visit in \
                         Visit.objects.filter(patient=self).order_by('-date')])
@@ -144,7 +153,7 @@ class Patient(DirtyFieldsMixin,models.Model):
         return None
     
 
-class Visit(DirtyFieldsMixin,models.Model):
+class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     
     VISIT_TYPES = (
         ('arv', 'ARV'),
@@ -165,8 +174,10 @@ class Visit(DirtyFieldsMixin,models.Model):
     visit_type = models.CharField('Visit Type', blank=True, max_length=80, 
                                     choices=VISIT_TYPES)
     
-    # soft delete & modification audit trail methods
+    # soft delete
     deleted = models.BooleanField(default=False)
+    
+    # modification audit trail methods
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -185,18 +196,6 @@ class Visit(DirtyFieldsMixin,models.Model):
         ordering = ['date']
         get_latest_by = 'id'
     
-    
-    def really_delete(self, *args, **kwargs):
-        super(Visit, self).delete(*args, **kwargs)
-    
-    def delete(self):
-        """
-        Implementing soft delete, this isn't possible with signals as far
-        as I know since there isn't a way to cancel the delete to be executed
-        """
-        if not self.deleted:
-            self.deleted = True
-            self.save()
     
     def __unicode__(self):
         return self.get_visit_type_display()

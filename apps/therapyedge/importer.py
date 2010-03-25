@@ -180,27 +180,36 @@ class Importer(object):
         # I'm assuming we'll always have the patient being referenced
         # in the Visit object, if not - raise hell
         patient = Patient.objects.get(te_id=remote_visit.te_id)
-        visit_date = iso8601.parse_date(remote_visit.scheduled_visit_date)
+        coming_date = iso8601.parse_date(remote_visit.scheduled_visit_date)
         
         try:
             visit = Visit.objects.get(te_visit_id=remote_visit.key_id)
-            
-            # if the date's the same then the status should be scheduled
-            # if not, it means it's been rescheduled
-            if visit.date == visit_date:
-                visit.status = 's'
-            else:
-                visit.status = 'r'
-            
             created = False
         except Visit.DoesNotExist:
             visit = Visit(te_visit_id=remote_visit.key_id)
-            visit.status = 's'
             created = True
+        
+        # check if something actually changed in the visit, if not, immediately
+        # return the visit - no use continuing
+        if coming_date.date() == visit.date:
+            return visit
+        
+        # it's a new visit
+        if created:
+            if coming_date.date() <= date.today():
+                visit.status = 'm'
+            else:
+                visit.status = 's'
+        # it's an existing visit
+        else:
+            if coming_date.date() > visit.date:
+                visit.status = 'r'
+            else:
+                visit.status = 'm'
         
         visit.clinic = clinic
         visit.patient = patient
-        visit.date = visit_date
+        visit.date = coming_date
         if visit.is_dirty():
             visit.save()
         
@@ -243,10 +252,23 @@ class Importer(object):
             visit = Visit(te_visit_id=remote_visit.key_id)
             created = True
         
-        if visit.date and missed_date is not visit.date:
-            visit.status = 'r' # if the dates differ then it's a reschedule
+        # check if something actually changed in the visit, if not, immediately
+        # return the visit - no use continuing
+        if missed_date == visit.date:
+            return visit
+        
+        # it's a new visit
+        if created:
+            if missed_date <= date.today():
+                visit.status = 'm'
+            else:
+                visit.status = 'r'
+        # it's an existing visit
         else:
-            visit.status = 'm' # if they match then it's a missed appointment
+            if missed_date > visit.date:
+                visit.status = 'r'
+            else:
+                visit.status = 'm'
         
         visit.clinic = clinic
         visit.patient = patient
