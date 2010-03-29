@@ -182,6 +182,10 @@ class Importer(object):
         patient = Patient.objects.get(te_id=remote_visit.te_id)
         coming_date = iso8601.parse_date(remote_visit.scheduled_visit_date)
         
+        # FIXME:    a lot of duplication between update_local_coming_visit and
+        #           update_local_missed_visits with regard to the status of
+        #           of the messages.
+        
         try:
             visit = Visit.objects.get(te_visit_id=remote_visit.key_id)
             created = False
