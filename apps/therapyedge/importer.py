@@ -258,7 +258,7 @@ class Importer(object):
         
         # check if something actually changed in the visit, if not, immediately
         # return the visit - no use continuing
-        if missed_date == visit.date:
+        if missed_date == visit.date and visit.status == 'm':
             return visit
         
         # it's a new visit

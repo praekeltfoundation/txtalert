@@ -102,6 +102,36 @@ class ImporterTestCase(TestCase):
                 local_visit.date
             )
     
+    def test_missed_visits(self):
+        # helper methods
+        def make_visit(named_tuple_klass, dictionary):
+            return named_tuple_klass._make(named_tuple_klass._fields) \
+                                                        ._replace(**dictionary)
+        # mock patient
+        patient = Patient.objects.all()[0]
+        # create a visit that's already been scheduled earlier, mock a 
+        # previous import
+        visit = patient.visit_set.create(
+            te_visit_id='02-002173383',
+            date=date.today(), 
+            status='s',
+            clinic=self.clinic
+        )
+        # create a missed visit
+        missed_visit = make_visit(MissedVisit, {
+            'dr_site_name': '', 
+            'dr_site_id': '', 
+            'dr_status': 'false', 
+            'missed_date': '%s 00:00:00' % date.today(), 
+            'key_id': '02-002173383', 
+            'te_id': patient.te_id
+        })
+        # import the data
+        list(self.importer.update_local_missed_visits(self.clinic, [missed_visit]))
+        # get the visit and check its status
+        visit = patient.visit_set.get(te_visit_id='02-002173383')
+        self.assertEquals(visit.status, 'm')
+    
     def test_update_local_reschedules_from_missed(self):
         """missed visits in the future are reschedules"""
         future_date = date.today() + timedelta(days=7) # one week ahead
@@ -330,9 +360,10 @@ class ImporterTestCase(TestCase):
         visit = patient.visit_set.latest()
         self.assertEquals(visit.status, 'a')
         self.assertEquals(visit.history.count(), 2)
-        
-class PatchedClient(client.Client):
     
+
+
+class PatchedClient(client.Client): 
     def __init__(self, **kwargs):
         self.patches = kwargs
     
@@ -464,3 +495,5 @@ class ImporterXmlRpcClientTestCase(TestCase):
         ))
         self.assertEquals(len(deleted_visits), Patient.objects.count())
         self.assertTrue(isinstance(deleted_visits[0], Visit))
+    
+
