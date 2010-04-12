@@ -57,7 +57,7 @@ class SMSReceiptHandler(BaseHandler):
     """This is completely handed off to the specified gateway, it should
     specify the sms_receipt_handler, this can be a regular Django view 
     responding some type of HttpResponse object"""
-    allowed_methods = ('POST')
+    allowed_methods = ('POST',)
     create = sms_receipt_handler
 
 class PCMHandler(BaseHandler):
