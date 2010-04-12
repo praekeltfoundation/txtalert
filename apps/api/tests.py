@@ -105,7 +105,9 @@ class OperaTestCase(TestCase):
         receipts = map(element_to_namedtuple, tree.findall('receipt'))
         
         for receipt in receipts:
-            [send_sms] = gateway.send_sms([receipt.msisdn], ['testing %s' % receipt.reference])
+            # FIXME: we need normalization FAST
+            [send_sms] = gateway.send_sms([receipt.msisdn.replace("+","")], 
+                                            ['testing %s' % receipt.reference])
             # manually specifiy the identifier so we can compare it later with the
             # posted receipt
             send_sms.identifier = receipt.reference
@@ -143,7 +145,8 @@ class OperaTestCase(TestCase):
         
         # check database state
         for receipt in receipts:
-            send_sms = SendSMS.objects.get(msisdn=receipt.msisdn, identifier=receipt.reference)
+            # FIXME: normalization please ...
+            send_sms = SendSMS.objects.get(msisdn=receipt.msisdn.replace("+",""), identifier=receipt.reference)
             self.assertEquals(send_sms.delivery_timestamp, datetime.strptime(receipt.timestamp, OPERA_TIMESTAMP_FORMAT))
             self.assertEquals(send_sms.status, 'D')
     
