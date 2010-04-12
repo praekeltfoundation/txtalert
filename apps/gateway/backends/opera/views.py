@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import permission_required
 from piston.utils import require_mime
 from utils import process_receipts_xml
 
-# @permission_required('gateway.can_place_sms_receipt')
+@permission_required('gateway.can_place_sms_receipt')
 # @require_mime('xml')
 def sms_receipt_handler(self, request):
     print "raw post data", request.raw_post_data
