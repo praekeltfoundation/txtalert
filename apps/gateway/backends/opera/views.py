@@ -4,10 +4,13 @@ from django.contrib.auth.decorators import permission_required
 
 from piston.utils import require_mime
 from utils import process_receipts_xml
+import logging
 
-@permission_required('gateway.can_place_sms_receipt')
+# @permission_required('gateway.can_place_sms_receipt')
 # @require_mime('xml')
 def sms_receipt_handler(self, request):
+    logging.info(request)
+    logging.info(request.META)
     success, fail = process_receipts_xml(request.raw_post_data)
     return HttpResponse(simplejson.dumps({
         'success': map(lambda rcpt: rcpt._asdict(), success),
