@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import permission_required
 
 from piston.utils import require_mime
 from utils import process_receipts_xml
-import logging
+from django.settings import LOGGER as logging
 
 # @permission_required('gateway.can_place_sms_receipt')
 # @require_mime('xml')
