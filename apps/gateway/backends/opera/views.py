@@ -13,6 +13,8 @@ def sms_receipt_handler(self, request):
     logging.info(request)
     logging.info(request.META)
     logging.debug(request.raw_post_data)
+    print logging
+    print request.raw_post_data
     success, fail = process_receipts_xml(request.raw_post_data)
     return HttpResponse(simplejson.dumps({
         'success': map(lambda rcpt: rcpt._asdict(), success),
