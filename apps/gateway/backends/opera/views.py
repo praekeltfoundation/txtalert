@@ -8,9 +8,10 @@ from utils import process_receipts_xml
 # @permission_required('gateway.can_place_sms_receipt')
 # @require_mime('xml')
 def sms_receipt_handler(self, request):
-    print request.user
-    print request.raw_post_data
-    print str(request)
+    from django.conf import settings
+    settings.LOGGER.debug(request.user)
+    settings.LOGGER.debug(request.raw_post_data)
+    settings.LOGGER.debug(str(request))
     success, fail = process_receipts_xml(request.raw_post_data)
     return HttpResponse(simplejson.dumps({
         'success': map(lambda rcpt: rcpt._asdict(), success),
