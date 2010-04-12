@@ -17,7 +17,7 @@ class SMSHandler(BaseHandler):
                 'status', 'status_display', 'msisdn')
     model = SendSMS
     
-    # Fixme, the way I deal with one resource & a list of resource in one view
+    # FIXME: the way I deal with one resource & a list of resource in one view
     # is hideous
     @permission_required('gateway.can_view_sms_statistics')
     @throttle(10, 60)
