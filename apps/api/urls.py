@@ -12,7 +12,8 @@ sms_handler = Resource(SMSHandler, http_basic_authentication)
 pcm_handler = Resource(PCMHandler, http_basic_authentication)
 
 def sms_receipt_handler(request):
-    print request.raw_post_data
+    from django.conf import settings
+    settings.LOGGER.debug(request.raw_post_data)
     return HttpResponse(status="400")
 
 # SMS api
