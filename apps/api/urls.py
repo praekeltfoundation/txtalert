@@ -7,8 +7,7 @@ from api.handlers import SMSHandler, PCMHandler, SMSReceiptHandler
 
 http_basic_authentication = HttpBasicAuthentication()
 
-# sms_receipt_handler = Resource(SMSReceiptHandler, http_basic_authentication)
-from gateway.backends.opera.views import sms_receipt_handler
+sms_receipt_handler = Resource(SMSReceiptHandler, http_basic_authentication)
 sms_handler = Resource(SMSHandler, http_basic_authentication)
 pcm_handler = Resource(PCMHandler, http_basic_authentication)
 
