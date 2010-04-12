@@ -11,15 +11,9 @@ sms_receipt_handler = Resource(SMSReceiptHandler, http_basic_authentication)
 sms_handler = Resource(SMSHandler, http_basic_authentication)
 pcm_handler = Resource(PCMHandler, http_basic_authentication)
 
-def sms_receipt_handler(request):
-    from django.conf import settings
-    settings.LOGGER.debug(request.raw_post_data)
-    return HttpResponse(status="400")
-
 # SMS api
 urlpatterns = patterns('',
-    url(r'^sms/receipt\.xml$', sms_receipt_handler, {}, 'api-sms-receipt'),
-    # url(r'^sms/receipt\.(?P<emitter_format>.+)$', sms_receipt_handler, {}, 'api-sms-receipt'),
+    url(r'^sms/receipt\.(?P<emitter_format>.+)$', sms_receipt_handler, {}, 'api-sms-receipt'),
     url(r'^sms/(?P<identifier>.+)/(?P<msisdn>[0-9]+)\.(?P<emitter_format>.+)$', sms_handler, {}, 'api-sms'),
     url(r'^sms\.(?P<emitter_format>.+)$', sms_handler, {}, 'api-sms'),
 )
