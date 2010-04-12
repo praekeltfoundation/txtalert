@@ -147,6 +147,53 @@ class OperaTestCase(TestCase):
             self.assertEquals(send_sms.delivery_timestamp, datetime.strptime(receipt.timestamp, OPERA_TIMESTAMP_FORMAT))
             self.assertEquals(send_sms.status, 'D')
     
+    def test_receipt_msisdn_normalization(self):
+        send_sms = SendSMS.objects.create(msisdn='27761234567', 
+                                            identifier='abcdefg',
+                                            expiry=datetime.today() + timedelta(days=1),
+                                            delivery=datetime.today())
+        self.assertEquals(send_sms.status, 'v') # unknown
+        
+        raw_xml_post = """
+        <?xml version="1.0"?>
+        <!DOCTYPE receipts>
+        <receipts>
+          <receipt>
+            <msgid>26567958</msgid>
+            <reference>abcdefg</reference>
+            <msisdn>+27761234567</msisdn>
+            <status>D</status>
+            <timestamp>20080831T15:59:24</timestamp>
+            <billed>NO</billed>
+          </receipt>
+        </receipts>
+        """
+        
+        from django.http import HttpRequest
+        request = HttpRequest()
+        request.method = 'POST'
+        request.raw_post_data = raw_xml_post.strip()
+        request.META['CONTENT_TYPE'] = 'text/xml'
+        request.META['HTTP_AUTHORIZATION'] = basic_auth_string('user', 'password')
+        request.user = User.objects.get(username='user')
+        
+        # ugly monkey patching to avoid us having to use a URL to test the opera
+        # backend
+        from gateway.backends.opera.views import sms_receipt_handler
+        from api.handlers import SMSReceiptHandler
+        SMSReceiptHandler.create = sms_receipt_handler
+        
+        # mimick POSTed receipt from Opera
+        add_perms_to_user('user','can_place_sms_receipt')
+        
+        # push the request
+        response = SMSReceiptHandler().create(request)
+        
+        # check the database response
+        updated_send_sms = SendSMS.objects.get(pk=send_sms.pk)
+        self.assertEquals(updated_send_sms.status, 'D') # delivered
+        
+    
     def test_bad_receipt_processing(self):
         """Test behaviour when we receive a receipt that doesn't match
         anything we know"""

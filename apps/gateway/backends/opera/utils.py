@@ -25,8 +25,10 @@ def process_receipts(receipts):
     success, fail = [], []
     for receipt in receipts:
         try:
+            # internally we store MSISDNs without a leading plus, strip that
+            # from the msisdn
             sms_sent = SendSMS.objects.get(identifier=receipt.reference, \
-                                                        msisdn=receipt.msisdn)
+                                        msisdn=receipt.msisdn.replace("+",""))
             sms_sent.status = receipt.status
             sms_sent.delivery_timestamp = datetime.strptime(receipt.timestamp, \
                                                         OPERA_TIMESTAMP_FORMAT)
