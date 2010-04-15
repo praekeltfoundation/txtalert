@@ -36,7 +36,7 @@ LOGGER.level = logging.DEBUG
 # creates two different loggers doing exactly the same thing. So we check if 
 # the current list of handlers already contains an instance of TimedRotatingFileHandler
 if not any(isinstance(h, TimedRotatingFileHandler) for h in LOGGER.handlers):
-    handler = TimedRotatingFileHandler(LOG_FILE, when='midnight', backupCount=14)
+    handler = TimedRotatingFileHandler(LOG_FILE, when='midnight', interval=1, backupCount=14)
     handler.setFormatter(logging.Formatter(LOG_FORMAT))
     LOGGER.addHandler(handler)
 
