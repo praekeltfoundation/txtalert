@@ -19,7 +19,7 @@ class Gateway(object):
         """Send a bulk of smses SMS"""
         
         struct = self.default_values.copy()
-        delivery = delivery or datetime.now()
+        delivery = delivery or datetime.utcnow()
         expiry = expiry or (delivery + timedelta(days=1))
         
         struct['Numbers'] = ','.join(map(str, msisdns))
