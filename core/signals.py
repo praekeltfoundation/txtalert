@@ -8,11 +8,35 @@ logger = logging.getLogger("signals")
 def track_please_call_me_handler(sender, **kwargs):
     return track_please_call_me(kwargs['instance'])
 
+def sloppy_get_or_create_possible_msisdn(sloppy_formatted_msisdn):
+    # Assume the MSISDNs are always formatted as +27761234567, normalize
+    # to 761234567
+    end_of_msisdn = sloppy_formatted_msisdn[-9:]
+    # it could be formatted as 27761234567,+27761234567 or 0761234567
+    possible_msisdns = MSISDN.objects.filter(msisdn__endswith=end_of_msisdn)
+    if possible_msisdns.count():
+        # priority for an MSISDN with a patient set
+        for msisdn in possible_msisdns:
+            if msisdn.patient_set.count():
+                return msisdn # just so you know what's going on
+        # otherwise we'll settle for a patient that has used this MSISDN 
+        # previously
+        for msisdn in possible_msisdns:
+            if msisdn.contacts.count():
+                return msisdn
+        # all possible MSISDNs have no patients linked to them
+        # if that's the case then just default to the most recent
+        # MSISDN registered for that given number.
+        return possible_msisdns.order_by('id')[0]
+    # nothing matches, so create one
+    else:
+        return MSISDN.objects.create(msisdn=sloppy_formatted_msisdn)
+
 def track_please_call_me(opera_pcm):
     """Track a MSISDN we receive from a PCM back to a specific contact. This is
     tricky because MSISDNs in txtAlert are involved in all sorts of ManyToMany 
     relationships."""
-    msisdn, _ = MSISDN.objects.get_or_create(msisdn=opera_pcm.sender_msisdn)
+    msisdn = sloppy_get_or_create_possible_msisdn(opera_pcm.sender_msisdn)
     patients = Patient.objects.filter(active_msisdn=msisdn) or \
                 msisdn.contacts.all()
     if patients.count() == 1:

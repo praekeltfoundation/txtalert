@@ -35,7 +35,8 @@ class MSISDN(models.Model):
     class Meta:
         verbose_name = 'Mobile Number'
         verbose_name_plural = 'Mobile Numbers'
-
+        ordering=['-id']
+    
     def __unicode__(self):
         return self.msisdn
 

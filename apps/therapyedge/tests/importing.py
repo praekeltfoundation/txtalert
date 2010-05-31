@@ -162,8 +162,8 @@ class PatientImportTestCase(TestCase):
         
         msisdns = patient.msisdns.all()
         self.assertEqual(len(msisdns), 2)
-        self.assertEqual(msisdns[0].msisdn, '27821231111')
-        self.assertEqual(msisdns[1].msisdn, '27821232222')
+        self.assertEqual(msisdns[0].msisdn, '27821232222')
+        self.assertEqual(msisdns[1].msisdn, '27821231111')
     
 
 class VisitImportTestCase(TestCase):
