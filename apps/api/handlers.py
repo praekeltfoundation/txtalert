@@ -95,7 +95,7 @@ class PCMHandler(BaseHandler):
         
         http://localhost:8000/api/v1/pcm.json? \
                 &sender_msisdn=${sender_number} \       # where the PCM came from
-                &message_content=${message_content} \   # the original PCM message
+                &message=${message_content} \           # the original PCM message
                 &sms_id=${sms_id} \                     # the SMSC's ID - mb we can use this to avoid duplicates
                 &recipient_msisdn=${recipient_number}   # the number the PCM was called to, perhaps we can use this to identify the clinic
         
