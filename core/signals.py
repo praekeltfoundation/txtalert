@@ -46,7 +46,7 @@ def track_please_call_me(opera_pcm):
         pcm = PleaseCallMe.objects.create(msisdn=msisdn, \
                                             timestamp=datetime.now(), \
                                             clinic=clinic)
-        msg = 'Thank you for your Please Call me to %s. ' % clinic.name + \
+        msg = 'Thank you for your Please Call Me to %s. ' % clinic.name + \
                 'An administrator will phone you back within 24 hours ' + \
                 'to offer assistance.'
         from gateway import gateway
