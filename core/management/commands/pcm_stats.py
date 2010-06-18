@@ -11,9 +11,10 @@ class Command(MuninCommand):
             'graph_title': 'PCM Statistics',
             'graph_category': 'TxtAlert',
             'graph_vlabel': 'Count',
-            'graph_order': 'received not_linked',
-            'received.label': 'PCMs received',
-            'not_linked.label': 'PCMs from unknown Patient MSISDN',
+            'graph_order': 'total linked not_linked',
+            'total.label': 'Total amount of PCMs received',
+            'linked.label': 'PCMs from known Patient MSISDNs',
+            'not_linked.label': 'PCMs from unknown Patient MSISDNs',
         })
     
     def run(self):
@@ -26,7 +27,8 @@ class Command(MuninCommand):
                                                 created_at__month=today.month,
                                                 created_at__year=today.year)
         self.output({
-            'received.value': pcms.count(),
+            'total.value': all_pcms.count(),
+            'linked.value': pcms.count(),
             'not_linked.value': all_pcms.count() - pcms.count(),
         })
         
