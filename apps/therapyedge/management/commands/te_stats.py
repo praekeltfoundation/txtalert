@@ -23,7 +23,7 @@ class Command(BaseCommand):
             'graph_title': 'TherapyEdge Statistics',
             'graph_category': 'TxtAlert',
             'graph_vlabel': 'Count',
-            'graph_order': 'attended missed percentage'
+            'graph_order': 'attended missed percentage',
             'attended.label': 'Attended',
             'missed.label': 'Missed',
             'percentage.label': 'Percentage Missed'
