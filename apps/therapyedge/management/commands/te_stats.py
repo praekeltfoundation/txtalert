@@ -1,21 +1,11 @@
-from django.core.management.base import BaseCommand
 from django.conf import settings
-from django.template import Template
 from os.path import join
 from core.models import Visit
-from datetime import datetime, timedelta
+from datetime import date, timedelta
+from core.utils import MuninCommand
 
-class Command(BaseCommand):
+class Command(MuninCommand):
     help = "Print out statistics on TherapyEdge, suitable as a Munin plugin"
-    
-    def handle(self, *args, **kwargs):
-        if args and args[0] == "config":
-            return self.config()
-        else:
-            return self.stats()
-    
-    def output(self, _dict):
-        print "\n".join(["%s %s" % (k,v) for k,v in _dict.items()])
     
     def config(self):
         """Print out the plugin configuration for Munin"""
@@ -29,9 +19,9 @@ class Command(BaseCommand):
             'percentage.label': 'Percentage Missed'
         })
     
-    def stats(self):
+    def run(self):
         """Print out the stats for Munin"""
-        yesterday = datetime.now() - timedelta(days=1)
+        yesterday = date.today() - timedelta(days=1)
         visits = Visit.objects.filter(patient__opted_in=True)
         attended_count = visits.filter(status__exact='a',
                                         date__exact=yesterday).count()
