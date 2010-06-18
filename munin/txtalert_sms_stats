@@ -1,0 +1,3 @@
+#!/bin/sh
+cd /var/praekelt/live/txtalert/current/txtalert \
+ && ./manage.py sms_stats --settings=environments.live.production $1
