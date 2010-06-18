@@ -1,4 +1,0 @@
-#!/bin/sh
-cd /var/praekelt/live/txtalert/current/txtalert \
- && sudo -u www-data ./manage.py te_stats \
-        --settings=environments.live.production $1 \

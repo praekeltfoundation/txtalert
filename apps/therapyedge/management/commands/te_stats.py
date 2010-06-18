@@ -21,9 +21,10 @@ class Command(BaseCommand):
         """Print out the plugin configuration for Munin"""
         self.output({
             'graph_title': 'TherapyEdge Statistics',
-            'graph_category': 'TherapyEdge',
+            'graph_category': 'TxtAlert',
             'graph_vlabel': 'Count',
-            'attended.label': 'Total',
+            'graph_order': 'attended missed percentage'
+            'attended.label': 'Attended',
             'missed.label': 'Missed',
             'percentage.label': 'Percentage Missed'
         })
