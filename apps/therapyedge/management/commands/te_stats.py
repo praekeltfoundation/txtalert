@@ -43,6 +43,6 @@ class Command(BaseCommand):
         self.output({
             'attended.value': attended_count,
             'missed.value': missed_count,
-            'percentage.value': missed_percentage
+            'percentage.value': '%.1f' % missed_percentage
         })
     
