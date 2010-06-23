@@ -15,6 +15,39 @@ class Gateway(object):
         }
     
     def send_sms(self, msisdns, smstexts, delivery=None, expiry=None, \
+                     priority='standard', receipt='Y'):
+        """Deprecated, replaced with send_bulk_sms"""
+        send_sms_ids = [self.send_one_sms(msisdn, smstext, delivery, 
+                                    expiry, priority, receipt).pk \
+                    for (msisdn, smstext) in zip(msisdns, smstexts)]
+        return SendSMS.objects.filter(pk__in=send_sms_ids)
+        
+    
+    def send_one_sms(self, msisdn, smstext, delivery=None, expiry=None, \
+                        priority='standard', receipt='Y'):
+        """Send one sms"""
+        struct = self.default_values.copy()
+        delivery = delivery or datetime.utcnow()
+        expiry = expiry or (delivery + timedelta(days=1))
+        
+        struct['Numbers'] = msisdn
+        struct['SMSText'] = smstext
+        struct['Delivery'] = delivery
+        struct['Expiry'] = expiry
+        struct['Priority'] = priority
+        struct['Receipt'] = receipt
+        
+        proxy_response = self.proxy.EAPIGateway.SendSMS(struct)
+        
+        return SendSMS.objects.create(msisdn=msisdn, \
+                                        smstext=smstext, \
+                                        delivery=struct['Delivery'], \
+                                        expiry=struct['Expiry'], \
+                                        priority=struct['Priority'], \
+                                        receipt=struct['Receipt'], \
+                                        identifier=proxy_response['Identifier'])
+    
+    def send_bulk_sms(self, msisdns, smstexts, delivery=None, expiry=None, \
                         priority='standard', receipt='Y'):
         """Send a bulk of smses SMS"""
         
