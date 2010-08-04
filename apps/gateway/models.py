@@ -73,8 +73,8 @@ class SendSMS(models.Model):
 class PleaseCallMe(models.Model):
     """A please call me we receive from a patient"""
     sms_id = models.CharField(max_length=80)
-    sender_msisdn = models.CharField(max_length=12)
-    recipient_msisdn = models.CharField(max_length=12)
+    sender_msisdn = models.CharField(max_length=255)
+    recipient_msisdn = models.CharField(max_length=255)
     message = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
