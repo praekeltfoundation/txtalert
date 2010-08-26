@@ -9,7 +9,7 @@ class Command(BaseCommand):
     help = "Can be run as a cronjob or directly to send import TherapyEdge data."
     def handle(self, *args, **kwargs):
         importer = Importer(
-            uri='https://%s:%s@196.36.218.99/tools/ws/sms/patients/server.php' % (
+            uri='https://%s:%s@41.0.13.99/tools/ws/sms/patients/server.php' % (
                 Setting.objects.get(name='THERAPYEDGE_USERNAME').value,
                 Setting.objects.get(name='THERAPYEDGE_PASSWORD').value
             ),
