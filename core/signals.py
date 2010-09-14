@@ -52,10 +52,16 @@ def track_please_call_me(opera_pcm):
         from gateway import gateway
         gateway.send_sms([msisdn.msisdn],[msg])
     elif patients.count() == 0:
-        # not sure what to do in this situation yet
-        logger.error('track_please_call_me: No contacts found for MSISDN: %s' % msisdn)
+        # not sure what to do in this situation yet, lets minimally store the PCM
+        # so we don't loose track of any.
+        pcm = PleaseCallMe.objects.create(msisdn=msisdn, \
+                                            timestamp=datetime.now())
+        logger.error('track_please_call_me: No contacts found for MSISDN: %s, registering without clinic.' % msisdn)
     else:
-        # not sure what to do in this situation yet
+        # not sure what to do in this situation yet, lets minimally store the PCM
+        # so we don't loose track of any.
+        pcm = PleaseCallMe.objects.create(msisdn=msisdn, \
+                                            timestamp=datetime.now())
         logger.error("track_please_call_me: More than one contact found for MSISDN: %s" % msisdn)
 
 
@@ -97,8 +103,13 @@ def find_clinic_for_please_call_me_handler(sender, **kwargs):
 
 def find_clinic_for_please_call_me(pcm):
     if not pcm.clinic:
-        patient = Patient.objects.get(id=pcm.msisdn.contacts.all()[0].id)
-        pcm.clinic = patient.get_last_clinic()
+        # this is hacky at best, we're not sure this will even return results.
+        contacts_for_msisdn = pcm.msisdn.contacts.all()
+        if contacts_for_msisdn:
+            patient = Patient.objects.get(id=contacts_for_msisdn[0].pk)
+            pcm.clinic = patient.get_last_clinic()
+        else:
+            logger.error("find_clinic_for_please_call_me: Unable to determine clinic for %s" % pcm.msisdn)
 
 
 def update_active_msisdn_handler(sender, **kwargs):
