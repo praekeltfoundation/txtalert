@@ -46,11 +46,11 @@ def track_please_call_me(opera_pcm):
         pcm = PleaseCallMe.objects.create(msisdn=msisdn, \
                                             timestamp=datetime.now(), \
                                             clinic=clinic)
-        msg = 'Thank you for your Please Call Me.' + \
-                'An administrator will phone you back within 24 hours ' + \
-                'to offer assistance.'
-        from gateway import gateway
-        gateway.send_sms([msisdn.msisdn],[msg])
+        # msg = 'Thank you for your Please Call Me. ' + \
+        #         'An administrator will phone you back within 24 hours ' + \
+        #         'to offer assistance.'
+        # from gateway import gateway
+        # gateway.send_sms([msisdn.msisdn],[msg])
     elif patients.count() == 0:
         # not sure what to do in this situation yet, lets minimally store the PCM
         # so we don't loose track of any.
