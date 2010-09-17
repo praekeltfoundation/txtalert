@@ -46,6 +46,12 @@ def track_please_call_me(opera_pcm):
         pcm = PleaseCallMe.objects.create(msisdn=msisdn, \
                                             timestamp=datetime.now(), \
                                             clinic=clinic)
+        logger.info("track_please_call_me: PCM registered for %s at %s for clinic %s from opera PCM: %s" % (
+            pcm.msisdn,
+            pcm.timestamp,
+            pcm.clinic,
+            opera_pcm
+        ))
         # msg = 'Thank you for your Please Call Me. ' + \
         #         'An administrator will phone you back within 24 hours ' + \
         #         'to offer assistance.'
