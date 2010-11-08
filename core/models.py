@@ -205,7 +205,10 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
 
 class PleaseCallMe(models.Model):
     REASON_CHOICES = (
-        ('nc', 'Not Called'),
+        ('ne', 'Khumbu did not phone back the patient'),
+        ('er', 'Patient did not try to reach us'),
+        ('lt', 'LTFU'),
+        ('de', 'Defaulter'),
         ('na', 'No Answer'),
         ('rm', 'Reschedule missed appointment'),
         ('rf', 'Reschedule future appointment'),
