@@ -10,7 +10,7 @@ from springfield.deploy.utils import git, system, base, twistd
 RELEASE_NAME_FORMAT = '%Y%m%d_%H%M%S' # timestamped
 
 # default for now
-# env.hosts = ['ubuntu-server.local']
+env.hosts = ['ovm1.praekelt.com']
 
 def _setup_env(fn):
     def wrapper(branch, *args, **kwargs):
@@ -28,8 +28,7 @@ def _setup_env_for(branch):
     # the github_user and github_repo variables are set by the ~/.fabricrc 
     # or whatever is provided to `fab` with the `-c` command line variable.
     # See the sample fabric.config file.
-    env.github_repo = 'http://github.com/%(github_user)s/%(github_repo_name)s.git' % env
-    
+    env.github_repo = 'git://github.com/%(github_user)s/%(github_repo_name)s.git' % env
     env.deploy_to = '/var/praekelt/%(github_repo_name)s/%(branch)s' % env
     env.releases_path = "%(deploy_to)s/releases" % env
     env.current = "%(deploy_to)s/current" % env
