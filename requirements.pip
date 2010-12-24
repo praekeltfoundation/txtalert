@@ -1,3 +1,4 @@
 django==1.2
+flup
 MySQL-python
 coverage
