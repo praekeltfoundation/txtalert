@@ -223,7 +223,7 @@ def start(branch):
 
 @_setup_env
 def stop(branch):
-    return run("kill `cat %s/yal.pid`" % env.pids_path) or True
+    return run("kill `cat %s/txtalert.pid`" % env.pids_path) or True
 
 @_setup_env
 def restart(branch):
