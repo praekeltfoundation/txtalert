@@ -1,4 +1,2 @@
 django==1.2
 coverage
-fabric
--e git+git@github.com:praekelt/springfield.git#egg=praekelt-springfield
