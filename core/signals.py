@@ -6,7 +6,8 @@ import logging
 logger = logging.getLogger("signals")
 
 def track_please_call_me_handler(sender, **kwargs):
-    return track_please_call_me(kwargs['instance'])
+    if kwargs.get('created', False):
+        return track_please_call_me(kwargs['instance'])
 
 def sloppy_get_or_create_possible_msisdn(sloppy_formatted_msisdn):
     # Assume the MSISDNs are always formatted as +27761234567, normalize
