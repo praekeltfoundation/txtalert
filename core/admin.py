@@ -33,7 +33,7 @@ class PleaseCallMeForm(forms.ModelForm):
 
 class PleaseCallMeAdmin(admin.ModelAdmin):
     form = PleaseCallMeForm
-    list_display = ('timestamp', 'msisdn','reason',)
+    list_display = ('timestamp', 'msisdn','reason','notes')
     list_filter = ('timestamp', 'clinic','reason',)
 
     def queryset(self, request):
