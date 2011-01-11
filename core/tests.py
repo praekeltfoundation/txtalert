@@ -112,6 +112,7 @@ class PleaseCallMeTestCase(TestCase):
         pcm = PleaseCallMe.objects.latest('timestamp')
         self.assertEquals(pcm.msisdn, self.patient.active_msisdn)
         self.assertEquals(pcm.clinic, self.patient.last_clinic)
+        self.assertEquals(pcm.notes, "Original SMS: %s" % gpcm.message)
     
     def test_please_call_me_from_therapyedge(self):
         pcm = PleaseCallMe.objects.create(
@@ -155,4 +156,4 @@ class PleaseCallMeTestCase(TestCase):
             sms_id='sms_id',
             sender_msisdn=msisdn.msisdn
         )
-        
+    
