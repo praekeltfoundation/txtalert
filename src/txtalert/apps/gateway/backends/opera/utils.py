@@ -4,7 +4,7 @@ from collections import namedtuple
 from datetime import datetime
 import xml.etree.ElementTree as ET
 
-from gateway.models import SendSMS
+from txtalert.apps.gateway.models import SendSMS
 import iso8601
 import logging
 

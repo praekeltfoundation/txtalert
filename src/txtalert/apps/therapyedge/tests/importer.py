@@ -1,8 +1,8 @@
 from django.test import TestCase
-from therapyedge.importer import Importer, SEX_MAP
-from therapyedge.xmlrpc import client
-from core.models import Patient, MSISDN, Visit, Clinic
-from therapyedge.tests.utils import (PatientUpdate, ComingVisit, MissedVisit,
+from txtalert.apps.therapyedge.importer import Importer, SEX_MAP
+from txtalert.apps.therapyedge.xmlrpc import client
+from txtalert.core.models import Patient, MSISDN, Visit, Clinic
+from txtalert.apps.therapyedge.tests.utils import (PatientUpdate, ComingVisit, MissedVisit,
                                         DoneVisit, DeletedVisit, create_instance)
 from datetime import datetime, timedelta, date
 import random

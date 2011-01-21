@@ -16,10 +16,10 @@
 
 from datetime import datetime, date, timedelta
 from django.test import TestCase
-from core.models import *
-from therapyedge.importer import Importer, InvalidValueException
-from therapyedge.tests.utils import create_instance
-from therapyedge.tests.utils import (PatientUpdate, ComingVisit, MissedVisit,
+from txtalert.core.models import *
+from txtalert.apps.therapyedge.importer import Importer, InvalidValueException
+from txtalert.apps.therapyedge.tests.utils import create_instance
+from txtalert.apps.therapyedge.tests.utils import (PatientUpdate, ComingVisit, MissedVisit,
                                         DoneVisit, DeletedVisit)
 
 def reload_record(record):

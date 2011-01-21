@@ -1,11 +1,11 @@
 from django.test import TestCase
 from datetime import datetime, date, timedelta
-from therapyedge import reminders
-from core.models import *
-from core.utils import random_string
-from gateway.models import SendSMS
+from txtalert.apps.therapyedge import reminders
+from txtalert.core.models import *
+from txtalert.core.utils import random_string
+from txtalert.apps.gateway.models import SendSMS
 import hashlib
-import gateway
+from txtalert.apps import gateway
 
 class RemindersI18NTestCase(TestCase):
     
@@ -16,7 +16,7 @@ class RemindersI18NTestCase(TestCase):
         self.patient.save()
         self.language = self.patient.language
         self.clinic = Clinic.objects.all()[0]
-        gateway.load_backend('gateway.backends.dummy')
+        gateway.load_backend('txtalert.apps.gateway.backends.dummy')
     
     def tearDown(self):
         pass
@@ -94,7 +94,7 @@ class RemindersI18NTestCase(TestCase):
         two_weeks = today + (one_week * 2)
         
         # These settings are needed by the reminder script
-        from general.settings.models import Setting
+        from txtalert.apps.general.settings.models import Setting
         Setting.objects.create(
             name='Stats Emails',
             type='t',

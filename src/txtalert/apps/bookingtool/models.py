@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models.signals import pre_save
-from core.models import Patient, Visit
-from bookingtool import signals
+from txtalert.core.models import Patient, Visit
+from txtalert.apps.bookingtool import signals
 from datetime import datetime
 
 class BookingPatient(Patient):

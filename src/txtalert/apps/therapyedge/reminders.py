@@ -19,9 +19,9 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.core import mail
 
-from general.settings.models import Setting
-from gateway.models import SendSMS
-from core.models import Visit
+from txtalert.apps.general.settings.models import Setting
+from txtalert.apps.gateway.models import SendSMS
+from txtalert.core.models import Visit
 import logging
 
 logger = logging.getLogger("reminders")
