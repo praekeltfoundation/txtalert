@@ -13,26 +13,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with TxtAlert.  If not, see <http://www.gnu.org/licenses/>.
 
-from environments.defaults import *
+from txtalert.environments.settings import *
 import os
 
-DEBUG = False
+DEBUG = True
 
-DATABASE_ENGINE = 'mysql'
-DATABASE_HOST = '41.203.21.92'
-DATABASE_NAME = 'txtalert_production'
-DATABASE_USER = 'txtalertuser'
-DATABASE_PASSWORD = 'phohX7mo'
+DATABASE_ENGINE = 'postgresql_psycopg2'
+DATABASE_NAME = 'txtalert_dev'
+DATABASE_USER = ''
+DATABASE_PASSWORD = ''
 DATABASE_PORT = ''
 
-OPERA_SERVICE = '19079'
-OPERA_PASSWORD = 'zu8U6afR'
-OPERA_CHANNEL = '165'
-
-ADMINS = MANAGERS = (
-    ('Simon de Haan', 'simon@praekeltfoundation.org'),
-    ('David Maclay', 'david@praekeltfoundation.org'),
-)
-
-PISTON_EMAIL_ERRORS = True
-PISTON_DISPLAY_ERRORS = True
+OPERA_SERVICE = os.environ['OPERA_SERVICE']
+OPERA_PASSWORD = os.environ['OPERA_PASSWORD'] 
+OPERA_CHANNEL = os.environ['OPERA_CHANNEL']
