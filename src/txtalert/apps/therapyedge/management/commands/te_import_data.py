@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, date
 from django.core.management.base import BaseCommand
 from django.conf import settings
-from general.settings.models import Setting
-from therapyedge.importer import Importer
-from core.models import Clinic
+from txtalert.apps.general.settings.models import Setting
+from txtalert.apps.therapyedge.importer import Importer
+from txtalert.core.models import Clinic
 from xml.parsers.expat import ExpatError
 import sys, traceback
 

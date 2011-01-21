@@ -233,8 +233,8 @@ class PleaseCallMe(models.Model):
 
 
 # signals
-from core import signals
-from gateway.models import PleaseCallMe as GatewayPleaseCallMe
+from txtalert.core import signals
+from txtalert.apps.gateway.models import PleaseCallMe as GatewayPleaseCallMe
 
 pre_save.connect(signals.check_for_opt_in_changes_handler, sender=Patient)
 pre_save.connect(signals.find_clinic_for_please_call_me_handler, sender=PleaseCallMe)

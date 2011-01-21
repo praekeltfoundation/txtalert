@@ -20,7 +20,7 @@ import sys
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-APP_ROOT = os.path.abspath(join(os.path.dirname(__file__),'..'))
+APP_ROOT = os.getcwd()
 PROJECT_NAME = os.path.basename(APP_ROOT)
 
 # Initialize logger that's rotated daily
@@ -39,14 +39,6 @@ if not any(isinstance(h, TimedRotatingFileHandler) for h in LOGGER.handlers):
     handler = TimedRotatingFileHandler(LOG_FILE, when='midnight', interval=1, backupCount=14)
     handler.setFormatter(logging.Formatter(LOG_FORMAT))
     LOGGER.addHandler(handler)
-
-# Add APP_ROOT/apps to the load path
-APP_PATH = join(APP_ROOT, 'apps')
-sys.path.insert(0, APP_PATH)
-
-# Add APP_ROOT/lib to the load path
-LIB_PATH = join(APP_ROOT, 'lib')
-sys.path.insert(0, LIB_PATH)
 
 SECRET_KEY = ''
 
@@ -105,21 +97,23 @@ MIDDLEWARE_CLASSES = (
 )
 
 TEMPLATE_DIRS = (
-    join(APP_ROOT, 'templates')
+    'templates',
 )
 
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'txtalert.urls'
 
 INSTALLED_APPS = (
-    'core',
-    'general.settings',
-    'general.jquery',
-    'therapyedge',
-    'bookingtool',
-    'gateway',
-    'api',
+    'txtalert.core',
+    'txtalert.apps.general.settings',
+    'txtalert.apps.general.jquery',
+    'txtalert.apps.therapyedge',
+    # booking tool is currently broken
+    # 'txtalert.apps.bookingtool',
+    'txtalert.apps.gateway',
+    'txtalert.apps.api',
     'piston',
     'dirtyfields',
+    'history',
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.sessions',
@@ -127,7 +121,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 )
 
-SMS_GATEWAY_CLASS = 'gateway.backends.opera'
+SMS_GATEWAY_CLASS = 'txtalert.apps.gateway.backends.opera'
 
 BOOKING_TOOL_RISK_LEVELS = {
     # pc is for patient count

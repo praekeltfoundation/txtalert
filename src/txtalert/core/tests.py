@@ -63,7 +63,7 @@ class ModelTestCase(TestCase):
 
 
 from django.test import TestCase
-from gateway.models import PleaseCallMe as GatewayPleaseCallMe
+from txtalert.apps.gateway.models import PleaseCallMe as GatewayPleaseCallMe
 from txtalert.core.models import PleaseCallMe, Patient, Clinic, MSISDN
 from datetime import datetime, timedelta
 
@@ -73,8 +73,8 @@ class PleaseCallMeTestCase(TestCase):
     
     def setUp(self):
         # use dummy gateway
-        import gateway
-        gateway.load_backend('gateway.backends.dummy')
+        from txtalert.apps import gateway
+        gateway.load_backend('txtalert.apps.gateway.backends.dummy')
         
         self.patient = Patient.objects.all()[0]
         self.patient.save() # save to specify the active_msisdn

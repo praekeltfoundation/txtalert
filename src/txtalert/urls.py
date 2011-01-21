@@ -27,9 +27,9 @@ urlpatterns = patterns('',
     # Uncomment this for admin docs:
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
-    (r'', include('general.jquery.urls')),
-    (r'^therapyedge/', include('therapyedge.urls')),
-    (r'^bookingtool/', include('bookingtool.urls')),
+    (r'', include('txtalert.apps.general.jquery.urls')),
+    (r'^therapyedge/', include('txtalert.apps.therapyedge.urls')),
+    (r'^bookingtool/', include('txtalert.apps.bookingtool.urls')),
     # (r'^sms/', include('opera.urls')),
     (r'^admin/(.*)', admin.site.root),
     (r'^static/(.*)$', 'django.views.static.serve', \
@@ -38,5 +38,5 @@ urlpatterns = patterns('',
 
 # web API
 urlpatterns += patterns('',
-   (r'^api/v1/', include('api.urls')),
+   (r'^api/v1/', include('txtalert.apps.api.urls')),
 )

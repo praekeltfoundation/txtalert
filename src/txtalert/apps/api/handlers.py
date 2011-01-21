@@ -1,11 +1,11 @@
-from django.contrib.auth.decorators import permission_required
+# from django.contrib.auth.decorators import permission_required
 from django.shortcuts import get_object_or_404
 
 from piston.handler import BaseHandler
 from piston.utils import rc, require_mime, throttle
 
-from gateway.models import SendSMS, PleaseCallMe
-from gateway import gateway, sms_receipt_handler
+from txtalert.apps.gateway.models import SendSMS, PleaseCallMe
+from txtalert.apps.gateway import gateway, sms_receipt_handler
 
 from datetime import datetime
 import logging
@@ -17,11 +17,11 @@ class SMSHandler(BaseHandler):
                 'status', 'status_display', 'msisdn')
     model = SendSMS
     
-    # FIXME: the way I deal with one resource & a list of resource in one view
-    # is hideous
-    @permission_required('gateway.can_view_sms_statistics')
     @throttle(10, 60)
     def read(self, request, msisdn=None, identifier=None):
+        if not request.user.has_perm('gateway.can_view_sms_statistics'):
+            return rc.FORBIDDEN
+        
         if all([msisdn, identifier]):
             return get_object_or_404(SendSMS, msisdn=msisdn, identifier=identifier)
         else:
@@ -37,10 +37,12 @@ class SMSHandler(BaseHandler):
             return rc.BAD_REQUEST
     
     
-    @permission_required('gateway.can_send_sms')
     @throttle(10, 60)
     @require_mime('json')
     def create(self, request):
+        if not request.user.has_perm('gateway.can_send_sms'):
+            return rc.FORBIDDEN
+        
         if request.content_type:
             msisdns = request.data.get('msisdns',[])
             smstext = request.data.get('smstext','')
@@ -58,20 +60,24 @@ class SMSReceiptHandler(BaseHandler):
     specify the sms_receipt_handler, this can be a regular Django view 
     responding some type of HttpResponse object"""
     allowed_methods = ('POST',)
-    create = sms_receipt_handler
+    
+    def create(self, request):
+        return sms_receipt_handler(request)
 
 class PCMHandler(BaseHandler):
     allowed_methods = ('POST', 'GET')
     fields = ('sms_id', 'sender_msisdn', 'recipient_msisdn', 'created_at')
     model = PleaseCallMe
     
-    @permission_required('gateway.can_view_pcm_statistics')
     @throttle(10, 60)
     def read(self, request):
         """
         Return the list of PleaseCallMe's received since the timestamp specified 
         in the `since` parameter.
         """
+        if not request.user.has_perm('gateway.can_view_pcm_statistics'):
+            return rc.FORBIDDEN
+        
         if 'since' in request.GET:
             # remove timezone info since MySQL is not able to handle that
             # assume input it UTC
@@ -80,7 +86,6 @@ class PCMHandler(BaseHandler):
         else:
             return rc.BAD_REQUEST
     
-    @permission_required('gateway.can_place_pcm')
     def create(self, request):
         """
         FIXME: This should probably be moved into something more pluggable, it 
@@ -103,6 +108,8 @@ class PCMHandler(BaseHandler):
         for available substitution variables.
         
         """
+        if not request.user.has_perm('gateway.can_place_pcm'):
+            return rc.FORBIDDEN
         
         if ('sms_id' in request.POST
             and 'sender_msisdn' in request.POST 

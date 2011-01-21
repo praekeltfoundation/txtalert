@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
-from bookingtool import views
+from txtalert.apps.bookingtool import views
 
 urlpatterns = patterns('',
     (r'verification\.html', views.verification, {}, 'verification-sms'),

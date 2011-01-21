@@ -1,6 +1,6 @@
-from core.utils import MuninCommand
+from txtalert.core.utils import MuninCommand
 from datetime import date, timedelta
-from gateway.models import SendSMS
+from txtalert.apps.gateway.models import SendSMS
 
 class Command(MuninCommand):
     help = "Print out statistics on TherapyEdge, suitable as a Munin plugin"

@@ -1,10 +1,10 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
-from general.settings.models import Setting
-from therapyedge import reminders
+from txtalert.apps.general.settings.models import Setting
+from txtalert.apps.therapyedge import reminders
 from datetime import datetime
 from optparse import make_option
-import gateway
+from txtalert.apps import gateway
 
 class Command(BaseCommand):
     

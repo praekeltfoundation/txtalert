@@ -1,14 +1,14 @@
 from django.test import TestCase
-from gateway.backends.dummy import backend
-import gateway
-from gateway.models import *
+from txtalert.apps.gateway.backends.dummy import backend
+from txtalert.apps import gateway
+from txtalert.apps.gateway.models import *
 from datetime import datetime
 
 class GatewayLoadingTestCase(TestCase):
     
     def test_loading_of_dummy_gateway(self):
         # load dummy
-        gateway.load_backend('gateway.backends.dummy')
+        gateway.load_backend('txtalert.apps.gateway.backends.dummy')
         # make sure it's been loaded
         self.assertTrue(isinstance(gateway.gateway, backend.Gateway))
     

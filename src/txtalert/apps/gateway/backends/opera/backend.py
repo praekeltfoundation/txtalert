@@ -2,7 +2,7 @@ from xmlrpclib import ServerProxy
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from gateway.models import SendSMS
+from txtalert.apps.gateway.models import SendSMS
 
 class Gateway(object):
     """Gateway for communicating with the Opera"""

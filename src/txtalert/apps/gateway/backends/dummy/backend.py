@@ -2,9 +2,9 @@ from django.http import HttpResponse
 from django.utils import simplejson
 from django.contrib.auth.decorators import permission_required
 
-from gateway.models import SendSMS
+from txtalert.apps.gateway.models import SendSMS
 
-from core.utils import random_string
+from txtalert.core.utils import random_string
 from datetime import datetime, timedelta
 
 class Gateway(object):

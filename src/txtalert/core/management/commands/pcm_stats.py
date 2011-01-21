@@ -1,7 +1,7 @@
-from core.utils import MuninCommand
+from txtalert.core.utils import MuninCommand
 from datetime import date, timedelta
-from core.models import PleaseCallMe
-from gateway.models import PleaseCallMe as GatewayPleaseCallMe
+from txtalert.core.models import PleaseCallMe
+from txtalert.apps.gateway.models import PleaseCallMe as GatewayPleaseCallMe
 
 class Command(MuninCommand):
     help = "Print out statistics on TherapyEdge, suitable as a Munin plugin"

@@ -1,4 +1,4 @@
-from core.models import PleaseCallMe, MSISDN, Visit, Patient
+from txtalert.core.models import PleaseCallMe, MSISDN, Visit, Patient
 from datetime import datetime
 from django.db.models import Q
 

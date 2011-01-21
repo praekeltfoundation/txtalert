@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from piston.resource import Resource
 from piston.authentication import HttpBasicAuthentication
 from piston.utils import Mimer
-from api.handlers import SMSHandler, PCMHandler, SMSReceiptHandler
+from txtalert.apps.api.handlers import SMSHandler, PCMHandler, SMSReceiptHandler
 
 # make sure Piston also accepts text/xml with charset=utf-8
 Mimer.register(lambda *a: None, ('text/xml; charset=utf-8',))

@@ -6,11 +6,11 @@ from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 
-from core.models import Visit
+from txtalert.core.models import Visit
 from cal import *
 from datetime import date, datetime, timedelta
-from bookingtool.models import BookingPatient
-from gateway import gateway
+from txtalert.apps.bookingtool.models import BookingPatient
+from txtalert.apps.gateway import gateway
 import logging
 
 

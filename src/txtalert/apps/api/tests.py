@@ -5,15 +5,15 @@ from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.utils import simplejson
 from django.db.models.signals import post_save
-from gateway.backends.opera.utils import element_to_namedtuple, OPERA_TIMESTAMP_FORMAT
-from gateway.models import SendSMS, PleaseCallMe
+from txtalert.apps.gateway.backends.opera.utils import element_to_namedtuple, OPERA_TIMESTAMP_FORMAT
+from txtalert.apps.gateway.models import SendSMS, PleaseCallMe
 
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 import base64
 import iso8601
-import gateway
-backend, gateway, receipt_handler = gateway.load_backend('gateway.backends.dummy')
+from txtalert.apps import gateway
+backend, gateway, receipt_handler = gateway.load_backend('txtalert.apps.gateway.backends.dummy')
 
 def basic_auth_string(username, password):
     """
@@ -46,7 +46,7 @@ class OperaTestCase(TestCase):
         settings.OPERA_SERVICE = 'dummy'
         settings.OPERA_PASSWORD = 'passwd'
         settings.OPERA_CHANNEL = 'dummy'
-        from gateway.backends.opera.backend import Gateway
+        from txtalert.apps.gateway.backends.opera.backend import Gateway
         gateway = Gateway(url="http://testserver/xmlrpc",
                             service_id='dummy_service_id',
                             password='dummy_password',
@@ -126,10 +126,8 @@ class OperaTestCase(TestCase):
         
         # ugly monkey patching to avoid us having to use a URL to test the opera
         # backend
-        from gateway.backends.opera.views import sms_receipt_handler
-        from api.handlers import SMSReceiptHandler
-        SMSReceiptHandler.create = sms_receipt_handler
-        response = SMSReceiptHandler().create(request)
+        from txtalert.apps.gateway.backends.opera.views import sms_receipt_handler
+        response = sms_receipt_handler(request)
         
         # it should return a JSON response
         self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
@@ -182,15 +180,13 @@ class OperaTestCase(TestCase):
         
         # ugly monkey patching to avoid us having to use a URL to test the opera
         # backend
-        from gateway.backends.opera.views import sms_receipt_handler
-        from api.handlers import SMSReceiptHandler
-        SMSReceiptHandler.create = sms_receipt_handler
+        from txtalert.apps.gateway.backends.opera.views import sms_receipt_handler
         
         # mimick POSTed receipt from Opera
         add_perms_to_user('user','can_place_sms_receipt')
         
         # push the request
-        response = SMSReceiptHandler().create(request)
+        response = sms_receipt_handler(request)
         
         # check the database response
         updated_send_sms = SendSMS.objects.get(pk=send_sms.pk)
@@ -245,12 +241,8 @@ class OperaTestCase(TestCase):
         request.META['HTTP_AUTHORIZATION'] = basic_auth_string('user', 'password')
         request.user = User.objects.get(username='user')
         
-        # ugly monkey patching to avoid us having to use a URL to test the opera
-        # backend
-        from gateway.backends.opera.views import sms_receipt_handler
-        from api.handlers import SMSReceiptHandler
-        SMSReceiptHandler.create = sms_receipt_handler
-        response = SMSReceiptHandler().create(request)
+        from txtalert.apps.gateway.backends.opera.views import sms_receipt_handler
+        response = sms_receipt_handler(request)
         
         # it should return a JSON response
         self.assertEquals(response['Content-Type'], 'application/json; charset=utf-8')
@@ -489,7 +481,7 @@ class PcmAutomationTestCase(TestCase):
         self.assertTrue(len(data) == 1)
         first_item = data[0]
         
-        from api.handlers import PCMHandler
+        from txtalert.apps.api.handlers import PCMHandler
         
         # test the fields exposed by the PCMHandler
         for key in ('sms_id', 'sender_msisdn', 'recipient_msisdn'):

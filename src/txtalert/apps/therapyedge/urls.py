@@ -16,5 +16,5 @@
 
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('therapyedge.views',
+urlpatterns = patterns('txtalert.apps.therapyedge.views',
 )

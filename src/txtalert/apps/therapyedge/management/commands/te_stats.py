@@ -1,8 +1,8 @@
 from django.conf import settings
 from os.path import join
-from core.models import Visit
+from txtalert.core.models import Visit
 from datetime import date, timedelta
-from core.utils import MuninCommand
+from txtalert.core.utils import MuninCommand
 
 class Command(MuninCommand):
     help = "Print out statistics on TherapyEdge, suitable as a Munin plugin"
