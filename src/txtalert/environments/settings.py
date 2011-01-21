@@ -55,8 +55,21 @@ TEMPLATE_DEBUG = DEBUG
 
 TEST_DATABASE_CHARSET = 'utf8'
 
+DEBUG = True
+
+DATABASE_ENGINE = 'postgresql_psycopg2'
+DATABASE_NAME = 'txtalert_dev'
+DATABASE_USER = ''
+DATABASE_PASSWORD = ''
+DATABASE_PORT = ''
+
+OPERA_SERVICE = os.environ['OPERA_SERVICE']
+OPERA_PASSWORD = os.environ['OPERA_PASSWORD'] 
+OPERA_CHANNEL = os.environ['OPERA_CHANNEL']
+
 ADMINS = (
-    # ('Joe Developer', 'a@b.xyz'),
+    ('Simon de Haan', 'simon@praekeltfoundation.org'),
+    ('David Maclay', 'david@praekeltfoundation.org'),
 )
 
 MANAGERS = ADMINS
