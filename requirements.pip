@@ -7,3 +7,4 @@ django-dirtyfields
 django-historicalrecords
 iso8601
 django-piston
+south
