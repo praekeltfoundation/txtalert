@@ -2,5 +2,4 @@ django==1.2
 flup
 MySQL-python
 coverage
-fabric
--e git+git@github.com:praekelt/springfield.git#egg=praekelt-springfield
+xlrd
