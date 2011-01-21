@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import Group
 
 # Copied from https://dragon.sa.operatelecom.com:1089/Gateway#Receipt, seems sensible to keep for now
 RECEIPT_STATUS_CHOICES = (
@@ -48,6 +49,7 @@ class SendSMS(models.Model):
         ('N', 'No'),
     )
     
+    group = models.ForeignKey(Group)
     msisdn = models.CharField(max_length=12)
     smstext = models.TextField()
     delivery = models.DateTimeField()
@@ -72,6 +74,7 @@ class SendSMS(models.Model):
 
 class PleaseCallMe(models.Model):
     """A please call me we receive from a patient"""
+    group = models.ForeignKey(Group, related_name='gateway_pleasecallme_set')
     sms_id = models.CharField(max_length=80)
     sender_msisdn = models.CharField(max_length=255)
     recipient_msisdn = models.CharField(max_length=255)
