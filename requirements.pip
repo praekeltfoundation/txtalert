@@ -1,5 +1,9 @@
-django==1.2
+django==1.2.4
 flup
 MySQL-python
 coverage
 xlrd
+django-dirtyfields
+django-historicalrecords
+iso8601
+django-piston
