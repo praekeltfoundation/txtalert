@@ -104,6 +104,7 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         ('m>f', 'transgender m>f'),
     )
     
+    group = models.ForeignKey(Group)
     te_id = models.CharField('MRS ID', max_length=10, unique=True)
     msisdns = models.ManyToManyField(MSISDN, related_name='contacts')
     active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', 
@@ -136,7 +137,7 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     history = HistoricalRecords()
     
     class Meta:
-	ordering = ['created_at']
+        ordering = ['created_at']
         verbose_name = 'Patient'
         verbose_name_plural = 'Patients'
     
@@ -216,7 +217,8 @@ class PleaseCallMe(models.Model):
         ('vm', 'Voicemail'),
         ('ot', 'Other (fill in notes)'),
     )
-
+    
+    group = models.ForeignKey(Group)
     msisdn = models.ForeignKey(MSISDN, related_name='pcms', verbose_name='Mobile Number')
     timestamp = models.DateTimeField('Date & Time', auto_now_add=False)
     reason = models.CharField('Reason', max_length=2, choices=REASON_CHOICES, default='nc')
