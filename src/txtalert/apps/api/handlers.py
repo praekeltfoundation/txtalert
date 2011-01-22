@@ -22,8 +22,10 @@ class SMSHandler(BaseHandler):
         if not request.user.has_perm('gateway.can_view_sms_statistics'):
             return rc.FORBIDDEN
         
+        group = request.user.groups.latest('pk')
         if all([msisdn, identifier]):
-            return get_object_or_404(SendSMS, msisdn=msisdn, identifier=identifier)
+            return get_object_or_404(SendSMS, msisdn=msisdn, group=group, 
+                                        identifier=identifier)
         else:
             return self._read_list(request)
     
@@ -31,8 +33,9 @@ class SMSHandler(BaseHandler):
         if 'since' in request.GET:
             # remove timezone info since MySQL is not able to handle that
             # assume input it UTC
+            group = request.user.groups.latest('pk')
             since = iso8601.parse_date(request.GET['since']).replace(tzinfo=None)
-            return SendSMS.objects.filter(delivery__gte=since)
+            return SendSMS.objects.filter(delivery__gte=since, group=group)
         else:
             return rc.BAD_REQUEST
     
@@ -82,8 +85,9 @@ class PCMHandler(BaseHandler):
         if 'since' in request.GET:
             # remove timezone info since MySQL is not able to handle that
             # assume input it UTC
+            group = request.user.groups.latest('pk')
             since = iso8601.parse_date(request.GET['since']).replace(tzinfo=None)
-            return PleaseCallMe.objects.filter(created_at__gte=since)
+            return PleaseCallMe.objects.filter(group=group, created_at__gte=since)
         else:
             return rc.BAD_REQUEST
     

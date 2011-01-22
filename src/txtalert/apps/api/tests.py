@@ -70,6 +70,7 @@ class OperaTestCase(TestCase):
         setattr(gateway.proxy, 'EAPIGateway', MockedEAPIGateway())
         sent_smss = gateway.send_sms(self.group,['27123456789'],['testing hello'])
         self.assertEquals(sent_smss.count(), 1)
+        self.assertEquals(sent_smss[0].group, self.group)
         self.assertEquals(sent_smss[0].identifier, 'a' * 8)
         self.assertEquals(sent_smss[0].msisdn, '27123456789')
         self.assertEquals(sent_smss[0].smstext, 'testing hello')
@@ -148,6 +149,7 @@ class OperaTestCase(TestCase):
             send_sms = SendSMS.objects.get(msisdn=receipt.msisdn.replace("+",""), identifier=receipt.reference)
             self.assertEquals(send_sms.delivery_timestamp, datetime.strptime(receipt.timestamp, OPERA_TIMESTAMP_FORMAT))
             self.assertEquals(send_sms.status, 'D')
+            self.assertEquals(send_sms.group, self.group)
     
     def test_receipt_msisdn_normalization(self):
         send_sms = SendSMS.objects.create(group=self.group,
@@ -192,6 +194,7 @@ class OperaTestCase(TestCase):
         
         # check the database response
         updated_send_sms = SendSMS.objects.get(pk=send_sms.pk)
+        self.assertEquals(updated_send_sms.group, self.group)
         self.assertEquals(updated_send_sms.status, 'D') # delivered
         
     
@@ -263,7 +266,8 @@ class OperaTestCase(TestCase):
             self.assertRaises(
                 SendSMS.DoesNotExist,   # exception expected
                 SendSMS.objects.get,    # callback
-                msisdn=receipt.msisdn,  # args
+                group=self.group,       # args
+                msisdn=receipt.msisdn,  
                 identifier=receipt.reference
             )
     
@@ -282,6 +286,7 @@ class SmsGatewayTestCase(TestCase):
     
     def test_send_sms(self):
         [send_sms,] = gateway.send_sms(self.group, ['27123456789'],['testing'])
+        self.failUnless(send_sms.group == self.group)
         self.failUnless(SendSMS.objects.filter(group=self.group, msisdn='27123456789'))
     
     def test_json_sms_statistics_auth(self):
