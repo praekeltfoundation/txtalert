@@ -48,7 +48,7 @@ class Gateway(object):
                                         receipt=struct['Receipt'], 
                                         identifier=proxy_response['Identifier'])
     
-    def send_bulk_sms(self, msisdns, smstexts, delivery=None, expiry=None, \
+    def send_bulk_sms(self, group, msisdns, smstexts, delivery=None, expiry=None, \
                         priority='standard', receipt='Y'):
         """Send a bulk of smses SMS"""
         
@@ -65,12 +65,14 @@ class Gateway(object):
         
         proxy_response = self.proxy.EAPIGateway.SendSMS(struct)
         
-        send_sms_ids = [SendSMS.objects.create(msisdn=msisdn, \
-                                        smstext=smstext, \
-                                        delivery=struct['Delivery'], \
-                                        expiry=struct['Expiry'], \
-                                        priority=struct['Priority'], \
-                                        receipt=struct['Receipt'], \
+        send_sms_ids = [SendSMS.objects.create(
+                                        group=group,
+                                        msisdn=msisdn, 
+                                        smstext=smstext, 
+                                        delivery=struct['Delivery'], 
+                                        expiry=struct['Expiry'], 
+                                        priority=struct['Priority'], 
+                                        receipt=struct['Receipt'], 
                                         identifier=proxy_response['Identifier']).pk
             for (msisdn, smstext) in zip(msisdns, smstexts)]
         
