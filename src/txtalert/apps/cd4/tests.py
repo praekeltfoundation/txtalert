@@ -20,4 +20,4 @@ class CD4TestCase(TestCase):
             # each with 5 columns
             self.assertEquals(len(row), 5)
     
-    
+    def test_storing_of_sample_excel(self):
