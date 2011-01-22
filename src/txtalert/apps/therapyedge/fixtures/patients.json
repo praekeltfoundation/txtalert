@@ -1,5 +1,12 @@
 [
-
+    {
+        "pk": 1, 
+        "model": "auth.group", 
+        "fields": {
+            "name": "Temba Lethu", 
+            "permissions": []
+        }
+    },
     {
         "pk":"1",
         "model": "core.msisdn",
@@ -12,15 +19,16 @@
         "model": "core.patient",
         "fields":{
             "msisdns":["1"],
-			"id":"1",
+            "id":"1",
             "te_id":"01-12345",
             "age":"33",
             "sex":"m",
             "opted_in":true,
             "disclosed":true,
             "deceased":false,
-			"created_at": "1977-12-12",
-			"updated_at": "1977-12-12"
+            "group": 1,
+            "created_at": "1977-12-12",
+            "updated_at": "1977-12-12"
         }
     },
 
@@ -35,16 +43,17 @@
         "pk":"2",
         "model": "core.patient",
         "fields":{
-			"msisdns":["2"],
-			"id":"2",
+            "msisdns":["2"],
+            "id":"2",
             "te_id":"02-12345",
             "age":"23",
             "sex":"f",
             "opted_in":true,
             "disclosed":true,
             "deceased":false,
-			"created_at": "1978-12-12",
-			"updated_at": "1978-12-12"
+            "group": 1,
+            "created_at": "1978-12-12",
+            "updated_at": "1978-12-12"
         }
     }
 

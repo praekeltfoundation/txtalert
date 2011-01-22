@@ -16,6 +16,7 @@
 
 from datetime import datetime, date, timedelta
 from django.test import TestCase
+from django.contrib.auth.models import Group
 from txtalert.core.models import *
 from txtalert.apps.therapyedge.importer import Importer, InvalidValueException
 from txtalert.apps.therapyedge.tests.utils import create_instance
@@ -31,12 +32,14 @@ class PatientImportTestCase(TestCase):
     
     def setUp(self):
         self.importer = Importer()
+        self.group = Group.objects.get(name='Temba Lethu')
     
     def testInvalidAgeImport(self):
         # import an invalid patient record
         self.assertRaises(InvalidValueException,    # exception 
             self.importer.update_local_patient,     # callable
-            create_instance(PatientUpdate, {        # args
+            self.group,                             # args
+            create_instance(PatientUpdate, {        
                 'te_id': '01-1235', 
                 'age': '3135', 
                 'sex': 'Female', 
@@ -48,7 +51,8 @@ class PatientImportTestCase(TestCase):
         # import an invalid patient record
         self.assertRaises(InvalidValueException,    # exception
             self.importer.update_local_patient,     # callable 
-            create_instance(PatientUpdate, {        # args
+            self.group,                             # args
+            create_instance(PatientUpdate, {        
                 'te_id': '01-1235', 
                 'age': '31', 
                 'sex': 'Feale', 
@@ -58,12 +62,13 @@ class PatientImportTestCase(TestCase):
     
     def testBasicImport(self):
         """basic patient record import"""
-        patient = self.importer.update_local_patient(create_instance(PatientUpdate, {
-            'te_id': '03-12345', 
-            'age': '25', 
-            'sex': 'Male', 
-            'celphone': '0821231234'
-        }))
+        patient = self.importer.update_local_patient(self.group,
+            create_instance(PatientUpdate, {
+                'te_id': '03-12345', 
+                'age': '25', 
+                'sex': 'Male', 
+                'celphone': '0821231234'
+            }))
         # reload to make sure we have the database values
         patient = reload_record(patient)
         
@@ -81,12 +86,13 @@ class PatientImportTestCase(TestCase):
         """duplicate 'te_id' import with altered details"""
         original_patient = Patient.objects.get(te_id='02-12345')
         original_history_count = original_patient.history.count()
-        patient = self.importer.update_local_patient(create_instance(PatientUpdate, {
-            'te_id': '02-12345', 
-            'age': '35', 
-            'sex': 'Female', 
-            'celphone':'0821234321'
-        }))
+        patient = self.importer.update_local_patient(self.group, 
+            create_instance(PatientUpdate, {
+                'te_id': '02-12345', 
+                'age': '35', 
+                'sex': 'Female', 
+                'celphone':'0821234321'
+            }))
         patient = reload_record(patient)
         self.assertEquals(
             patient.history.latest().get_history_type_display(), 
@@ -100,20 +106,22 @@ class PatientImportTestCase(TestCase):
     def testDuplicateMsisdnImport(self):
         """duplicate 'msisdn' import"""
         # new patient, not in fixtures
-        patientA = self.importer.update_local_patient(create_instance(PatientUpdate, {
-            'te_id': '03-12345', 
-            'age': '30', 
-            'sex': 'Male', 
-            'celphone': '0821111111'
-        }))
+        patientA = self.importer.update_local_patient(self.group,
+            create_instance(PatientUpdate, {
+                'te_id': '03-12345', 
+                'age': '30', 
+                'sex': 'Male', 
+                'celphone': '0821111111'
+            }))
         
         # existing patient, in fixtures
-        patientB = self.importer.update_local_patient(create_instance(PatientUpdate, {
-            'te_id': '01-12345', 
-            'age': '30', 
-            'sex': 'Male', 
-            'celphone': '0821111111'
-        }))
+        patientB = self.importer.update_local_patient(self.group, 
+            create_instance(PatientUpdate, {
+                'te_id': '01-12345', 
+                'age': '30', 
+                'sex': 'Male', 
+                'celphone': '0821111111'
+            }))
         
         patientA = reload_record(patientA)
         patientB = reload_record(patientB)
@@ -137,12 +145,13 @@ class PatientImportTestCase(TestCase):
     
     def testCountryCodeMsisdn(self):
         """country code included in 'msisdn'"""
-        patient = self.importer.update_local_patient(create_instance(PatientUpdate, {
-            'te_id': '03-12345', 
-            'age': '55', 
-            'sex': 'Male', 
-            'celphone': '+27823211234'
-        }))
+        patient = self.importer.update_local_patient(self.group,
+            create_instance(PatientUpdate, {
+                'te_id': '03-12345', 
+                'age': '55', 
+                'sex': 'Male', 
+                'celphone': '+27823211234'
+            }))
         patient = reload_record(patient)
         self.assertEquals(patient.history.latest().get_history_type_display(), 
                             'Created')
@@ -150,12 +159,13 @@ class PatientImportTestCase(TestCase):
     
     def testMultipleMsisdn(self):
         """multiple 'msisdn' import (ons country code 'msisdn' without plus)"""
-        patient = self.importer.update_local_patient(create_instance(PatientUpdate, {
-            'te_id': '03-12345', 
-            'age': '18', 
-            'sex': 'Female', 
-            'celphone': '0821231111/27821232222'
-        }))
+        patient = self.importer.update_local_patient(self.group, 
+            create_instance(PatientUpdate, {
+                'te_id': '03-12345', 
+                'age': '18', 
+                'sex': 'Female', 
+                'celphone': '0821231111/27821232222'
+            }))
         patient = reload_record(patient)
         self.assertEquals(patient.history.latest().get_history_type_display(), 
                             'Created')
