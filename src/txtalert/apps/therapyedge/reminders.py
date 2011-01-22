@@ -54,12 +54,12 @@ def group_by_language(patients):
                 language, patients_per_language in groupby(patients, grouper)]
     )
 
-def send_stats(gateway, today):
+def send_stats(gateway, group, today):
     yesterday = today - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
     twoweeks = today + timedelta(weeks=2)
     
-    visits = Visit.objects.filter(patient__opted_in=True)
+    visits = Visit.objects.filter(patient__opted_in=True, patient__group=group)
     
     # get stats for today's bulk of SMSs sent
     tomorrow_count = visits.filter(date__exact=tomorrow).count()
@@ -72,7 +72,7 @@ def send_stats(gateway, today):
     else: missed_percentage = missed_count * (100.0 / yesterday_count)
     
     # for every SMS sent we have an entry of SendSMS
-    total_count = SendSMS.objects.filter(delivery__gte=today).count()
+    total_count = SendSMS.objects.filter(delivery__gte=today, group=group).count()
     
     # send email with stats
     emails = Setting.objects.get(name='Stats Emails').value.split('\r\n')
@@ -101,11 +101,11 @@ def send_stats(gateway, today):
     }
     logger.info('Sending stat SMSs to: %s' % ', '.join(msisdns))
     logger.debug(message)
-    gateway.send_sms(msisdns, [message] * len(msisdns))
+    gateway.send_sms(group, msisdns, [message] * len(msisdns))
     
 
 
-def send_messages(gateway, message_key, patients, message_formatter=lambda x: x):
+def send_messages(gateway, group, message_key, patients, message_formatter=lambda x: x):
     send_sms_per_language = {}
     for language, patients in group_by_language(patients).items():
         message = message_formatter(getattr(language, message_key))
@@ -113,66 +113,71 @@ def send_messages(gateway, message_key, patients, message_formatter=lambda x: x)
         # happen if a patient has two different visits on the same day
         msisdns = set([patient.active_msisdn.msisdn for patient in patients])
         send_sms_per_language[language] = gateway.send_sms(
+            group,
             msisdns, 
             [message] * len(msisdns)
         )
     return send_sms_per_language
 
-def tomorrow(gateway, visits, today):
+def tomorrow(gateway, group, visits, today):
     # send reminders for patients due tomorrow
     tomorrow = today + timedelta(days=1)
     visits_tomorrow = visits.filter(date__exact=tomorrow).select_related()
     return send_messages(
         gateway,
+        group,
         message_key='tomorrow_message',
         patients=[visit.patient for visit in visits_tomorrow]
     )
 
 
-def two_weeks(gateway, visits, today):
+def two_weeks(gateway, group, visits, today):
     # send reminders for patients due in two weeks
     twoweeks = today + timedelta(weeks=2)
     visits_in_two_weeks = visits.filter(date__exact=twoweeks).select_related()
     return send_messages(
         gateway,
+        group,
         message_key='twoweeks_message',
         patients=[visit.patient for visit in visits_in_two_weeks],
         message_formatter=lambda msg: msg % {'date': twoweeks.strftime('%A %d %b')}
     )
 
 
-def attended(gateway, visits, today):
+def attended(gateway, group, visits, today):
     # send reminders to patients who attended their visits
     yesterday = today - timedelta(days=1)
     attended_yesterday = visits.filter(status__exact='a', \
                                         date__exact=yesterday).select_related()
     return send_messages(
         gateway,
+        group,
         message_key='attended_message',
         patients=[visit.patient for visit in attended_yesterday]
     )
 
 
-def missed(gateway, visits, today):
+def missed(gateway, group, visits, today):
     # send reminders to patients who missed their visits
     yesterday = today - timedelta(days=1)
     missed_yesterday = visits.filter(status__exact='m', \
                                         date__exact=yesterday).select_related()
     return send_messages(
         gateway,
+        group,
         message_key='missed_message',
         patients=[visit.patient for visit in missed_yesterday]
     )
 
 
-def all(gateway):
+def all(gateway, group):
     visits = Visit.objects.filter(patient__opted_in=True)
     today = datetime.now().date()
     logger.debug('Sending reminders for: tomorrow')
-    tomorrow(gateway, visits, today)
+    tomorrow(gateway, group, visits, today)
     logger.debug('Sending reminders for: two weeks')
-    two_weeks(gateway, visits, today)
+    two_weeks(gateway, group, visits, today)
     logger.debug('Sending reminders for: attended yesterday')
-    attended(gateway, visits, today)
+    attended(gateway, group, visits, today)
     logger.debug('Sending reminders for: missed yesterday')
-    missed(gateway, visits, today)
+    missed(gateway, group, visits, today)

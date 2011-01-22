@@ -113,27 +113,27 @@ class Importer(object):
         raise NotImplemented, 'all these are failing for me, without any '\
                                 'documentation I am unable to continue'
     
-    def import_updated_patients(self, clinic, since, until):
+    def import_updated_patients(self, group, clinic, since, until):
         updated_patients = self.client.get_updated_patients(clinic.te_id, since, until)
         logger.info('Receiving updated patients for %s between %s and %s' % (
             clinic.name,
             since,
             until
         ))
-        return self.update_local_patients(updated_patients)
+        return self.update_local_patients(group, updated_patients)
     
-    def update_local_patients(self, remote_patients):
+    def update_local_patients(self, group, remote_patients):
         for remote_patient in remote_patients:
             try:
-                yield self.update_local_patient(remote_patient)
+                yield self.update_local_patient(group, remote_patient)
             except IntegrityError, e:
-                logger.exception('Failed to create Patient for: %s' % remote_patient)
+                logger.exception('Failed to create Patient for: %s' % (remote_patient,))
     
-    def update_local_patient(self, remote_patient):
+    def update_local_patient(self, group, remote_patient):
         logger.debug('Processing: %s' % remote_patient._asdict())
         
         patient, created = Update(Patient) \
-                                .get(te_id=remote_patient.te_id) \
+                                .get(te_id=remote_patient.te_id, group=group) \
                                 .update_attributes(
                                     age = Age(remote_patient.age),
                                     sex = Sex(remote_patient.sex)

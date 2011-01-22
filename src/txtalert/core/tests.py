@@ -1,5 +1,6 @@
 from django.test import TestCase
 from txtalert.core.models import *
+from django.contrib.auth.models import Group
 from datetime import datetime
 
 class ModelTestCase(TestCase):
@@ -76,6 +77,8 @@ class PleaseCallMeTestCase(TestCase):
         from txtalert.apps import gateway
         gateway.load_backend('txtalert.apps.gateway.backends.dummy')
         
+        self.group = Group.objects.get(name="Temba Lethu")
+        
         self.patient = Patient.objects.all()[0]
         self.patient.save() # save to specify the active_msisdn
         
@@ -104,6 +107,7 @@ class PleaseCallMeTestCase(TestCase):
             sms_id='sms_id',
             sender_msisdn=self.patient.active_msisdn.msisdn,
             recipient_msisdn='27123456789',
+            group=self.group,
             message='Please Call Me',
         )
         
@@ -117,7 +121,8 @@ class PleaseCallMeTestCase(TestCase):
     def test_please_call_me_from_therapyedge(self):
         pcm = PleaseCallMe.objects.create(
             msisdn = self.patient.active_msisdn,
-            timestamp = datetime.now()
+            timestamp = datetime.now(),
+            group = self.group,
         )
         # the signals should track the clinic for this pcm if it hasn't
         # been specified automatically yet
@@ -134,7 +139,8 @@ class PleaseCallMeTestCase(TestCase):
         # message in the log file
         gpcm = GatewayPleaseCallMe.objects.create(
             sms_id='sms_id',
-            sender_msisdn='27123456789' # this shouldn't exist in the db
+            sender_msisdn='27123456789', # this shouldn't exist in the db
+            group=self.group,
         )
     
     def test_multiple_patients_for_one_msisdn(self):
@@ -142,6 +148,7 @@ class PleaseCallMeTestCase(TestCase):
         for i in range(0,2):
             Patient.objects.create(
                 active_msisdn = msisdn,
+                group=self.group,
                 te_id='06-%s2345' % i,
                 age=23
             )
@@ -154,6 +161,7 @@ class PleaseCallMeTestCase(TestCase):
         # message in the log file
         gpcm = GatewayPleaseCallMe.objects.create(
             sms_id='sms_id',
-            sender_msisdn=msisdn.msisdn
+            sender_msisdn=msisdn.msisdn,
+            group=self.group,
         )
     

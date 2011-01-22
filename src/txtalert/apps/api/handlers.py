@@ -46,8 +46,9 @@ class SMSHandler(BaseHandler):
         if request.content_type:
             msisdns = request.data.get('msisdns',[])
             smstext = request.data.get('smstext','')
+            group = request.user.groups.latest('pk')
             if len(smstext) <= 160 and len(msisdns) > 0:
-                return gateway.send_sms(msisdns, (smstext,) * len(msisdns))
+                return gateway.send_sms(group, msisdns, (smstext,) * len(msisdns))
         return rc.BAD_REQUEST
     
     @classmethod
@@ -118,8 +119,10 @@ class PCMHandler(BaseHandler):
             sender_msisdn = request.POST.get('sender_msisdn')
             recipient_msisdn = request.POST.get('recipient_msisdn')
             message = request.POST.get('message', '')
+            group = request.user.groups.latest('pk')
             
-            pcm = PleaseCallMe.objects.create(sms_id=sms_id, sender_msisdn=sender_msisdn, 
+            pcm = PleaseCallMe.objects.create(group=group, sms_id=sms_id,
+                                                sender_msisdn=sender_msisdn, 
                                                 recipient_msisdn=recipient_msisdn, 
                                                 message=message)
             resp = rc.CREATED

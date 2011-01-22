@@ -8,6 +8,7 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
+        # all previous data belongs to Temba Lethu Clinic
         from django.contrib.auth.models import Group
         group, created = Group.objects.get_or_create(name="Temba Lethu")
         
