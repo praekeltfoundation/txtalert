@@ -1,10 +1,16 @@
 from django.test import TestCase
+from django.contrib.auth.models import Group
 from txtalert.apps.cd4.utils import read_cd4_document
+from txtalert.apps.cd4.models import CD4Document, CD4Record, CD4_MESSAGE_TEMPLATE
+from txtalert.apps.gateway.models import SendSMS
+from txtalert.apps import gateway
+gateway.load_backend('txtalert.apps.gateway.backends.dummy')
 
 class CD4TestCase(TestCase):
     
     def setUp(self):
-        pass
+        self.document = read_cd4_document('docs/sample.xls')
+        self.group = Group.objects.create(name='Group')
     
     def tearDown(self):
         pass
@@ -13,11 +19,23 @@ class CD4TestCase(TestCase):
         """
         We should be able to read the sample MS Excel document
         """
-        rows = read_cd4_document('docs/sample.xls')
         # there should be 4 rows
-        self.assertEquals(len(rows), 4)
-        for row in rows:
+        self.assertEquals(len(self.document), 4)
+        for row in self.document:
             # each with 5 columns
             self.assertEquals(len(row), 5)
     
     def test_storing_of_sample_excel(self):
+        document = CD4Document.objects.create(original='docs/sample.xls',
+                                                group=self.group)
+        self.assertEquals(document.record_set.count(), 4)
+        for record in document.record_set.all():
+            self.assertEquals(record.sms, None)
+    
+    def test_sending_of_loaded_records(self):
+        document = CD4Document.objects.create(original='docs/sample.xls',
+                                                group=self.group)
+        document.send_messages()
+        for record in document.record_set.all():
+            self.assertTrue(isinstance(record.sms, SendSMS))
+            self.assertEquals(record.sms.smstext, CD4_MESSAGE_TEMPLATE % record.cd4count)
