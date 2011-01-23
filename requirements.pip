@@ -8,3 +8,4 @@ django-historicalrecords
 iso8601
 django-piston
 south
+ipython

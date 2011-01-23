@@ -10,3 +10,4 @@ tmp/coverage/*
 environments/live/*
 ve/
 *.egg-info
+uploads/*

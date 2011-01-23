@@ -80,7 +80,7 @@ LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
 USE_I18N = True
 
-UPLOAD_ROOT = join(APP_ROOT, "upload")
+UPLOAD_ROOT = "upload"
 MEDIA_ROOT = join(APP_ROOT, 'webroot', 'media')
 MEDIA_URL = '/static/'
 
@@ -89,6 +89,7 @@ ADMIN_MEDIA_PREFIX = '/media/'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
     'django.template.loaders.app_directories.load_template_source',
+    'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (

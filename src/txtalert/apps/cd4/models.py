@@ -23,6 +23,9 @@ class CD4Document(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    class Meta:
+        verbose_name = 'CD4 Count Document'
+    
     def send_messages(self):
         from txtalert.apps.gateway import gateway
         for cd4record in self.record_set.filter(sms__isnull=True):
@@ -34,7 +37,7 @@ class CD4Document(models.Model):
         
     
     def __unicode__(self):
-        return u"CD4Document uploaded at %s" % (self.created,)
+        return u"CD4Document uploaded at %s" % (self.created_at,)
     
 
 def load_cd4_records(sender, **kwargs):
@@ -42,7 +45,7 @@ def load_cd4_records(sender, **kwargs):
     instance = kwargs.get('instance')
     
     if created:
-        for row in read_cd4_document(instance.original.name):
+        for row in read_cd4_document(instance.original.path):
             instance.record_set.create(
                 # string
                 lab_id_number = row[LAB_ID_NUMBER][1],
@@ -61,6 +64,9 @@ class CD4Record(models.Model):
     msisdn = models.CharField("Cell phone number", max_length=11)
     cd4count = models.IntegerField("CD4 count")
     sms = models.ForeignKey(SendSMS, blank=True, null=True)
+    
+    class Meta:
+        verbose_name = 'CD4 Count'
     
     def __unicode__(self):
         return u"CD4Record %s" % (self.lab_id_number, )
