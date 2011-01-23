@@ -69,5 +69,5 @@ class CD4Record(models.Model):
         verbose_name = 'CD4 Count'
     
     def __unicode__(self):
-        return u"CD4Record %s" % (self.lab_id_number, )
+        return u"%s %s" % (self._meta.verbose_name, self.lab_id_number, )
     
