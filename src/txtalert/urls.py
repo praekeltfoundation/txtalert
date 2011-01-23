@@ -31,7 +31,7 @@ urlpatterns = patterns('',
     (r'^therapyedge/', include('txtalert.apps.therapyedge.urls')),
     (r'^bookingtool/', include('txtalert.apps.bookingtool.urls')),
     # (r'^sms/', include('opera.urls')),
-    (r'^admin/(.*)', admin.site.root),
+    (r'^admin/', include(admin.site.urls)),
     (r'^static/(.*)$', 'django.views.static.serve', \
                             {'document_root': settings.MEDIA_ROOT}, "static"),
 )
