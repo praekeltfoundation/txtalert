@@ -34,7 +34,7 @@ class CD4DocumentAdmin(admin.ModelAdmin):
     inlines = [
         CD4DocumentRecordInlineAdmin
     ]
-    readonly_fields = ['group', 'created_at']
+    readonly_fields = ['created_at']
     list_filter = ['created_at',]
     
     def get_urls(self):
@@ -51,6 +51,12 @@ class CD4DocumentAdmin(admin.ModelAdmin):
         messages.add_message(request, messages.INFO, 'SMS messages sent succesfully.')
         return HttpResponseRedirect(reverse('admin:cd4_cd4document_change', 
             args=(object_id,)))
+    
+    def formfield_for_foreign_key(self, db_field, request, **kwargs):
+        if db_field.name == 'group':
+            kwargs['queryset'] = request.user.groups.all()
+        return super(CD4DocumentAdmin, self).formfield_for_foreign_key(dbfield, 
+            request, **kwargs)
     
     def change_view(self, request, object_id, extra_context=None):
         if request.POST.has_key('_send_cd4_messages'):

@@ -1,21 +1,23 @@
 {% extends "admin/change_form.html" %}
 
 {% block after_related_objects %}
-    <fieldset class="module aligned">
-        <div class="form-row">
-            <div>
-                <h1>Send the SMS Messages</h1>
+    {% if object_id %}
+        <fieldset class="module aligned">
+            <div class="form-row">
                 <div>
-                    Are these values correct?
-                    If so, then please click on click "Send Messages" below
-                    to schedule the SMS messages for delivery.
-                    <br/>
-                    <br/>
-                </div>
-                <div>
-                    <input type="submit" name="_send_cd4_messages" value="Send Messages">
+                    <h1>Send the SMS Messages</h1>
+                    <div>
+                        Are these values correct?
+                        If so, then please click on click "Send Messages" below
+                        to schedule the SMS messages for delivery.
+                        <br/>
+                        <br/>
+                    </div>
+                    <div>
+                        <input type="submit" name="_send_cd4_messages" value="Send Messages">
+                    </div>
                 </div>
             </div>
-        </div>
-    </fieldset>
+        </fieldset>
+    {% endif %}
 {% endblock %}
