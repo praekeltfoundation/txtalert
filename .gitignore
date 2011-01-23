@@ -8,6 +8,7 @@ db/*.db
 tmp/coverage/*
 .coverage
 environments/live/*
+environments/*
 ve/
 *.egg-info
 webroot/media/upload/*
