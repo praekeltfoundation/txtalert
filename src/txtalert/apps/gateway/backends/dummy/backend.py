@@ -12,7 +12,7 @@ class Gateway(object):
     our test code against something we control"""
     
     def send_sms(self, *args, **kwargs):
-        self.send_bulk_sms(*args, **kwargs)
+        return self.send_bulk_sms(*args, **kwargs)
     
     def send_one_sms(self, group, msisdn, smstext, delivery=None, expiry=None,
                         priority='standard', receipt='Y'):
