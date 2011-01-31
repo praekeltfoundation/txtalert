@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 cd /var/praekelt/txtalert/production/current/txtalert && \
     source ve/bin/activate && \
         ./manage.py te_import_data --settings=environments.production && \
