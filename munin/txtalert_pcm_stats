@@ -1,3 +1,4 @@
 #!/bin/sh
-cd /var/praekelt/live/txtalert/current/txtalert \
- && ./manage.py pcm_stats --settings=environments.live.production $1
+cd /var/praekelt/txtalert/production/current/txtalert && \
+    source ve/bin/activate && \
+    ./manage.py pcm_stats --settings=environments.production $1
