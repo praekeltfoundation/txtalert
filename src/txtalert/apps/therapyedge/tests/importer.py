@@ -1,5 +1,5 @@
 from django.test import TestCase
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import User
 from txtalert.apps.therapyedge.importer import Importer, SEX_MAP
 from txtalert.apps.therapyedge.xmlrpc import client
 from txtalert.core.models import Patient, MSISDN, Visit, Clinic
@@ -20,7 +20,7 @@ class ImporterTestCase(TestCase):
         # make sure we're actually testing some data
         self.assertTrue(Patient.objects.count() > 0)
         self.clinic = Clinic.objects.all()[0]
-        self.group = Group.objects.get(name="Temba Lethu")
+        self.user = User.objects.get(username="kumbu")
     
     def tearDown(self):
         pass
@@ -38,7 +38,7 @@ class ImporterTestCase(TestCase):
             '02-7012%s' % idx                   # te_id
         ) for idx in range(0, 10)]
         updated_patients = map(PatientUpdate._make, data)
-        local_patients = list(self.importer.update_local_patients(self.group, updated_patients))
+        local_patients = list(self.importer.update_local_patients(self.user, updated_patients))
         self.assertEquals(len(local_patients), 10)
         
         for updated_patient in updated_patients:
@@ -304,7 +304,7 @@ class ImporterTestCase(TestCase):
         
         # create the patient for which we'll get the visits
         patient = Patient.objects.create(te_id='02-82088', age=29, sex='m',
-                                            group=self.group)
+                                            user=self.user)
         
         # importer
         importer = Importer()
@@ -382,7 +382,7 @@ class ImporterXmlRpcClientTestCase(TestCase):
     
     def setUp(self):
         self.importer = Importer()
-        self.group = Group.objects.get(name="Temba Lethu")
+        self.user = User.objects.get(username="kumbu")
         
         # patching the client to automatically return our specified result
         # sets without doing an XML-RPC call
@@ -445,7 +445,7 @@ class ImporterXmlRpcClientTestCase(TestCase):
         plate code we're only testing it for one method call.
         """
         updated_patients = self.importer.import_updated_patients(
-            group=self.group,
+            user=self.user,
             clinic=self.clinic, 
             since=(datetime.now() - timedelta(days=1)),
             until=datetime.now()

@@ -14,12 +14,12 @@ class Gateway(object):
     def send_sms(self, *args, **kwargs):
         return self.send_bulk_sms(*args, **kwargs)
     
-    def send_one_sms(self, group, msisdn, smstext, delivery=None, expiry=None,
+    def send_one_sms(self, user, msisdn, smstext, delivery=None, expiry=None,
                         priority='standard', receipt='Y'):
         delivery = delivery or datetime.now()
         expiry = expiry or (datetime.now() + timedelta(days=1))
         return SendSMS.objects.create(
-                                        group=group, 
+                                        user=user, 
                                         msisdn=msisdn, 
                                         smstext=smstext, 
                                         delivery=delivery, 
@@ -28,8 +28,8 @@ class Gateway(object):
                                         receipt=receipt, 
                                         identifier=random_string()[:8])
     
-    def send_bulk_sms(self, group, msisdns, smstexts, *args, **kwargs):
-        return [self.send_one_sms(group, msisdn, smstext, *args, **kwargs)
+    def send_bulk_sms(self, user, msisdns, smstexts, *args, **kwargs):
+        return [self.send_one_sms(user, msisdn, smstext, *args, **kwargs)
                             for (msisdn, smstext) in zip(msisdns, smstexts)]
 
 

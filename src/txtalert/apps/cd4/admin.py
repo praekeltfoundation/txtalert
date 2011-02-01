@@ -53,8 +53,8 @@ class CD4DocumentAdmin(admin.ModelAdmin):
             args=(object_id,)))
     
     def formfield_for_foreign_key(self, db_field, request, **kwargs):
-        if db_field.name == 'group':
-            kwargs['queryset'] = request.user.groups.all()
+        if db_field.name == 'user':
+            kwargs['queryset'] = User.objects.filter(pk=request.user.pk)
         return super(CD4DocumentAdmin, self).formfield_for_foreign_key(dbfield, 
             request, **kwargs)
     

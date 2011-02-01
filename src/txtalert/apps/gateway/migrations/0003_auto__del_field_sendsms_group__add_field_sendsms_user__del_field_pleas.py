@@ -11,25 +11,36 @@ class Migration(SchemaMigration):
         from django.contrib.auth.models import User
         user, created = User.objects.get_or_create(username='kumbu')
         
-        # Adding field 'CD4Document.user'
-        db.add_column('cd4_cd4document', 'user', self.gf('django.db.models.fields.related.ForeignKey')(default=user.pk, to=orm['auth.User']), keep_default=False)
-        
-        # Deleting field 'CD4Document.user'
-        db.delete_column('cd4_cd4document', 'group_id')
+        # Deleting field 'SendSMS.group'
+        db.delete_column('gateway_sendsms', 'group_id')
+
+        # Adding field 'SendSMS.user'
+        db.add_column('gateway_sendsms', 'user', self.gf('django.db.models.fields.related.ForeignKey')(default=user.pk, to=orm['auth.User']), keep_default=False)
+
+        # Deleting field 'PleaseCallMe.group'
+        db.delete_column('gateway_pleasecallme', 'group_id')
+
+        # Adding field 'PleaseCallMe.user'
+        db.add_column('gateway_pleasecallme', 'user', self.gf('django.db.models.fields.related.ForeignKey')(default=user.pk, related_name='gateway_pleasecallme_set', to=orm['auth.User']), keep_default=False)
+
 
     def backwards(self, orm):
         
-        # Deleting field 'CD4Document.user'
-        db.delete_column('cd4_cd4document', 'user_id')
-        
-        from django.contrib.auth.models import Group
         group, created = Group.objects.get_or_create(name='Temba Lethu')
         
-        # Adding field 'CD4Document.user'
-        db.add_column('cd4_cd4document', 'group', self.gf('django.db.models.fields.related.ForeignKey')(default=group.pk, to=orm['auth.Group']), keep_default=False)
-        
-    
-    
+        # Adding field 'SendSMS.group'
+        db.add_column('gateway_sendsms', 'group', self.gf('django.db.models.fields.related.ForeignKey')(default=group.pk, to=orm['auth.Group']), keep_default=False)
+
+        # Deleting field 'SendSMS.user'
+        db.delete_column('gateway_sendsms', 'user_id')
+
+        # Adding field 'PleaseCallMe.group'
+        db.add_column('gateway_pleasecallme', 'group', self.gf('django.db.models.fields.related.ForeignKey')(default=group.pk, related_name='gateway_pleasecallme_set', to=orm['auth.Group']), keep_default=False)
+
+        # Deleting field 'PleaseCallMe.user'
+        db.delete_column('gateway_pleasecallme', 'user_id')
+
+
     models = {
         'auth.group': {
             'Meta': {'object_name': 'Group'},
@@ -60,23 +71,6 @@ class Migration(SchemaMigration):
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
-        'cd4.cd4document': {
-            'Meta': {'object_name': 'CD4Document'},
-            'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'original': ('django.db.models.fields.files.FileField', [], {'max_length': '100'}),
-            'updated_at': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
-        },
-        'cd4.cd4record': {
-            'Meta': {'object_name': 'CD4Record'},
-            'cd4count': ('django.db.models.fields.IntegerField', [], {}),
-            'cd4document': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'record_set'", 'to': "orm['cd4.CD4Document']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'lab_id_number': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'msisdn': ('django.db.models.fields.CharField', [], {'max_length': '11'}),
-            'sms': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['gateway.SendSMS']", 'null': 'True', 'blank': 'True'})
-        },
         'contenttypes.contenttype': {
             'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
             'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
@@ -84,20 +78,30 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
+        'gateway.pleasecallme': {
+            'Meta': {'ordering': "['created_at']", 'object_name': 'PleaseCallMe'},
+            'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'message': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'recipient_msisdn': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'sender_msisdn': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'sms_id': ('django.db.models.fields.CharField', [], {'max_length': '80'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'gateway_pleasecallme_set'", 'to': "orm['auth.User']"})
+        },
         'gateway.sendsms': {
             'Meta': {'object_name': 'SendSMS'},
             'delivery': ('django.db.models.fields.DateTimeField', [], {}),
             'delivery_timestamp': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'expiry': ('django.db.models.fields.DateTimeField', [], {}),
-            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.Group']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'identifier': ('django.db.models.fields.CharField', [], {'max_length': '8'}),
             'msisdn': ('django.db.models.fields.CharField', [], {'max_length': '12'}),
             'priority': ('django.db.models.fields.CharField', [], {'max_length': '80'}),
             'receipt': ('django.db.models.fields.CharField', [], {'max_length': '1'}),
             'smstext': ('django.db.models.fields.TextField', [], {}),
-            'status': ('django.db.models.fields.CharField', [], {'default': "'v'", 'max_length': '1'})
+            'status': ('django.db.models.fields.CharField', [], {'default': "'v'", 'max_length': '1'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
         }
     }
 
-    complete_apps = ['cd4']
+    complete_apps = ['gateway']
