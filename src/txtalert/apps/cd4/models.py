@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import User
 from txtalert.apps.gateway.models import SendSMS
 from utils import read_cd4_document
 
@@ -18,7 +18,7 @@ CD4_MESSAGE_TEMPLATE = "Hello. Thanks for doing your CD4 test. " \
 
 class CD4Document(models.Model):
     """An uploaded CD4Document for sending out SMSs"""
-    group = models.ForeignKey(Group)
+    user = models.ForeignKey(User)
     original = models.FileField(upload_to=settings.UPLOAD_ROOT)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -29,7 +29,7 @@ class CD4Document(models.Model):
     def send_messages(self):
         from txtalert.apps.gateway import gateway
         for cd4record in self.record_set.filter(sms__isnull=True):
-            cd4record.sms = gateway.send_one_sms(self.group, 
+            cd4record.sms = gateway.send_one_sms(self.user, 
                 cd4record.msisdn,
                 CD4_MESSAGE_TEMPLATE % (cd4record.cd4count, )
             )
