@@ -14,16 +14,16 @@ class Gateway(object):
             'Channel': channel,
         }
     
-    def send_sms(self, group, msisdns, smstexts, delivery=None, expiry=None, \
+    def send_sms(self, user, msisdns, smstexts, delivery=None, expiry=None, \
                      priority='standard', receipt='Y'):
         """Deprecated, replaced with send_bulk_sms"""
-        send_sms_ids = [self.send_one_sms(group, msisdn, smstext, delivery, 
+        send_sms_ids = [self.send_one_sms(user, msisdn, smstext, delivery, 
                                     expiry, priority, receipt).pk \
                     for (msisdn, smstext) in zip(msisdns, smstexts)]
         return SendSMS.objects.filter(pk__in=send_sms_ids)
         
     
-    def send_one_sms(self, group, msisdn, smstext, delivery=None, expiry=None, \
+    def send_one_sms(self, user, msisdn, smstext, delivery=None, expiry=None, \
                         priority='standard', receipt='Y'):
         """Send one sms"""
         struct = self.default_values.copy()
@@ -39,7 +39,7 @@ class Gateway(object):
         
         proxy_response = self.proxy.EAPIGateway.SendSMS(struct)
         
-        return SendSMS.objects.create(group=group,
+        return SendSMS.objects.create(user=user,
                                         msisdn=msisdn,
                                         smstext=smstext, 
                                         delivery=struct['Delivery'], 
@@ -48,7 +48,7 @@ class Gateway(object):
                                         receipt=struct['Receipt'], 
                                         identifier=proxy_response['Identifier'])
     
-    def send_bulk_sms(self, group, msisdns, smstexts, delivery=None, expiry=None, \
+    def send_bulk_sms(self, user, msisdns, smstexts, delivery=None, expiry=None, \
                         priority='standard', receipt='Y'):
         """Send a bulk of smses SMS"""
         
@@ -66,7 +66,7 @@ class Gateway(object):
         proxy_response = self.proxy.EAPIGateway.SendSMS(struct)
         
         send_sms_ids = [SendSMS.objects.create(
-                                        group=group,
+                                        user=user,
                                         msisdn=msisdn, 
                                         smstext=smstext, 
                                         delivery=struct['Delivery'], 

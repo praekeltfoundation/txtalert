@@ -47,7 +47,7 @@ def track_please_call_me(opera_pcm):
         pcm = PleaseCallMe.objects.create(msisdn=msisdn,
                                             timestamp=datetime.now(),
                                             clinic=clinic,
-                                            group=opera_pcm.group,
+                                            user=opera_pcm.user,
                                             notes="Original SMS: %s" % opera_pcm.message)
         logger.info("track_please_call_me: PCM registered for %s at %s for clinic %s from opera PCM: %s" % (
             pcm.msisdn,
@@ -65,7 +65,7 @@ def track_please_call_me(opera_pcm):
         # so we don't loose track of any.
         pcm = PleaseCallMe.objects.create(msisdn=msisdn,
                                             timestamp=datetime.now(),
-                                            group=opera_pcm.group, 
+                                            user=opera_pcm.user, 
                                             notes="Original SMS: %s" % opera_pcm.message)
         logger.error('track_please_call_me: No contacts found for MSISDN: %s, registering without clinic.' % msisdn)
     else:
@@ -73,7 +73,7 @@ def track_please_call_me(opera_pcm):
         # so we don't loose track of any.
         pcm = PleaseCallMe.objects.create(msisdn=msisdn,
                                             timestamp=datetime.now(),
-                                            group=opera_pcm.group,
+                                            user=opera_pcm.user,
                                             notes="Original SMS: %s" % opera_pcm.message)
         logger.error("track_please_call_me: More than one contact found for MSISDN: %s" % msisdn)
 

@@ -22,9 +22,8 @@ class SMSHandler(BaseHandler):
         if not request.user.has_perm('gateway.can_view_sms_statistics'):
             return rc.FORBIDDEN
         
-        group = request.user.groups.latest('pk')
         if all([msisdn, identifier]):
-            return get_object_or_404(SendSMS, msisdn=msisdn, group=group, 
+            return get_object_or_404(SendSMS, msisdn=msisdn, user=request.user, 
                                         identifier=identifier)
         else:
             return self._read_list(request)
@@ -33,9 +32,8 @@ class SMSHandler(BaseHandler):
         if 'since' in request.GET:
             # remove timezone info since MySQL is not able to handle that
             # assume input it UTC
-            group = request.user.groups.latest('pk')
             since = iso8601.parse_date(request.GET['since']).replace(tzinfo=None)
-            return SendSMS.objects.filter(delivery__gte=since, group=group)
+            return SendSMS.objects.filter(delivery__gte=since, user=request.user)
         else:
             return rc.BAD_REQUEST
     
@@ -49,9 +47,8 @@ class SMSHandler(BaseHandler):
         if request.content_type:
             msisdns = request.data.get('msisdns',[])
             smstext = request.data.get('smstext','')
-            group = request.user.groups.latest('pk')
             if len(smstext) <= 160 and len(msisdns) > 0:
-                return gateway.send_sms(group, msisdns, (smstext,) * len(msisdns))
+                return gateway.send_sms(request.user, msisdns, (smstext,) * len(msisdns))
         return rc.BAD_REQUEST
     
     @classmethod
@@ -85,9 +82,8 @@ class PCMHandler(BaseHandler):
         if 'since' in request.GET:
             # remove timezone info since MySQL is not able to handle that
             # assume input it UTC
-            group = request.user.groups.latest('pk')
             since = iso8601.parse_date(request.GET['since']).replace(tzinfo=None)
-            return PleaseCallMe.objects.filter(group=group, created_at__gte=since)
+            return PleaseCallMe.objects.filter(user=request.user, created_at__gte=since)
         else:
             return rc.BAD_REQUEST
     
@@ -123,9 +119,8 @@ class PCMHandler(BaseHandler):
             sender_msisdn = request.POST.get('sender_msisdn')
             recipient_msisdn = request.POST.get('recipient_msisdn')
             message = request.POST.get('message', '')
-            group = request.user.groups.latest('pk')
             
-            pcm = PleaseCallMe.objects.create(group=group, sms_id=sms_id,
+            pcm = PleaseCallMe.objects.create(user=request.user, sms_id=sms_id,
                                                 sender_msisdn=sender_msisdn, 
                                                 recipient_msisdn=recipient_msisdn, 
                                                 message=message)

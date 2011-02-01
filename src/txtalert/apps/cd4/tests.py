@@ -1,5 +1,5 @@
 from django.test import TestCase
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import User
 from django.conf import settings
 from os.path import join
 from txtalert.apps.cd4.utils import read_cd4_document
@@ -10,11 +10,13 @@ gateway.load_backend('txtalert.apps.gateway.backends.dummy')
 
 class CD4TestCase(TestCase):
     
+    fixtures = ['patients']
+    
     def setUp(self):
         self.sample_file = join(settings.MEDIA_ROOT, settings.UPLOAD_ROOT, 
                                     'sample.xls')
         self.document = read_cd4_document(self.sample_file)
-        self.group = Group.objects.create(name='Group')
+        self.user = User.objects.get(username='kumbu')
     
     def tearDown(self):
         pass
@@ -31,14 +33,14 @@ class CD4TestCase(TestCase):
     
     def test_storing_of_sample_excel(self):
         document = CD4Document.objects.create(original=self.sample_file,
-                                                group=self.group)
+                                                user=self.user)
         self.assertEquals(document.record_set.count(), 4)
         for record in document.record_set.all():
             self.assertEquals(record.sms, None)
     
     def test_sending_of_loaded_records(self):
         document = CD4Document.objects.create(original=self.sample_file,
-                                                group=self.group)
+                                                user=self.user)
         document.send_messages()
         for record in document.record_set.all():
             self.assertTrue(isinstance(record.sms, SendSMS))

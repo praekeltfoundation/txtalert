@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
-from django.contrib.auth.models import User, Permission, Group
+from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.utils import simplejson
 from django.db.models.signals import post_save
@@ -38,8 +38,6 @@ class OperaTestCase(TestCase):
         self.user = User.objects.create_user(username='user', \
                                                 email='user@domain.com', \
                                                 password='password')
-        self.group, created = Group.objects.get_or_create(name='Group')
-        self.user.groups.add(self.group)
     
     def test_gateway(self):
         # FIXME: this is hideous
@@ -68,9 +66,9 @@ class OperaTestCase(TestCase):
                 }
         
         setattr(gateway.proxy, 'EAPIGateway', MockedEAPIGateway())
-        sent_smss = gateway.send_sms(self.group,['27123456789'],['testing hello'])
+        sent_smss = gateway.send_sms(self.user,['27123456789'],['testing hello'])
         self.assertEquals(sent_smss.count(), 1)
-        self.assertEquals(sent_smss[0].group, self.group)
+        self.assertEquals(sent_smss[0].user, self.user)
         self.assertEquals(sent_smss[0].identifier, 'a' * 8)
         self.assertEquals(sent_smss[0].msisdn, '27123456789')
         self.assertEquals(sent_smss[0].smstext, 'testing hello')
@@ -108,7 +106,7 @@ class OperaTestCase(TestCase):
         
         for receipt in receipts:
             # FIXME: we need normalization FAST
-            [send_sms] = gateway.send_sms(self.group, [receipt.msisdn.replace("+","")], 
+            [send_sms] = gateway.send_sms(self.user, [receipt.msisdn.replace("+","")], 
                                             ['testing %s' % receipt.reference])
             # manually specifiy the identifier so we can compare it later with the
             # posted receipt
@@ -149,10 +147,10 @@ class OperaTestCase(TestCase):
             send_sms = SendSMS.objects.get(msisdn=receipt.msisdn.replace("+",""), identifier=receipt.reference)
             self.assertEquals(send_sms.delivery_timestamp, datetime.strptime(receipt.timestamp, OPERA_TIMESTAMP_FORMAT))
             self.assertEquals(send_sms.status, 'D')
-            self.assertEquals(send_sms.group, self.group)
+            self.assertEquals(send_sms.user, self.user)
     
     def test_receipt_msisdn_normalization(self):
-        send_sms = SendSMS.objects.create(group=self.group,
+        send_sms = SendSMS.objects.create(user=self.user,
                                             msisdn='27761234567', 
                                             identifier='abcdefg',
                                             expiry=datetime.today() + timedelta(days=1),
@@ -194,7 +192,7 @@ class OperaTestCase(TestCase):
         
         # check the database response
         updated_send_sms = SendSMS.objects.get(pk=send_sms.pk)
-        self.assertEquals(updated_send_sms.group, self.group)
+        self.assertEquals(updated_send_sms.user, self.user)
         self.assertEquals(updated_send_sms.status, 'D') # delivered
         
     
@@ -229,7 +227,7 @@ class OperaTestCase(TestCase):
         receipts = map(element_to_namedtuple, tree.findall('receipt'))
         
         for receipt in receipts:
-            [send_sms] = gateway.send_sms(self.group, [receipt.msisdn], ['testing %s' % receipt.reference])
+            [send_sms] = gateway.send_sms(self.user, [receipt.msisdn], ['testing %s' % receipt.reference])
             # manually specifiy the identifier so we can compare it later with the
             # posted receipt
             send_sms.identifier = 'a-bad-id' # this is going to cause a failure
@@ -266,7 +264,7 @@ class OperaTestCase(TestCase):
             self.assertRaises(
                 SendSMS.DoesNotExist,   # exception expected
                 SendSMS.objects.get,    # callback
-                group=self.group,       # args
+                user=self.user,       # args
                 msisdn=receipt.msisdn,  
                 identifier=receipt.reference
             )
@@ -280,14 +278,11 @@ class SmsGatewayTestCase(TestCase):
         self.user = User.objects.create_user(username='user', \
                                                 email='user@domain.com', \
                                                 password='password')
-        self.group, created = Group.objects.get_or_create(name='Group')
-        self.user.save()
-        self.user.groups.add(self.group)
     
     def test_send_sms(self):
-        [send_sms,] = gateway.send_sms(self.group, ['27123456789'],['testing'])
-        self.failUnless(send_sms.group == self.group)
-        self.failUnless(SendSMS.objects.filter(group=self.group, msisdn='27123456789'))
+        [send_sms,] = gateway.send_sms(self.user, ['27123456789'],['testing'])
+        self.failUnless(send_sms.user == self.user)
+        self.failUnless(SendSMS.objects.filter(user=self.user, msisdn='27123456789'))
     
     def test_json_sms_statistics_auth(self):
         response = self.client.get(reverse('api-sms',kwargs={'emitter_format':'json'}), 
@@ -335,7 +330,7 @@ class SmsGatewayTestCase(TestCase):
         
         # now create it and repeat
         sms = SendSMS.objects.create(
-            group=self.group,
+            user=self.user,
             identifier='a' * 8, 
             msisdn='27123456789',
             delivery=datetime.now(),
@@ -404,7 +399,6 @@ class PcmAutomationTestCase(TestCase):
                                                 email='user@domain.com',
                                                 password='password')
         self.user.save()
-        self.user.groups.create(name='Group')
         
         # we don't want to be bogged down with signal receivers in this test
         self.original_post_save_receivers = post_save.receivers
@@ -433,6 +427,7 @@ class PcmAutomationTestCase(TestCase):
             HTTP_AUTHORIZATION=basic_auth_string('user','password')
         )
         
+        print response.content
         self.assertEquals(response.status_code, 201) # Created
         
         pcm = PleaseCallMe.objects.latest('created_at')
