@@ -3,6 +3,30 @@ from txtalert.core.models import *
 from django.contrib.auth.models import Group
 from datetime import datetime
 
+class PermissionsTestCase(TestCase):
+    
+    fixtures = ['patients','clinics','visits']
+    
+    def setUp(self):
+        pass
+    
+    def tearDown(self):
+        pass
+    
+    def test_msisdn_access(self):
+        assert False
+    
+    def test_patient_access(self):
+        assert False
+    
+    def test_clinic_access(self):
+        assert False
+    
+    def test_visit_acess(self):
+        assert False
+    
+
+
 class ModelTestCase(TestCase):
     
     fixtures = ['patients', 'clinics', 'visits']

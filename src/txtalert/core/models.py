@@ -16,7 +16,7 @@
 
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_save
 from dirtyfields import DirtyFieldsMixin
 from history.models import HistoricalRecords
@@ -56,7 +56,7 @@ class Language(models.Model):
 class Clinic(models.Model):
     te_id = models.CharField('TE ID', max_length=2, unique=True)
     name = models.CharField('Name', max_length=100)
-    group = models.ForeignKey(Group, related_name='clinic', blank=True, 
+    user = models.ForeignKey(User, related_name='clinic', blank=True, 
                                 null=True)
     
     class Meta:
@@ -104,7 +104,7 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         ('m>f', 'transgender m>f'),
     )
     
-    group = models.ForeignKey(Group)
+    user = models.ForeignKey(User)
     te_id = models.CharField('MRS ID', max_length=10, unique=True)
     msisdns = models.ManyToManyField(MSISDN, related_name='contacts')
     active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', 
@@ -218,7 +218,7 @@ class PleaseCallMe(models.Model):
         ('ot', 'Other (fill in notes)'),
     )
     
-    group = models.ForeignKey(Group)
+    user = models.ForeignKey(User)
     msisdn = models.ForeignKey(MSISDN, related_name='pcms', verbose_name='Mobile Number')
     timestamp = models.DateTimeField('Date & Time', auto_now_add=False)
     reason = models.CharField('Reason', max_length=2, choices=REASON_CHOICES, default='nc')
