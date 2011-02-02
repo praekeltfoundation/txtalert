@@ -40,18 +40,29 @@ class CD4Document(models.Model):
         return u"CD4Document uploaded at %s" % (self.created_at,)
     
 
+def normalize_msisdn(raw):
+    raw = str(int(raw))
+    if raw.startswith('0'):
+        return '27' + raw[1:]
+    if raw.startswith('+'):
+        return raw[1:]
+    if raw.startswith('27'):
+        return raw
+    return '27' + raw
+
 def load_cd4_records(sender, **kwargs):
     created = kwargs.get('created', False)
     instance = kwargs.get('instance')
     
     if created:
         for row in read_cd4_document(instance.original.path):
+            normalized_msisdn = normalize_msisdn(row[MSISDN][1])
             instance.record_set.create(
                 # string
                 lab_id_number = row[LAB_ID_NUMBER][1],
                 # Excel will probably store this as a float
                 # cast to int, saved as string in db
-                msisdn = int(row[MSISDN][1]),
+                msisdn = normalized_msisdn,
                 cd4count = row[CD4_COUNT][1]
             )
 
