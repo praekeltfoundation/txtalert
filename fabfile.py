@@ -28,7 +28,8 @@ def _setup_env_for(branch):
     # the github_user and github_repo variables are set by the ~/.fabricrc 
     # or whatever is provided to `fab` with the `-c` command line variable.
     # See the sample fabric.config file.
-    env.github_repo = 'git://github.com/%(github_user)s/%(github_repo_name)s.git' % env
+    env.github_repo = 'http://github.com/%(github_user)s/%(github_repo_name)s.git' % env
+    
     env.deploy_to = '/var/praekelt/%(github_repo_name)s/%(branch)s' % env
     env.releases_path = "%(deploy_to)s/releases" % env
     env.current = "%(deploy_to)s/current" % env
@@ -191,7 +192,7 @@ def create_virtualenv(branch, release=None):
             "virtualenv --no-site-packages ve",
             "source ve/bin/activate",
             "pip -E ve install --download-cache=%(pip_cache_path)s -r requirements.pip" % env,
-            "deactivate",
+            "python setup.py develop",
         ]))
 
 
