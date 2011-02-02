@@ -35,16 +35,11 @@ class PleaseCallMeAdmin(admin.ModelAdmin):
     form = PleaseCallMeForm
     list_display = ('timestamp', 'msisdn','reason','notes')
     list_filter = ('timestamp', 'clinic','reason',)
-
+    readonly_fields = ('user',)
+    
     def queryset(self, request):
         qs = super(PleaseCallMeAdmin, self).queryset(request)
-        groups = request.user.groups.all()
-        # FIXME: If this fails add the Group to the admin, should have CRUD
-        #        permissions for the PleaseCallMe's in TherapyEdge
-        if Group.objects.get(name='Clinic Agents') in groups:
-            clinics = Clinic.objects.filter(group__in=groups)
-            qs = qs.filter(clinic__in=clinics)
-        return qs
+        return qs.filter(user=request.user)
 
 class PatientForm(forms.ModelForm):
     active_msisdn = forms.ModelChoiceField(
