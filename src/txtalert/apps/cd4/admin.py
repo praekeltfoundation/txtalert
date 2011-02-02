@@ -24,7 +24,7 @@ class CD4DocumentRecordInlineAdmin(admin.TabularInline):
     exclude = ('sms',)
     can_delete = False
     readonly_fields = ('lab_id_number',
-                        'msisdn',
+                        # 'msisdn',
                         'cd4count',
                         get_sms_delivery, 
                         get_sms_status_display)
@@ -34,7 +34,7 @@ class CD4DocumentAdmin(admin.ModelAdmin):
     inlines = [
         CD4DocumentRecordInlineAdmin
     ]
-    readonly_fields = ['created_at']
+    readonly_fields = ['created_at', 'user']
     list_filter = ['created_at',]
     
     def get_urls(self):
@@ -52,11 +52,9 @@ class CD4DocumentAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(reverse('admin:cd4_cd4document_change', 
             args=(object_id,)))
     
-    def formfield_for_foreign_key(self, db_field, request, **kwargs):
-        if db_field.name == 'user':
-            kwargs['queryset'] = User.objects.filter(pk=request.user.pk)
-        return super(CD4DocumentAdmin, self).formfield_for_foreign_key(dbfield, 
-            request, **kwargs)
+    def save_model(self, request, obj, form, change):
+        obj.user = request.user
+        obj.save()
     
     def change_view(self, request, object_id, extra_context=None):
         if request.POST.has_key('_send_cd4_messages'):
