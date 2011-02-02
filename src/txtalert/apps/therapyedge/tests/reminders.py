@@ -1,5 +1,5 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from datetime import datetime, date, timedelta
 from txtalert.apps.therapyedge import reminders
 from txtalert.core.models import *
@@ -17,7 +17,9 @@ class RemindersI18NTestCase(TestCase):
         self.patient.save()
         self.language = self.patient.language
         self.clinic = Clinic.objects.all()[0]
+        self.group = Group.objects.get(name='Temba Lethu')
         self.user = User.objects.get(username='kumbu')
+        self.user.groups.add(self.group)
         gateway.load_backend('txtalert.apps.gateway.backends.dummy')
     
     def tearDown(self):
@@ -128,9 +130,10 @@ class RemindersI18NTestCase(TestCase):
         
         # send the SMSs over the dummy gateway
         # FIXME: rename `all` method to something more explicit
-        reminders.all(gateway.gateway, self.user)
+        group_names = [group.name for group in Group.objects.all()]
+        reminders.all(gateway.gateway, group_names)
         # send the stats
-        reminders.send_stats(gateway.gateway, self.user, today.date())
+        reminders.send_stats(gateway.gateway, group_names, today.date())
         
         # test the emails being sent out
         from django.core import mail

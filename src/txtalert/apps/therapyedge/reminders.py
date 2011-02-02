@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core import mail
+from django.contrib.auth.models import Group
 
 from txtalert.apps.general.settings.models import Setting
 from txtalert.apps.gateway.models import SendSMS
@@ -54,12 +55,18 @@ def group_by_language(patients):
                 language, patients_per_language in groupby(patients, grouper)]
     )
 
-def send_stats(gateway, user, today):
+def send_stats(gateway, group_names, today):
+    for group in Group.objects.filter(name__in=group_names):
+        send_stats_for_group(gateway, today, group)
+
+def send_stats_for_group(gateway, today, group):
     yesterday = today - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
     twoweeks = today + timedelta(weeks=2)
     
-    visits = Visit.objects.filter(patient__opted_in=True, patient__user=user)
+    users = group.user_set.all()
+    visits = Visit.objects.filter(patient__opted_in=True, 
+                                    patient__user__in=users)
     
     # get stats for today's bulk of SMSs sent
     tomorrow_count = visits.filter(date__exact=tomorrow).count()
@@ -72,7 +79,7 @@ def send_stats(gateway, user, today):
     else: missed_percentage = missed_count * (100.0 / yesterday_count)
     
     # for every SMS sent we have an entry of SendSMS
-    total_count = SendSMS.objects.filter(delivery__gte=today, user=user).count()
+    total_count = SendSMS.objects.filter(delivery__gte=today, user__in=users).count()
     
     # send email with stats
     emails = Setting.objects.get(name='Stats Emails').value.split('\r\n')
@@ -101,7 +108,9 @@ def send_stats(gateway, user, today):
     }
     logger.info('Sending stat SMSs to: %s' % ', '.join(msisdns))
     logger.debug(message)
-    gateway.send_sms(user, msisdns, [message] * len(msisdns))
+    # FIXME: I'm always using the first user in the list as the one sending the
+    #        stats SMS for this group 
+    gateway.send_sms(users[0], msisdns, [message] * len(msisdns))
     
 
 
@@ -170,14 +179,18 @@ def missed(gateway, user, visits, today):
     )
 
 
-def all(gateway, user):
-    visits = Visit.objects.filter(patient__opted_in=True)
-    today = datetime.now().date()
-    logger.debug('Sending reminders for: tomorrow')
-    tomorrow(gateway, user, visits, today)
-    logger.debug('Sending reminders for: two weeks')
-    two_weeks(gateway, user, visits, today)
-    logger.debug('Sending reminders for: attended yesterday')
-    attended(gateway, user, visits, today)
-    logger.debug('Sending reminders for: missed yesterday')
-    missed(gateway, user, visits, today)
+def all(gateway, group_names):
+    groups = Group.objects.filter(name__in=group_names)
+    for group in groups:
+        for user in group.user_set.all():
+            visits = Visit.objects.filter(patient__opted_in=True,
+                                            clinic__user=user)
+            today = datetime.now().date()
+            logger.debug('Sending reminders for %s: tomorrow' % user)
+            tomorrow(gateway, user, visits, today)
+            logger.debug('Sending reminders for %s: two weeks' % user)
+            two_weeks(gateway, user, visits, today)
+            logger.debug('Sending reminders for %s: attended yesterday' % user)
+            attended(gateway, user, visits, today)
+            logger.debug('Sending reminders for %s: missed yesterday' % user)
+            missed(gateway, user, visits, today)

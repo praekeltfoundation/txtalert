@@ -427,7 +427,6 @@ class PcmAutomationTestCase(TestCase):
             HTTP_AUTHORIZATION=basic_auth_string('user','password')
         )
         
-        print response.content
         self.assertEquals(response.status_code, 201) # Created
         
         pcm = PleaseCallMe.objects.latest('created_at')
