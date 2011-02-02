@@ -4,6 +4,7 @@
         "model": "core.clinic",
         "fields":{
             "te_id":"01",
+            "user": 1,
             "name":"Test Clinic"
         }
     }

@@ -17,6 +17,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         backend, selected_gateway, sms_receipt_handler = gateway.load_backend(options['gateway'])
         today = datetime.now().date()
-        reminders.all(selected_gateway)
-        reminders.send_stats(selected_gateway, today)
+        reminders.all(selected_gateway, ['Temba Lethu'])
+        reminders.send_stats(selected_gateway, ['Temba Lethu'], today)
     
