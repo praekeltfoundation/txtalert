@@ -55,9 +55,9 @@ DATABASE_USER = ''
 DATABASE_PASSWORD = ''
 DATABASE_PORT = ''
 
-OPERA_SERVICE = os.environ['OPERA_SERVICE']
-OPERA_PASSWORD = os.environ['OPERA_PASSWORD'] 
-OPERA_CHANNEL = os.environ['OPERA_CHANNEL']
+OPERA_SERVICE = os.environ.get('OPERA_SERVICE')
+OPERA_PASSWORD = os.environ.get('OPERA_PASSWORD')
+OPERA_CHANNEL = os.environ.get('OPERA_CHANNEL')
 
 ADMINS = (
     ('Simon de Haan', 'simon@praekeltfoundation.org'),
