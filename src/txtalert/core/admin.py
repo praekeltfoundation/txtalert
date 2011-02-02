@@ -39,7 +39,10 @@ class PleaseCallMeAdmin(admin.ModelAdmin):
     
     def queryset(self, request):
         qs = super(PleaseCallMeAdmin, self).queryset(request)
-        return qs.filter(user=request.user)
+        if request.user.is_superuser:
+            return qs
+        else:
+            return qs.filter(user=request.user)
 
 class PatientForm(forms.ModelForm):
     active_msisdn = forms.ModelChoiceField(
