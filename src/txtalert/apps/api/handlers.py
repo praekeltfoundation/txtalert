@@ -121,7 +121,7 @@ class PCMHandler(BaseHandler):
             message = request.POST.get('message', '')
             if isinstance(message, unicode):
                 try:
-                    message = message.decode('utf-8')
+                    message = message.decode('latin-1')
                 except Exception, e:
                     pass
             
