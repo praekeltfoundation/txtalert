@@ -120,10 +120,7 @@ class PCMHandler(BaseHandler):
             recipient_msisdn = request.POST.get('recipient_msisdn')
             message = request.POST.get('message', '')
             if isinstance(message, unicode):
-                try:
-                    message = message.decode('latin-1')
-                except Exception, e:
-                    pass
+                message = message.encode('unicode_escape')
             
             pcm = PleaseCallMe.objects.create(user=request.user, sms_id=sms_id,
                                                 sender_msisdn=sender_msisdn, 
