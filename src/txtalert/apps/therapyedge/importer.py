@@ -131,7 +131,6 @@ class Importer(object):
     
     def update_local_patient(self, user, remote_patient):
         logger.debug('Processing: %s' % remote_patient._asdict())
-        
         patient, created = Update(Patient) \
                                 .get(te_id=remote_patient.te_id, user=user) \
                                 .update_attributes(
@@ -339,24 +338,24 @@ class Importer(object):
             ))
         return visit
     
-    def import_deleted_visits(self, clinic, since, until):
+    def import_deleted_visits(self, user, clinic, since, until):
         deleted_visits = self.client.get_deleted_visits(clinic.te_id, since, until)
         logger.info('Receiving deleted visits between %s and %s' % (
             since,
             until
         ))
-        return self.update_local_deleted_visits(deleted_visits)
+        return self.update_local_deleted_visits(user, deleted_visits)
     
-    def update_local_deleted_visits(self, remote_visits):
+    def update_local_deleted_visits(self, user, remote_visits):
         for remote_visit in remote_visits:
             logger.debug('Processing deleted Visit: %s' % remote_visit._asdict())
             try:
-                yield self.update_local_deleted_visit(remote_visit)
+                yield self.update_local_deleted_visit(user, remote_visit)
             except Visit.DoesNotExist, e:
                 logger.exception('Could not find Visit to delete')
     
-    def update_local_deleted_visit(self, remote_visit):
-        visit = Visit.objects.get(te_visit_id=remote_visit.key_id)
+    def update_local_deleted_visit(self, user, remote_visit):
+        visit = Visit.objects.get(te_visit_id=remote_visit.key_id, patient__user=user)
         visit.delete()
         logger.debug('Deleted Visit: %s' % visit.id)
         return visit
@@ -370,7 +369,7 @@ class Importer(object):
             'coming_visits': list(self.import_coming_visits(user, clinic, since, until)),
             'missed_visits': list(self.import_missed_visits(user, clinic, since, until)),
             'done_visits': list(self.import_done_visits(user, clinic, since, until)),
-            'deleted_visits': list(self.import_deleted_visits(clinic, since, until))
+            'deleted_visits': list(self.import_deleted_visits(user, clinic, since, until))
         }
     
     

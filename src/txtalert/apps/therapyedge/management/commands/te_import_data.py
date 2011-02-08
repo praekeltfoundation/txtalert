@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, date
+from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from txtalert.apps.general.settings.models import Setting
@@ -17,7 +18,7 @@ class Command(BaseCommand):
             ),
             verbose=settings.DEBUG
         )
-        for clinic in Clinic.objects.all():
+        for clinic in Clinic.objects.filter(active=True):
             # from midnight
             midnight = datetime.now().replace(
                 hour=0,

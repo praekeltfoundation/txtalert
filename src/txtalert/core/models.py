@@ -55,6 +55,7 @@ class Language(models.Model):
 
 class Clinic(models.Model):
     te_id = models.CharField('TE ID', max_length=2, unique=True)
+    active = models.BooleanField(default=True)
     name = models.CharField('Name', max_length=100)
     user = models.ForeignKey(User, related_name='clinic', blank=True, 
                                 null=True)
