@@ -37,7 +37,7 @@ class Command(BaseCommand):
                         since=since,
                         until=until
                     ).items():
-                    print "\t%s: %s" % (key, value)
+                    print "\t%s: %s" % (key, len(value))
             except ExpatError, e:
                 print "Exception during processing XML for clinic ", clinic
                 traceback.print_exc()

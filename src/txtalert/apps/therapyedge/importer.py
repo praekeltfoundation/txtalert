@@ -84,9 +84,9 @@ class Update(object):
     
     def get(self, *args, **kwargs):
         try:
-            self.instance, self.created = self.klass.objects.get(*args, **kwargs), False
+            self.instance, self.created, self.updated = self.klass.objects.get(*args, **kwargs), False, False
         except self.klass.DoesNotExist, e:
-            self.instance, self.created = self.klass(*args, **kwargs), True
+            self.instance, self.created, self.updated = self.klass(*args, **kwargs), True, True
         return self
     
     def update_attributes(self, **kwargs):
@@ -96,8 +96,11 @@ class Update(object):
     
     def save(self):
         if self.instance.is_dirty():
+            self.updated = True
             self.instance.save()
-        return self.instance, self.created
+        else:
+            self.updated = False
+        return self.instance, self.created, self.updated
 
 class Importer(object):
         
@@ -131,7 +134,7 @@ class Importer(object):
     
     def update_local_patient(self, user, remote_patient):
         logger.debug('Processing: %s' % remote_patient._asdict())
-        patient, created = Update(Patient) \
+        patient, created, updated = Update(Patient) \
                                 .get(te_id=remote_patient.te_id, user=user) \
                                 .update_attributes(
                                     age = Age(remote_patient.age),
@@ -139,9 +142,9 @@ class Importer(object):
                                 ).save()
         if created:
             logger.debug('Patient created: %s' % patient)
-        else:
+        elif updated:
             logger.debug('Update for existing patient: %s' % patient)
-        
+            
         # `celphone` typo is TherapyEdge's
         for msisdn in remote_patient.celphone.split('/'):
             # FIXME: this normalization seems sketchy at best
@@ -152,9 +155,8 @@ class Importer(object):
                 if msisdn not in patient.msisdns.all():
                     patient.msisdns.add(msisdn)
         
-        return patient
-            
-        
+        if created or updated:
+            return patient
     
     def import_coming_visits(self, user, clinic, since, until):
         coming_visits = self.client.get_coming_visits(clinic.te_id, since, until)
@@ -195,7 +197,7 @@ class Importer(object):
         # check if something actually changed in the visit, if not, immediately
         # return the visit - no use continuing
         if coming_date.date() == visit.date:
-            return visit
+            return
         
         # it's a new visit
         if created:
@@ -258,7 +260,7 @@ class Importer(object):
         # check if something actually changed in the visit, if not, immediately
         # return the visit - no use continuing
         if missed_date == visit.date and visit.status == 'm':
-            return visit
+            return
         
         # it's a new visit
         if created:
@@ -291,7 +293,7 @@ class Importer(object):
         return visit
     
     def import_done_visits(self, user, clinic, since, until):
-        done_visits = self.client.get_done_visits(user, clinic.te_id, since, until)
+        done_visits = self.client.get_done_visits(clinic.te_id, since, until)
         logger.info('Receiving done visits for %s between %s and %s' % (
             clinic.name,
             since,
@@ -315,7 +317,7 @@ class Importer(object):
         patient = Patient.objects.get(te_id=remote_visit.te_id, user=user)
         done_date = iso8601.parse_date(remote_visit.done_date).date()
         
-        visit, created = Update(Visit) \
+        visit, created, updated = Update(Visit) \
                             .get(te_visit_id=remote_visit.key_id) \
                             .update_attributes(
                                 clinic=clinic,
@@ -327,7 +329,8 @@ class Importer(object):
         # make sure we have a visit for the change we're getting
         if created:
             logger.debug('Creating new done Visit: %s' % visit.id)
-        else:
+            return visit
+        elif updated:
             # done events we flag as a for 'attended', not sure why the orignal
             # import script did a get_or_create here. Maybe an error or 
             # maybe the TherapyEdge data is *really* wonky
@@ -336,7 +339,7 @@ class Importer(object):
                 done_date,
                 'a'
             ))
-        return visit
+            return visit
     
     def import_deleted_visits(self, user, clinic, since, until):
         deleted_visits = self.client.get_deleted_visits(clinic.te_id, since, until)
@@ -365,11 +368,11 @@ class Importer(object):
         # them to be iterated over
         return {
             # 'all_patients': list(self.import_all_patients(clinic)),
-            'updated_patients': list(self.import_updated_patients(user, clinic, since, until)),
-            'coming_visits': list(self.import_coming_visits(user, clinic, since, until)),
-            'missed_visits': list(self.import_missed_visits(user, clinic, since, until)),
-            'done_visits': list(self.import_done_visits(user, clinic, since, until)),
-            'deleted_visits': list(self.import_deleted_visits(user, clinic, since, until))
+            'updated_patients': filter(None, self.import_updated_patients(user, clinic, since, until)),
+            'coming_visits': filter(None, self.import_coming_visits(user, clinic, since, until)),
+            'missed_visits': filter(None, self.import_missed_visits(user, clinic, since, until)),
+            'done_visits': filter(None, self.import_done_visits(user, clinic, since, until)),
+            'deleted_visits': filter(None, self.import_deleted_visits(user, clinic, since, until))
         }
     
     
