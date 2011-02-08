@@ -137,7 +137,7 @@ class Importer(object):
         patient, created, updated = Update(Patient) \
                                 .get(te_id=remote_patient.te_id, user=user) \
                                 .update_attributes(
-                                    age = Age(remote_patient.age),
+                                    age = int(Age(remote_patient.age)),
                                     sex = Sex(remote_patient.sex)
                                 ).save()
         if created:
