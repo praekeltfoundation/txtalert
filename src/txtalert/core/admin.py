@@ -39,11 +39,11 @@ class PleaseCallMeAdmin(admin.ModelAdmin):
     
     def queryset(self, request):
         qs = super(PleaseCallMeAdmin, self).queryset(request)
-        groups = request.user.groups.all()
-        groups_users = User.objects.distinct().filter(groups__in=groups)
         if request.user.is_superuser:
             return qs
         else:
+            groups = request.user.groups.all()
+            groups_users = User.objects.distinct().filter(groups__in=groups)
             return qs.filter(user__in=groups_users)
 
 class PatientForm(forms.ModelForm):

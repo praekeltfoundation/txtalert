@@ -157,29 +157,29 @@ class Importer(object):
             
         
     
-    def import_coming_visits(self, clinic, since, until):
+    def import_coming_visits(self, user, clinic, since, until):
         coming_visits = self.client.get_coming_visits(clinic.te_id, since, until)
         logger.info('Receiving coming visits for %s between %s and %s' % (
             clinic.name,
             since,
             until
         ))
-        return self.update_local_coming_visits(clinic, coming_visits)
+        return self.update_local_coming_visits(user, clinic, coming_visits)
     
-    def update_local_coming_visits(self, clinic, visits):
+    def update_local_coming_visits(self, user, clinic, visits):
         for visit in visits:
             logger.debug('Processing coming Visit %s' % visit._asdict())
             try:
-                yield self.update_local_coming_visit(clinic, visit)
+                yield self.update_local_coming_visit(user, clinic, visit)
             except IntegrityError, e:
                 logger.exception('Failed to create upcoming Visit')
             except Patient.DoesNotExist, e:
                 logger.exception('Could not find Patient for Visit.te_id')
     
-    def update_local_coming_visit(self, clinic, remote_visit):
+    def update_local_coming_visit(self, user, clinic, remote_visit):
         # I'm assuming we'll always have the patient being referenced
         # in the Visit object, if not - raise hell
-        patient = Patient.objects.get(te_id=remote_visit.te_id)
+        patient = Patient.objects.get(te_id=remote_visit.te_id, user=user)
         coming_date = iso8601.parse_date(remote_visit.scheduled_visit_date)
         
         # FIXME:    a lot of duplication between update_local_coming_visit and
@@ -223,20 +223,20 @@ class Importer(object):
             logger.debug('Updating existing Visit: %s / (%s vs %s)' % (visit.id, visit.get_dirty_fields(), visit._original_state))
         return visit
     
-    def import_missed_visits(self, clinic, since, until):
+    def import_missed_visits(self, user, clinic, since, until):
         missed_visits = self.client.get_missed_visits(clinic.te_id, since, until)
         logger.info('Receiving missed visits for %s between %s and %s' % (
             clinic.name,
             since,
             until
         ))
-        return self.update_local_missed_visits(clinic, missed_visits)
+        return self.update_local_missed_visits(user, clinic, missed_visits)
     
-    def update_local_missed_visits(self, clinic, missed_visits):
+    def update_local_missed_visits(self, user, clinic, missed_visits):
         for visit in missed_visits:
             logger.debug('Processing missed Visit: %s' % visit._asdict())
             try:
-                yield self.update_local_missed_visit(clinic, visit)
+                yield self.update_local_missed_visit(user, clinic, visit)
             except IntegrityError, e:
                 logger.exception('Failed to create Visit')
             except Patient.DoesNotExist, e:
@@ -244,9 +244,9 @@ class Importer(object):
             except VisitException, e:
                 logger.exception('VisitException')
     
-    def update_local_missed_visit(self, clinic, remote_visit):
+    def update_local_missed_visit(self, user, clinic, remote_visit):
         # get the patient or raise error
-        patient = Patient.objects.get(te_id=remote_visit.te_id)
+        patient = Patient.objects.get(te_id=remote_visit.te_id, user=user)
         missed_date = iso8601.parse_date(remote_visit.missed_date).date()
         
         try:
@@ -291,29 +291,29 @@ class Importer(object):
         
         return visit
     
-    def import_done_visits(self, clinic, since, until):
-        done_visits = self.client.get_done_visits(clinic.te_id, since, until)
+    def import_done_visits(self, user, clinic, since, until):
+        done_visits = self.client.get_done_visits(user, clinic.te_id, since, until)
         logger.info('Receiving done visits for %s between %s and %s' % (
             clinic.name,
             since,
             until
         ))
-        return self.update_local_done_visits(clinic, done_visits)
+        return self.update_local_done_visits(user, clinic, done_visits)
     
-    def update_local_done_visits(self, clinic, remote_visits):
+    def update_local_done_visits(self, user, clinic, remote_visits):
         for remote_visit in remote_visits:
             logger.debug('Processing done Visit: %s' % remote_visit._asdict())
             try:
-                yield self.update_local_done_visit(clinic, remote_visit)
+                yield self.update_local_done_visit(user, clinic, remote_visit)
             except IntegrityError, e:
                 logger.exception('Failed to create visit')
             except Patient.DoesNotExist, e:
                 logger.exception('Could not find Patient for Visit.te_id')
         
     
-    def update_local_done_visit(self, clinic, remote_visit):
+    def update_local_done_visit(self, user, clinic, remote_visit):
         # get patient or raise error
-        patient = Patient.objects.get(te_id=remote_visit.te_id)
+        patient = Patient.objects.get(te_id=remote_visit.te_id, user=user)
         done_date = iso8601.parse_date(remote_visit.done_date).date()
         
         visit, created = Update(Visit) \
@@ -361,15 +361,15 @@ class Importer(object):
         logger.debug('Deleted Visit: %s' % visit.id)
         return visit
     
-    def import_all_changes(self, clinic, since, until):
+    def import_all_changes(self, user, clinic, since, until):
         # I set these because they all are generators, listing them forces
         # them to be iterated over
         return {
             # 'all_patients': list(self.import_all_patients(clinic)),
-            'updated_patients': list(self.import_updated_patients(clinic, since, until)),
-            'coming_visits': list(self.import_coming_visits(clinic, since, until)),
-            'missed_visits': list(self.import_missed_visits(clinic, since, until)),
-            'done_visits': list(self.import_done_visits(clinic, since, until)),
+            'updated_patients': list(self.import_updated_patients(user, clinic, since, until)),
+            'coming_visits': list(self.import_coming_visits(user, clinic, since, until)),
+            'missed_visits': list(self.import_missed_visits(user, clinic, since, until)),
+            'done_visits': list(self.import_done_visits(user, clinic, since, until)),
             'deleted_visits': list(self.import_deleted_visits(clinic, since, until))
         }
     
