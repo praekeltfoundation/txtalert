@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, date
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from txtalert.apps.general.settings.models import Setting
