@@ -32,7 +32,7 @@ class Command(BaseCommand):
             print clinic.name, 'from', since, 'until', until
             try:
                 for key, value in importer.import_all_changes(
-                        User.objects.get(name='kumbu'),
+                        User.objects.get(username='kumbu'),
                         clinic, 
                         since=since,
                         until=until
