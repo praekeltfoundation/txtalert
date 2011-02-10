@@ -87,7 +87,7 @@ gateway = Gateway('https://dragon.sa.operatelecom.com:1089/Gateway',
                     settings.OPERA_SERVICE, 
                     settings.OPERA_PASSWORD, 
                     settings.OPERA_CHANNEL, 
-                    verbose=True)
+                    verbose=settings.DEBUG)
 
 from views import sms_receipt_handler
 
