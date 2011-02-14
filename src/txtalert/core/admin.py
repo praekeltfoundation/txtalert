@@ -33,7 +33,7 @@ class PleaseCallMeForm(forms.ModelForm):
 
 class PleaseCallMeAdmin(admin.ModelAdmin):
     form = PleaseCallMeForm
-    list_display = ('timestamp', 'msisdn','reason','notes')
+    list_display = ('timestamp', 'msisdn','reason','notes', 'message')
     list_filter = ('timestamp', 'clinic','reason',)
     readonly_fields = ('user',)
     
