@@ -224,6 +224,7 @@ class PleaseCallMe(models.Model):
     timestamp = models.DateTimeField('Date & Time', auto_now_add=False)
     reason = models.CharField('Reason', max_length=2, choices=REASON_CHOICES, default='nc')
     notes = models.TextField('Notes', blank=True)
+    message = models.TextField('Received SMS Message', blank=True)
     clinic = models.ForeignKey(Clinic, related_name='pcms', blank=True, null=True)
 
     class Meta:

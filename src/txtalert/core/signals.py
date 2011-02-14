@@ -48,7 +48,7 @@ def track_please_call_me(opera_pcm):
                                             timestamp=datetime.now(),
                                             clinic=clinic,
                                             user=opera_pcm.user,
-                                            notes="Original SMS: %s" % opera_pcm.message)
+                                            message=opera_pcm.message)
         logger.info("track_please_call_me: PCM registered for %s at %s for clinic %s from opera PCM: %s" % (
             pcm.msisdn,
             pcm.timestamp,

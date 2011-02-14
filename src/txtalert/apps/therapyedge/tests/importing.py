@@ -182,13 +182,15 @@ class VisitImportTestCase(TestCase):
     def setUp(self):
         self.clinic = Clinic.objects.get(te_id='01')
         self.importer = Importer()
+        self.user = User.objects.get(username='kumbu')
     
     def testInvalidImport(self):
         """attempt import of an invalid record"""
         self.assertRaises(Patient.DoesNotExist,         # exception
             self.importer.update_local_coming_visit,    # callback
-            self.clinic,                                # arg1
-            create_instance(                            # arg2
+            self.user,                                  # args
+            self.clinic,                                
+            create_instance(                            
                 ComingVisit, {
                 'key_id': '123456789', 
                 'te_id': '01-1245', 
@@ -199,6 +201,7 @@ class VisitImportTestCase(TestCase):
     def testNewVisit(self):
         """import a new visit"""
         visit = self.importer.update_local_coming_visit(
+            self.user,
             self.clinic,
             create_instance(ComingVisit, {
                 'key_id': '02-123456789', 
@@ -221,6 +224,7 @@ class VisitImportTestCase(TestCase):
         # make sure the updated date is actually in the future
         self.assertTrue(original_visit.date < missed_future_date)
         visit = self.importer.update_local_missed_visit(
+            self.user,
             self.clinic,
             create_instance(MissedVisit, {
                 'key_id': '01-123456789', 
@@ -237,6 +241,7 @@ class VisitImportTestCase(TestCase):
     def testIndicateMissed(self):
         """indicate a missed visit"""
         visit = self.importer.update_local_missed_visit(
+            self.user,
             self.clinic, 
             create_instance(MissedVisit, {
                 'key_id': '01-123456799', 
@@ -254,6 +259,7 @@ class VisitImportTestCase(TestCase):
     def testIndicateAttended(self):
         """indicate an attended visit"""
         visit = self.importer.update_local_done_visit(
+            self.user,
             self.clinic, 
             create_instance(DoneVisit, {
                 'key_id': '01-123456789', 
@@ -270,6 +276,7 @@ class VisitImportTestCase(TestCase):
     def testIndicateNewAttended(self):
         """indicate a new attended visit"""
         visit = self.importer.update_local_done_visit(
+            self.user,
             self.clinic,
             create_instance(DoneVisit, {
                 'key_id': '02-123456789', 
@@ -287,6 +294,7 @@ class VisitImportTestCase(TestCase):
         # indicate a new attended visit
         yesterday = date.today() - timedelta(days=1)
         visit = self.importer.update_local_missed_visit(
+            self.user,
             self.clinic,
             create_instance(MissedVisit, {
                 'key_id': '02-123456789', 
@@ -302,7 +310,7 @@ class VisitImportTestCase(TestCase):
     
     def testDelete(self):
         """delete a visit"""
-        visit = self.importer.update_local_deleted_visit(create_instance(DeletedVisit, {
+        visit = self.importer.update_local_deleted_visit(self.user, create_instance(DeletedVisit, {
             'key_id': '01-123456789', 
             'te_id': '01-12345'
         }))
@@ -323,6 +331,7 @@ class PatientRiskProfileTestCase(TestCase):
         self.patient = Patient.objects.all()[0]
         self.importer = Importer()
         self.clinic = Clinic.objects.get(te_id='01')
+        self.user = User.objects.get(username='kumbu')
     
     def reload_patient(self):
         return reload_record(self.patient)
@@ -330,6 +339,7 @@ class PatientRiskProfileTestCase(TestCase):
     def test_risk_profile_calculation(self):
         today = datetime.now() - timedelta(days=1)
         visit = self.importer.update_local_missed_visit(
+            self.user,
             self.clinic, 
             create_instance(MissedVisit, {
             'key_id':'02-123456789', 
@@ -347,6 +357,7 @@ class PatientRiskProfileTestCase(TestCase):
         
         # attended
         visit1 = self.importer.update_local_done_visit(
+            self.user,
             self.clinic,
             create_instance(DoneVisit, {
                 'key_id': '02-123456701', 
@@ -355,6 +366,7 @@ class PatientRiskProfileTestCase(TestCase):
             }))
         # attended
         visit2 = self.importer.update_local_done_visit(
+            self.user,
             self.clinic, 
             create_instance(DoneVisit, {
                 'key_id': '02-123456702', 
@@ -366,6 +378,7 @@ class PatientRiskProfileTestCase(TestCase):
         
         # missed
         visit3 = self.importer.update_local_missed_visit(
+            self.user,
             self.clinic, 
             create_instance(MissedVisit, {
                 'key_id': '02-123456703', 
@@ -375,6 +388,7 @@ class PatientRiskProfileTestCase(TestCase):
         # attended two out of three, 33% risk
         self.assertAlmostEquals(self.reload_patient().risk_profile, 0.33, places=2)
         visit4 = self.importer.update_local_missed_visit(
+            self.user,
             self.clinic, 
             create_instance(MissedVisit, {
                 'key_id': '02-123456704', 

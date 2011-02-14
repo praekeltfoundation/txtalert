@@ -69,6 +69,7 @@ class ImporterTestCase(TestCase):
         coming_visits = map(ComingVisit._make, data)
         
         local_visits = set(self.importer.update_local_coming_visits(
+            self.user,
             self.clinic, 
             coming_visits
         ))
@@ -93,6 +94,7 @@ class ImporterTestCase(TestCase):
         ) for idx, patient in enumerate(Patient.objects.all())]
         missed_visits = map(MissedVisit._make, data)
         local_visits = set(self.importer.update_local_missed_visits(
+            self.user,
             self.clinic, 
             missed_visits
         ))
@@ -129,7 +131,7 @@ class ImporterTestCase(TestCase):
             'te_id': patient.te_id
         })
         # import the data
-        list(self.importer.update_local_missed_visits(self.clinic, [missed_visit]))
+        list(self.importer.update_local_missed_visits(self.user, self.clinic, [missed_visit]))
         # get the visit and check its status
         visit = patient.visit_set.get(te_visit_id='02-002173383')
         self.assertEquals(visit.status, 'm')
@@ -151,6 +153,7 @@ class ImporterTestCase(TestCase):
         coming_visits = map(ComingVisit._make, data)
         
         local_visits = set(self.importer.update_local_coming_visits(
+            self.user,
             self.clinic, 
             coming_visits
         ))
@@ -173,6 +176,7 @@ class ImporterTestCase(TestCase):
         ) for idx, patient in enumerate(Patient.objects.all())]
         rescheduled_visits = map(MissedVisit._make, data)
         local_visits = set(self.importer.update_local_missed_visits(
+            self.user,
             self.clinic,
             rescheduled_visits
         ))
@@ -196,6 +200,7 @@ class ImporterTestCase(TestCase):
         coming_visits = map(ComingVisit._make, data)
         
         local_visits = set(self.importer.update_local_coming_visits(
+            self.user,
             self.clinic, 
             coming_visits
         ))
@@ -217,7 +222,7 @@ class ImporterTestCase(TestCase):
             patient.te_id,                  # te_id
         ) for idx, patient in enumerate(Patient.objects.all())]
         coming_visits = map(ComingVisit._make, data)
-        set(self.importer.update_local_coming_visits(self.clinic, coming_visits))
+        set(self.importer.update_local_coming_visits(self.user, self.clinic, coming_visits))
         for coming_visit in coming_visits:
             local_visit = Visit.objects.get(te_visit_id=coming_visit.key_id)
             self.assertEquals('r', local_visit.status)
@@ -234,6 +239,7 @@ class ImporterTestCase(TestCase):
         ) for idx, patient in enumerate(Patient.objects.all())]
         done_visits = map(DoneVisit._make, data)
         local_visits = set(self.importer.update_local_done_visits(
+            self.user,
             self.clinic,
             done_visits
         ))
@@ -266,6 +272,7 @@ class ImporterTestCase(TestCase):
         ) for idx, patient in enumerate(Patient.objects.all())]
         coming_visits = map(ComingVisit._make, data)
         local_visits = set(self.importer.update_local_coming_visits(
+            self.user,
             self.clinic, 
             coming_visits
         ))
@@ -283,6 +290,7 @@ class ImporterTestCase(TestCase):
         # reason it considers deleted the deleted django objects as dupes
         # and returns a list of one
         local_visits = [v for v in self.importer.update_local_deleted_visits(
+            self.user,
             deleted_visits
         )]
         self.assertEquals(len(local_visits), Patient.objects.count())
@@ -310,47 +318,47 @@ class ImporterTestCase(TestCase):
         importer = Importer()
         # [importer] 2010-03-18 08:00:37,705 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
         coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        local_coming_visit = importer.update_local_coming_visit(self.user, self.clinic, coming_visit)
         # [importer] 2010-03-18 08:01:39,354 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
         missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        local_missed_visit = importer.update_local_missed_visit(self.user, self.clinic, missed_visit)
         # [importer] 2010-03-19 08:00:36,876 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
         coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        local_coming_visit = importer.update_local_coming_visit(self.user, self.clinic, coming_visit)
         # [importer] 2010-03-19 08:01:36,747 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
         missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        local_missed_visit = importer.update_local_missed_visit(self.user, self.clinic, missed_visit)
         # [importer] 2010-03-20 08:00:29,600 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
         coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        local_coming_visit = importer.update_local_coming_visit(self.user, self.clinic, coming_visit)
         # [importer] 2010-03-20 08:01:30,926 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
         missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        local_missed_visit = importer.update_local_missed_visit(self.user, self.clinic, missed_visit)
         # [importer] 2010-03-21 08:00:28,052 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
         coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        local_coming_visit = importer.update_local_coming_visit(self.user, self.clinic, coming_visit)
         # [importer] 2010-03-21 08:01:33,909 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
         missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        local_missed_visit = importer.update_local_missed_visit(self.user, self.clinic, missed_visit)
         # [importer] 2010-03-22 08:00:27,711 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
         coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        local_coming_visit = importer.update_local_coming_visit(self.user, self.clinic, coming_visit)
         # [importer] 2010-03-22 08:01:33,549 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
         missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        local_missed_visit = importer.update_local_missed_visit(self.user, self.clinic, missed_visit)
         # [importer] 2010-03-23 08:00:26,453 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
         coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        local_coming_visit = importer.update_local_coming_visit(self.user, self.clinic, coming_visit)
         # [importer] 2010-03-23 08:01:36,731 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
         missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        local_missed_visit = importer.update_local_missed_visit(self.user, self.clinic, missed_visit)
         # [importer] 2010-03-25 09:00:41,774 DEBUG Processing coming Visit {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'}
         coming_visit = create_instance(ComingVisit, {'dr_site_name': '', 'dr_site_id': '', 'dr_status': 'false', 'scheduled_visit_date': '2010-03-24 00:00:00', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_coming_visit = importer.update_local_coming_visit(self.clinic, coming_visit)
+        local_coming_visit = importer.update_local_coming_visit(self.user, self.clinic, coming_visit)
         # [importer] 2010-03-25 09:00:41,850 DEBUG Updating existing Visit: 37361 / ({'date': datetime.date(2010, 3, 24), 'updated_at': datetime.datetime(2010, 3, 23, 8, 1, 36)} vs {'status': u'r', 'comment': u'', 'visit_type': u'', 'deleted': 0, 'created_at': datetime.datetime(2010, 3, 18, 8, 0, 37), 'updated_at': datetime.datetime(2010, 3, 23, 8, 1, 36), 'te_visit_id': u'02-091967084', 'date': datetime.date(2010, 3, 24), 'id': 37361L})
         # [importer] 2010-03-25 09:01:40,902 DEBUG Processing missed Visit: {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'}
         missed_visit = create_instance(MissedVisit, {'dr_site_name': '', 'dr_site_id': '', 'missed_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_missed_visit = importer.update_local_missed_visit(self.clinic, missed_visit)
+        local_missed_visit = importer.update_local_missed_visit(self.user, self.clinic, missed_visit)
         
         visit = patient.visit_set.latest()
         
@@ -358,7 +366,7 @@ class ImporterTestCase(TestCase):
         self.assertEquals(visit.history.count(), 1)
         
         done_visit = create_instance(DoneVisit, {'dr_site_name': '', 'dr_site_id': '', 'done_date': '2010-03-24 00:00:00', 'scheduled_date': '2010-03-24 00:00:00', 'dr_status': 'false', 'key_id': '02-091967084', 'te_id': '02-82088'})
-        local_done_visit = importer.update_local_done_visit(self.clinic, done_visit)
+        local_done_visit = importer.update_local_done_visit(self.user, self.clinic, done_visit)
         
         visit = patient.visit_set.latest()
         self.assertEquals(visit.status, 'a')
@@ -456,6 +464,7 @@ class ImporterXmlRpcClientTestCase(TestCase):
     
     def test_import_coming_visits(self):
         coming_visits = self.importer.import_coming_visits(
+            user=self.user,
             clinic=self.clinic,
             since=(datetime.now() - timedelta(days=1)),
             until=datetime.now()
@@ -466,6 +475,7 @@ class ImporterXmlRpcClientTestCase(TestCase):
     
     def test_missed_visits(self):
         missed_visits = self.importer.import_missed_visits(
+            user=self.user,
             clinic=self.clinic,
             since=(datetime.now() - timedelta(days=1)),
             until=datetime.now()
@@ -476,6 +486,7 @@ class ImporterXmlRpcClientTestCase(TestCase):
     
     def test_done_visits(self):
         done_visits = self.importer.import_done_visits(
+            user=self.user,
             clinic=self.clinic,
             since=(datetime.now() - timedelta(days=1)),
             until=datetime.now()
@@ -487,6 +498,7 @@ class ImporterXmlRpcClientTestCase(TestCase):
     def test_deleted_visits(self):
         # first have some coming visits
         coming_visits = list(self.importer.import_coming_visits(
+            user=self.user,
             clinic=self.clinic,
             since=(datetime.now() - timedelta(days=1)),
             until=datetime.now()
@@ -494,6 +506,7 @@ class ImporterXmlRpcClientTestCase(TestCase):
         # then mark them as deleted, they're matched because they
         # have the same key_id
         deleted_visits = list(self.importer.import_deleted_visits(
+            user=self.user,
             clinic=self.clinic,
             since=(datetime.now() - timedelta(days=1)),
             until=datetime.now()
