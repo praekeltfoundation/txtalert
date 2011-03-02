@@ -129,5 +129,21 @@ class PCMHandler(BaseHandler):
             resp = rc.CREATED
             resp.content = 'Please Call Me registered'
             return resp
+        elif ('to_msisdn' in request.POST 
+            and 'from_msisdn' in request.POST
+            and 'message' in request.POST):
+            sms_id = ''
+            sender_msisdn = request.POST.get('from_msisdn')
+            recipient_msisdn = request.POST.get('to_msisdn')
+            message = request.POST.get('message')
+            if isinstance(message, unicode):
+                message = message.encode('unicode_escape')
+            pcm = PleaseCallMe.objects.create(user=request.user, sms_id=sms_id,
+                                                sender_msisdn=sender_msisdn, 
+                                                recipient_msisdn=recipient_msisdn, 
+                                                message=message)
+            resp = rc.CREATED
+            resp.content = 'Please Call Me registered'
+            return resp
         return rc.BAD_REQUEST
     
