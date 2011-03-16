@@ -113,7 +113,7 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     
     age = models.IntegerField('Age')
     sex = models.CharField('Sex', max_length=3, choices=SEX_CHOICES)
-    opted_in = models.BooleanField('Opted In', default=False)
+    opted_in = models.BooleanField('Opted In', default=True)
     disclosed = models.BooleanField('Disclosed', default=False)
     deceased = models.BooleanField('Deceased', default=False)
     last_clinic = models.ForeignKey(Clinic, verbose_name='Last Clinic', 
