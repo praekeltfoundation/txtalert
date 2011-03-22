@@ -433,31 +433,6 @@ class PcmAutomationTestCase(TestCase):
         for key, value in parameters.items():
             self.assertEquals(getattr(pcm, key), value)
     
-    def test_pcm_receiving_via_sms(self):
-        add_perms_to_user('user', 'can_place_pcm')
-        parameters = {
-            'to_msisdn': '27123456789',
-            'from_msisdn': '27123456789',
-            'message': 'Please Call: Test User at 27123456789'
-        }
-        response = self.client.post(reverse('api-pcm',kwargs={'emitter_format':'json'}),
-            parameters,
-            HTTP_AUTHORIZATION=basic_auth_string('user','password')
-        )
-        
-        self.assertEquals(response.status_code, 201) # Created
-        
-        pcm = PleaseCallMe.objects.latest('created_at')
-        
-        for key, value in parameters.items():
-            mapping = {
-                'to_msisdn': 'recipient_msisdn',
-                'from_msisdn': 'sender_msisdn',
-                'message': 'message'
-            }
-            self.assertEquals(getattr(pcm, mapping[key]), value)
-        
-    
     def test_pcm_receiving_bad_request(self):
         add_perms_to_user('user', 'can_place_pcm')
         

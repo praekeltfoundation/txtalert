@@ -7,7 +7,7 @@ from piston.utils import rc, require_mime, throttle
 from txtalert.apps.gateway.models import SendSMS, PleaseCallMe
 from txtalert.apps.gateway import gateway, sms_receipt_handler
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 import iso8601
 
@@ -119,25 +119,19 @@ class PCMHandler(BaseHandler):
             sender_msisdn = request.POST.get('sender_msisdn')
             recipient_msisdn = request.POST.get('recipient_msisdn')
             message = request.POST.get('message', '')
+            
             if isinstance(message, unicode):
                 message = message.encode('unicode_escape')
             
-            pcm = PleaseCallMe.objects.create(user=request.user, sms_id=sms_id,
-                                                sender_msisdn=sender_msisdn, 
-                                                recipient_msisdn=recipient_msisdn, 
-                                                message=message)
-            resp = rc.CREATED
-            resp.content = 'Please Call Me registered'
-            return resp
-        elif ('to_msisdn' in request.POST 
-            and 'from_msisdn' in request.POST
-            and 'message' in request.POST):
-            sms_id = ''
-            sender_msisdn = request.POST.get('from_msisdn')
-            recipient_msisdn = request.POST.get('to_msisdn')
-            message = request.POST.get('message')
-            if isinstance(message, unicode):
-                message = message.encode('unicode_escape')
+            # check for duplicate submissions
+            if PleaseCallMe.objects.filter(
+                sender_msisdn=sender_msisdn, 
+                message=message,
+                created_at__gt=datetime.now() - timedelta(hours=2)).exists():
+                resp = rc.OK
+                resp.content = "Already registered in the last two hours"
+                return resp
+            
             pcm = PleaseCallMe.objects.create(user=request.user, sms_id=sms_id,
                                                 sender_msisdn=sender_msisdn, 
                                                 recipient_msisdn=recipient_msisdn, 
