@@ -128,7 +128,7 @@ class PCMHandler(BaseHandler):
                 sender_msisdn=sender_msisdn, 
                 message=message,
                 created_at__gt=datetime.now() - timedelta(hours=2)).exists():
-                resp = rc.OK
+                resp = rc.DUPLICATE_ENTRY
                 resp.content = "Already registered in the last two hours"
                 return resp
             
