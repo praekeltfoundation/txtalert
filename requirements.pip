@@ -9,3 +9,4 @@ iso8601
 django-piston
 south
 ipython
+django-geckoboard==1.0.0
