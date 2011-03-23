@@ -46,7 +46,7 @@ def pcms_received(request):
 @pie_chart
 def visit_status(request):
     week_ago = datetime.now() - timedelta(weeks=1)
-    visits = Visit.objects.filter(date__gte=week_ago)
+    visits = Visit.objects.filter(date__gte=week_ago, date__lt=date.today())
     return [
         [visits.filter(status='a').count(), 'Attended', '1D6099'],
         [visits.filter(status='m').count(), 'Missed', 'FF4359'],
