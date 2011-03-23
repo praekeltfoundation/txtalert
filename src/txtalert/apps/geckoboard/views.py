@@ -56,8 +56,8 @@ def visit_status(request):
 
 @number_widget
 def visit_attendance(request, status):
-    last_month = datetime.now() - timedelta(days=29)
-    this_month = datetime.now() - timedelta(days=29)
+    last_month = datetime.now() - timedelta(days=60)
+    this_month = datetime.now() - timedelta(days=30)
     visits = Visit.objects.filter(status=status)
     last_months_visits = visits.filter(date__gte=last_month, date__lt=this_month).count()
     this_months_visits = visits.filter(date__gte=this_month, date__lt=datetime.now()).count()
