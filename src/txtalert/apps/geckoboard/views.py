@@ -1,6 +1,6 @@
-from django_geckoboard.decorators import number_widget, line_chart
+from django_geckoboard.decorators import number_widget, line_chart, pie_chart
 from datetime import datetime, timedelta, date
-from txtalert.core.models import Patient, PleaseCallMe
+from txtalert.core.models import Patient, PleaseCallMe, Visit
 from txtalert.apps.gateway.models import SendSMS
 
 @number_widget
@@ -42,4 +42,14 @@ def pcms_received(request):
                             timestamp__gte=last_week_end,
                         )
     return (this_week_pcms.count(), last_week_pcms.count())
-    
+
+@pie_chart
+def visit_status(request):
+    week_ago = datetime.now() - timedelta(weeks=1)
+    visits = Visit.objects.filter(date__gte=week_ago)
+    return [
+        [visits.filter(status='a').count(), 'Attended'],
+        [visits.filter(status='m').count(), 'Missed'],
+        [visits.filter(status='s').count(), 'Scheduled'],
+        [visits.filter(status='r').count(), 'Rescheduled'],
+    ]
