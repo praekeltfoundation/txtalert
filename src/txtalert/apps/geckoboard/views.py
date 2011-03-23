@@ -10,7 +10,7 @@ def patient_count(request):
     patients = Patient.objects
     last_week_patients = patients.filter(
                             created_at__gte=last_week_start,
-                            created_at__lte=last_week_end)
+                            created_at__lt=last_week_end)
     this_week_patients = patients.filter(
                             created_at__gte=last_week_end,
                         )
@@ -24,7 +24,7 @@ def smss_sent(request):
     smss = SendSMS.objects
     last_week_sms = smss.filter(
                             delivery__gte=last_week_start,
-                            delivery__lte=last_week_end)
+                            delivery__lt=last_week_end)
     this_week_sms = smss.filter(
                             delivery__gte=last_week_end,
                         )
@@ -37,7 +37,7 @@ def pcms_received(request):
     pcms = PleaseCallMe.objects
     last_week_pcms = pcms.filter(
                             timestamp__gte=last_week_start,
-                            timestamp__lte=last_week_end)
+                            timestamp__lt=last_week_end)
     this_week_pcms = pcms.filter(
                             timestamp__gte=last_week_end,
                         )
