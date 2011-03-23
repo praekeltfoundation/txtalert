@@ -48,8 +48,8 @@ def visit_status(request):
     week_ago = datetime.now() - timedelta(weeks=1)
     visits = Visit.objects.filter(date__gte=week_ago)
     return [
-        [visits.filter(status='a').count(), 'Attended'],
-        [visits.filter(status='m').count(), 'Missed'],
-        [visits.filter(status='s').count(), 'Scheduled'],
-        [visits.filter(status='r').count(), 'Rescheduled'],
+        [visits.filter(status='a').count(), 'Attended', '1D6099'],
+        [visits.filter(status='m').count(), 'Missed', 'FF4359'],
+        [visits.filter(status='s').count(), 'Scheduled', '239953'],
+        [visits.filter(status='r').count(), 'Rescheduled', '992B8B'],
     ]
