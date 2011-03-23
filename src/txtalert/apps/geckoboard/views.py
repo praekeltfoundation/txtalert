@@ -76,5 +76,6 @@ def smss_sent_breakdown(request):
             (messages.filter(smstext__startswith="Thank you for attending").count(), "Attended message"),
             (messages.filter(smstext__startswith="See you at the clinic tomorrow").count(), "Tomorrow reminder"),
             (messages.filter(smstext__startswith="You have an visit at the clinic on").count(), "Two week reminder")
-        ]
+        ],
+        "sort": True
     }
