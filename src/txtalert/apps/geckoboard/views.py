@@ -19,11 +19,13 @@ def patient_count(request):
 
 @number_widget
 def smss_sent(request):
-    sent_messages = SendSMS.objects
-    weeks = {}
-    week_range = range(0,1)
-    for week in week_range:
-        start = datetime.now() - timedelta(weeks=week+1)
-        end = datetime.now() - timedelta(weeks=week)
-        weeks[week] = SendSMS.objects.filter(delivery__gte=start, delivery__lt=end).count()
-        return (weeks[0], weeks[1])
+    last_week_start = datetime.now() - timedelta(weeks=2)
+    last_week_end = datetime.now() - timedelta(weeks=1)
+    smss = SendSMS.objects
+    last_week_sms = smss.filter(
+                            delivery__gte=last_week_start,
+                            delivery__lte=last_week_end)
+    this_week_sms = smss.filter(
+                            delivery__gte=last_week_end,
+                        )
+    return (this_week_sms.count(), last_week_sms.count())
