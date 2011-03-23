@@ -20,10 +20,13 @@ def patient_count(request):
 @line_chart
 def smss_sent(request):
     since = date.today() - timedelta(weeks=16)
-    weeks = dict((d, 0) for d in range(0, 16))
+    weeks = {}
     sent_messages = SendSMS.objects.filter(delivery__gte=since)
     for sms in sent_messages:
-        weeks[int(sms.delivery.strftime('%W'))] += 1
+        week_nr = int(sms.delivery.strftime('%W'))
+        weeks.setdefault(week_nr, 0)
+        weeks[week_nr] += 1
+    
     return (
         weeks.values(),
         [weeks[i] for i in range(0, 16)],
