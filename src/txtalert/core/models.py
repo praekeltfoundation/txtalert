@@ -234,6 +234,14 @@ class PleaseCallMe(models.Model):
     def __unicode__(self):
         return '%s - %s' % (self.msisdn, self.timestamp)
     
+class Event(models.Model):
+    """A description of an event; taxi strike, power failure etc..."""
+    description = models.TextField("What happened?", blank=False)
+    created_at = models.DateTimeField(blank=True, auto_now_add=True)
+    updated_at = models.DateTimeField(blank=True, auto_now=True)
+
+    def __unicode__(self):
+        return u"%s... on %s" % (self.description[:50], self.created_at)
 
 
 # signals
