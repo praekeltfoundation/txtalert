@@ -9,4 +9,5 @@ iso8601
 django-piston
 south
 ipython
-django-geckoboard==1.0.0
+# django-geckoboard==1.0.0
+-e git+http://github.com/smn/django-geckoboard.git#egg=django-geckoboard

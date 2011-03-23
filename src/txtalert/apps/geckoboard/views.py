@@ -1,4 +1,4 @@
-from django_geckoboard.decorators import number_widget, line_chart, pie_chart
+from django_geckoboard.decorators import number_widget, line_chart, pie_chart, funnel
 from datetime import datetime, timedelta, date
 from txtalert.core.models import Patient, PleaseCallMe, Visit
 from txtalert.apps.gateway.models import SendSMS
@@ -62,3 +62,19 @@ def visit_attendance(request, status):
     last_months_visits = visits.filter(date__gte=last_month, date__lt=this_month).count()
     this_months_visits = visits.filter(date__gte=this_month, date__lt=datetime.now()).count()
     return (this_months_visits, last_months_visits)
+
+@funnel
+def smss_sent_breakdown(request):
+    last_month = datetime.now() - timedelta(days=30)
+    messages = SendSMS.objects.filter(delivery__gte=last_month)
+    return {
+        "type": "standard",
+        "percentage": "show",
+        "items": [
+            (messages.count(), "Messages sent"),
+            (messages.filter(smstext__startswith='You missed your visit%').count(), "Missed message"),
+            (messages.filter(smstext__startswith="Thank you for attending%").count(), "Attended message"),
+            (messages.filter(smstext__startswith="See you at the clinic tomorrow%").count(), "Tomorrow reminder"),
+            (messages.filter(smstext__startswith="You have an visit at the clinic on%").count(), "Two week reminder")
+        ]
+    }
