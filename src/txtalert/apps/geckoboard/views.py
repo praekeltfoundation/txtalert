@@ -53,3 +53,12 @@ def visit_status(request):
         [visits.filter(status='s').count(), 'Scheduled', '239953'],
         [visits.filter(status='r').count(), 'Rescheduled', '992B8B'],
     ]
+
+@number_widget
+def visit_attendance(request, status):
+    last_month = datetime.now() - timedelta(days=29)
+    this_month = datetime.now() - timedelta(days=29)
+    visits = Visit.objects.filter(status=status)
+    last_months_visits = visits.filter(date__gte=last_month, date__lt=this_month).count()
+    this_months_visits = visits.filter(date__gte=this_month, date__lt=datetime.now()).count()
+    return (this_months_visits, last_months_visits)
