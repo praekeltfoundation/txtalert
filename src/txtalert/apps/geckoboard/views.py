@@ -27,9 +27,12 @@ def smss_sent(request):
         weeks.setdefault(week_nr, 0)
         weeks[week_nr] += 1
     
+    min_week = min(weeks.keys())
+    max_week = max(weeks.keys())
+    
     return (
-        weeks.values(),
-        [weeks[i] for i in range(0, 16)],
+        [weeks.get(week_nr, 0) for week_nr in range(min_week, max_week + 1)],
+        range(min_week, max_week + 1),
         "SMSs Sent per week",
     )
     
