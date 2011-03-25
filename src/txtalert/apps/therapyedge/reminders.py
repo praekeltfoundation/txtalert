@@ -117,6 +117,8 @@ def send_stats_for_group(gateway, today, group):
 def send_messages(gateway, user, message_key, patients, message_formatter=lambda x: x):
     send_sms_per_language = {}
     for language, patients in group_by_language(patients).items():
+        # We only can send messages to patients with an active msisdn
+        patients = filter(lambda p:p.active_msisdn, patients)
         message = message_formatter(getattr(language, message_key))
         # we make a set out of it to avoid having duplicate MSISDNs, this can
         # happen if a patient has two different visits on the same day
