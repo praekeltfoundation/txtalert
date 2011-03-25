@@ -16,6 +16,7 @@ from txtalert.apps.gateway.models import SendSMS
 from txtalert.apps.bookingtool.models import *
 from datetime import datetime, timedelta, date
 from txtalert.apps import gateway
+from django.contrib.auth.models import User
 _, gateway, sms_receipt_handler = gateway.load_backend('txtalert.apps.gateway.backends.dummy')
                             
 def create_booking_patient():
@@ -23,6 +24,7 @@ def create_booking_patient():
     
     booking_patient.name = 'name'
     booking_patient.surname = 'surname'
+    booking_patient.user = User.objects.get(username='kumbu')
     
     booking_patient.te_id = '123456789'
     booking_patient.mrs_id = 'A1234567890-1'
@@ -93,6 +95,7 @@ class BookingPatientTestCase(TestCase):
             patient_ptr=patient.pk
         )
         bp = BookingPatient.objects.create(
+            user = User.objects.get(username='kumbu'),
             patient_ptr=patient,
             created_at=datetime.now(),
             age=20,
@@ -279,6 +282,12 @@ class VerificationTestCase(TestCase):
             SendSMS.objects.get,
             msisdn=msisdn
         )
+        
+        user = User.objects.get(username='kumbu')
+        user.set_password('kumbu')
+        user.save()
+        
+        self.client.login(username='kumbu', password='kumbu')
         response = self.client.post(reverse('verification-sms'), {
             'msisdn': msisdn
         })

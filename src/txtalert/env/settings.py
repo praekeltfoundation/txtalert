@@ -110,7 +110,7 @@ INSTALLED_APPS = (
     'txtalert.apps.general.jquery',
     'txtalert.apps.therapyedge',
     # booking tool is currently broken
-    # 'txtalert.apps.bookingtool',
+    'txtalert.apps.bookingtool',
     'txtalert.apps.gateway',
     'txtalert.apps.api',
     'txtalert.apps.cd4',

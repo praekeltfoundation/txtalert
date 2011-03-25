@@ -80,6 +80,6 @@ def calendar(request, year, month):
 
 def verification(request):
     msisdn = request.POST.get('msisdn',None)
-    gateway.send_sms([msisdn], ['Welcome to TxtAlert!'])
+    gateway.send_sms(request.user, [msisdn], ['Welcome to TxtAlert!'])
     response = "<span class='success'>SMS has been sent to %(msisdn)s</span>"
     return HttpResponse(response)
