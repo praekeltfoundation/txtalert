@@ -125,7 +125,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 )
 
-SMS_GATEWAY_CLASS = 'txtalert.apps.gateway.backends.opera'
+SMS_GATEWAY_CLASS = 'txtalert.apps.gateway.backends.vumi'
 
 BOOKING_TOOL_RISK_LEVELS = {
     # pc is for patient count
