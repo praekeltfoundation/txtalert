@@ -32,9 +32,13 @@ class Gateway(object):
 gateway = Gateway(settings.VUMI_USERNAME, settings.VUMI_PASSWORD)
 
 def sms_receipt_handler(request, *args, **kwargs):
-    print request
-    send_sms = get_object_or_404(SendSMS, identifier=request.POST.get('id'))
-    send_sms.status = request.POST.get('transport_status')
-    send_sms.delivery_timestamp = request.POST.get('delivered_at')
-    send_sms.save()
-    return HttpResponse("ok")
+    try:
+        send_sms = SendSMS.objects.get(identifier=request.POST.get('id'))
+        send_sms.status = request.POST.get('transport_status')
+        send_sms.delivery_timestamp = request.POST.get('delivered_at')
+        send_sms.save()
+        return HttpResponse("ok", status=201)
+    except SendSMS.DoesNotExist, e:
+        print 'Cannot find SendSMS for id', request.POST.get('id')
+        print request.POST
+        return HttpResponse("accepted", status=202)
