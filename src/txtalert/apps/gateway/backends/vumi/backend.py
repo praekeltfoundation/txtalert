@@ -1,6 +1,8 @@
 from vumiclient.client import Client
 from datetime import datetime, timedelta
 from django.conf import settings
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
 from txtalert.apps.gateway.models import SendSMS
 
 class Gateway(object):
@@ -30,4 +32,9 @@ class Gateway(object):
 gateway = Gateway(settings.VUMI_USERNAME, settings.VUMI_PASSWORD)
 
 def sms_receipt_handler(request, *args, **kwargs):
-    print request, args, kwargs
+    print request
+    send_sms = get_object_or_404(SendSMS, identifier=request.POST.get('id'))
+    send_sms.status = request.POST.get('transport_status')
+    send_sms.delivery_timestamp = request.POST.get('delivered_at')
+    send_sms.save()
+    return HttpResponse("ok")

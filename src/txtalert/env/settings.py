@@ -126,6 +126,8 @@ INSTALLED_APPS = (
 )
 
 SMS_GATEWAY_CLASS = 'txtalert.apps.gateway.backends.vumi'
+VUMI_USERNAME = ''
+VUMI_PASSWORD = ''
 
 BOOKING_TOOL_RISK_LEVELS = {
     # pc is for patient count
