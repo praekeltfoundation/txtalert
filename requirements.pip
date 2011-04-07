@@ -9,6 +9,6 @@ iso8601
 django-piston
 south
 ipython
-# django-geckoboard==1.0.0
+gunicorn
 -e git+http://github.com/smn/django-geckoboard.git#egg=django-geckoboard
 -e git+http://github.com/smn/vumi-client.git#egg=vumi-client

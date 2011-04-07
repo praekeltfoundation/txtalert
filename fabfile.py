@@ -219,8 +219,7 @@ def update(branch):
 
 @_setup_env
 def start(branch):
-	return managepy(branch, "runfcgi `cat fcgi.%s.config | tr '\n' ' '` pidfile=%s/txtalert.pid " % (env.branch, env.pids_path,))
-
+    return managepy(branch, "run_gunicorn --daemon 127.0.0.1:9992 --pid=%s/txtalert.pid" % env.pids_path)
 
 @_setup_env
 def stop(branch):
@@ -228,10 +227,7 @@ def stop(branch):
 
 @_setup_env
 def restart(branch):
-    if stop(branch):
-	    start(branch)
-
-
+    return run("kill -HUP `cat %s/txtalert.pid`" % env.pids_path)
 
 @_setup_env
 def cleanup(branch,limit=5):

@@ -118,6 +118,7 @@ INSTALLED_APPS = (
     'dirtyfields',
     'history',
     'south',
+    'gunicorn',
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.sessions',
