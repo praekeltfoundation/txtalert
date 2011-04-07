@@ -219,7 +219,7 @@ def update(branch):
 
 @_setup_env
 def start(branch):
-    return managepy(branch, "run_gunicorn --daemon 127.0.0.1:9992 --pid=%s/txtalert.pid" % env.pids_path)
+    return managepy(branch, "run_gunicorn --log-file=%(logs_path)s/txtalert.log --daemon 127.0.0.1:9992 --pid=%(pids_path)s/txtalert.pid" % env)
 
 @_setup_env
 def stop(branch):
