@@ -433,6 +433,55 @@ class PcmAutomationTestCase(TestCase):
         for key, value in parameters.items():
             self.assertEquals(getattr(pcm, key), value)
     
+    def test_voicemail_message_receiving(self):
+        add_perms_to_user('user', 'can_place_pcm')
+        
+        def submit_message(msg):
+            parameters = {
+                'sender_msisdn': '121',
+                'recipient_msisdn': '27123456789',
+                'sms_id': 'doesntmatteratm',
+                'message': msg
+            }
+            response = self.client.post(reverse('api-pcm', kwargs={'emitter_format': 'json'}),
+                parameters,
+                HTTP_AUTHORIZATION=basic_auth_string('user', 'password')
+            )
+            self.assertEquals(response.status_code, 201) # Created
+            return PleaseCallMe.objects.latest('created_at')
+        
+        sms = submit_message('You have 1 new message. The last message from 0712345678 was left at 11/04/2011 16:00. Please dial 121.')
+        self.assertEquals(
+            sms.message,
+            "Voicemail message from 0712345678, left at %s. Dial 121" % datetime(2011,4,11,16)
+        )
+        self.assertEquals(
+            sms.sender_msisdn,
+            '0712345678'
+        )
+        
+        sms = submit_message('Missed call: 0712345678, 16:00 11/04/2011;')
+        self.assertEquals(
+            sms.message,
+            "Voicemail message from 0712345678, left at %s. Dial 121" % datetime(2011,4,11,16)
+        )
+        self.assertEquals(
+            sms.sender_msisdn,
+            '0712345678'
+        )
+        
+        # this isn't going to match, testing fail case
+        fail_voicemail_sms = submit_message('Missed kall: 0712345678, 11/04/2011 16:00')
+        self.assertEquals(
+            fail_voicemail_sms.message,
+            'Missed kall: 0712345678, 11/04/2011 16:00',
+        )
+        
+        self.assertEquals(
+            fail_voicemail_sms.sender_msisdn,
+            '121'
+        )
+        
     def test_pcm_receiving_bad_request(self):
         add_perms_to_user('user', 'can_place_pcm')
         

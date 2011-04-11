@@ -10,6 +10,29 @@ from txtalert.apps.gateway import gateway, sms_receipt_handler
 from datetime import datetime, timedelta
 import logging
 import iso8601
+import re
+
+def handle_voicemail_message(message):
+    msisdn = r'(?P<msisdn>[0-9]+)'
+    time = r'(?P<hour>\d+):(?P<minute>\d+)'
+    date = r'(?P<day>\d+)/(?P<month>\d+)/(?P<year>\d+)'
+    sms_patterns = [
+        r'Missed call: %s, %s %s' % (msisdn, time, date),
+        r'You have \d+ new messages?. The last message from %s was left at %s %s. Please dial 121.' % (msisdn, date, time),
+    ]
+    
+    for pattern in sms_patterns:
+        match = re.match(pattern, message)
+        if match:
+            dictionary = match.groupdict()
+            timestamp = datetime(*map(int, [
+                dictionary.get(key) for key in [
+                    'year', 'month', 'day', 'hour', 'minute'
+                ]
+            ]))
+            return dictionary['msisdn'], timestamp
+        
+
 
 class SMSHandler(BaseHandler):
     allowed_methods = ('POST', 'GET')
@@ -132,10 +155,16 @@ class PCMHandler(BaseHandler):
                 resp.content = "Already registered in the last two hours"
                 return resp
             
+            if sender_msisdn == '121':
+                match = handle_voicemail_message(message)
+                if match:
+                    sender_msisdn, date = match
+                    message = "Voicemail message from %s, left at %s. Dial %s" % (sender_msisdn, date, '121')
+            
             pcm = PleaseCallMe.objects.create(user=request.user, sms_id=sms_id,
-                                                sender_msisdn=sender_msisdn, 
-                                                recipient_msisdn=recipient_msisdn, 
-                                                message=message)
+                                            sender_msisdn=sender_msisdn, 
+                                            recipient_msisdn=recipient_msisdn, 
+                                            message=message)
             resp = rc.CREATED
             resp.content = 'Please Call Me registered'
             return resp
