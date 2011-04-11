@@ -150,7 +150,7 @@ class PCMHandler(BaseHandler):
                 match = handle_voicemail_message(message)
                 if match:
                     sender_msisdn, date = match
-                    message = "Voicemail message from %s, left at %s. Dial %s" % (sender_msisdn, date, '121')
+                    message = "Missed call from %s, left at %s." % (sender_msisdn, date)
             
             # check for duplicate submissions
             if PleaseCallMe.objects.filter(

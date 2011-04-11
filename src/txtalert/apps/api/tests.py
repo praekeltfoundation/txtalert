@@ -453,7 +453,7 @@ class PcmAutomationTestCase(TestCase):
         sms = submit_message('You have 1 new message. The last message from 0712345671 was left at 11/04/2011 16:00. Please dial 121')
         self.assertEquals(
             sms.message,
-            "Voicemail message from 0712345671, left at %s. Dial 121" % datetime(2011,4,11,16)
+            "Missed call from 0712345671, left at %s." % datetime(2011,4,11,16)
         )
         self.assertEquals(
             sms.sender_msisdn,
@@ -463,7 +463,7 @@ class PcmAutomationTestCase(TestCase):
         sms = submit_message('Missed call: 0712345672, 16:00 11/04/2011;')
         self.assertEquals(
             sms.message,
-            "Voicemail message from 0712345672, left at %s. Dial 121" % datetime(2011,4,11,16)
+            "Missed call from 0712345672, left at %s." % datetime(2011,4,11,16)
         )
         self.assertEquals(
             sms.sender_msisdn,
