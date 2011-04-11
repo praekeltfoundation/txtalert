@@ -18,7 +18,7 @@ def handle_voicemail_message(message):
     date = r'(?P<day>\d+)/(?P<month>\d+)/(?P<year>\d+)'
     sms_patterns = [
         r'Missed call: %s, %s %s' % (msisdn, time, date),
-        r'You have \d+ new messages?. The last message from %s was left at %s %s. Please dial 121.' % (msisdn, date, time),
+        r'You have \d+ new messages?.\s+The last message from %s was left at %s %s. Please dial 121' % (msisdn, date, time),
     ]
     
     for pattern in sms_patterns:
@@ -146,6 +146,12 @@ class PCMHandler(BaseHandler):
             if isinstance(message, unicode):
                 message = message.encode('unicode_escape')
             
+            if sender_msisdn == '121':
+                match = handle_voicemail_message(message)
+                if match:
+                    sender_msisdn, date = match
+                    message = "Voicemail message from %s, left at %s. Dial %s" % (sender_msisdn, date, '121')
+            
             # check for duplicate submissions
             if PleaseCallMe.objects.filter(
                 sender_msisdn=sender_msisdn, 
@@ -154,12 +160,6 @@ class PCMHandler(BaseHandler):
                 resp = rc.DUPLICATE_ENTRY
                 resp.content = "Already registered in the last two hours"
                 return resp
-            
-            if sender_msisdn == '121':
-                match = handle_voicemail_message(message)
-                if match:
-                    sender_msisdn, date = match
-                    message = "Voicemail message from %s, left at %s. Dial %s" % (sender_msisdn, date, '121')
             
             pcm = PleaseCallMe.objects.create(user=request.user, sms_id=sms_id,
                                             sender_msisdn=sender_msisdn, 

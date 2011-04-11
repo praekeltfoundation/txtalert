@@ -450,24 +450,24 @@ class PcmAutomationTestCase(TestCase):
             self.assertEquals(response.status_code, 201) # Created
             return PleaseCallMe.objects.latest('created_at')
         
-        sms = submit_message('You have 1 new message. The last message from 0712345678 was left at 11/04/2011 16:00. Please dial 121.')
+        sms = submit_message('You have 1 new message. The last message from 0712345671 was left at 11/04/2011 16:00. Please dial 121')
         self.assertEquals(
             sms.message,
-            "Voicemail message from 0712345678, left at %s. Dial 121" % datetime(2011,4,11,16)
+            "Voicemail message from 0712345671, left at %s. Dial 121" % datetime(2011,4,11,16)
         )
         self.assertEquals(
             sms.sender_msisdn,
-            '0712345678'
+            '0712345671'
         )
         
-        sms = submit_message('Missed call: 0712345678, 16:00 11/04/2011;')
+        sms = submit_message('Missed call: 0712345672, 16:00 11/04/2011;')
         self.assertEquals(
             sms.message,
-            "Voicemail message from 0712345678, left at %s. Dial 121" % datetime(2011,4,11,16)
+            "Voicemail message from 0712345672, left at %s. Dial 121" % datetime(2011,4,11,16)
         )
         self.assertEquals(
             sms.sender_msisdn,
-            '0712345678'
+            '0712345672'
         )
         
         # this isn't going to match, testing fail case
