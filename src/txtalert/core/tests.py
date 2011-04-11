@@ -189,3 +189,22 @@ class PleaseCallMeTestCase(TestCase):
             user=self.user,
         )
     
+    def test_sloppy_get_or_create_possible_msisdn(self):
+        msisdn = MSISDN.objects.create(msisdn='27123456121')
+        from txtalert.core.signals import sloppy_get_or_create_possible_msisdn
+        self.assertEquals(
+            sloppy_get_or_create_possible_msisdn('121').msisdn,
+            '121'
+        )
+        self.assertEquals(
+            sloppy_get_or_create_possible_msisdn('0123456121').msisdn,
+            '27123456121'
+        )
+        self.assertEquals(
+            sloppy_get_or_create_possible_msisdn('27123456121').msisdn,
+            '27123456121'
+        )
+        self.assertEquals(
+            sloppy_get_or_create_possible_msisdn('+27123456121').msisdn,
+            '27123456121'
+        )

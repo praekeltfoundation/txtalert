@@ -10,28 +10,37 @@ def track_please_call_me_handler(sender, **kwargs):
         return track_please_call_me(kwargs['instance'])
 
 def sloppy_get_or_create_possible_msisdn(sloppy_formatted_msisdn):
+    # if the msisdn is of fewer characters than 9 then don't normalize
+    # as it's a shortcode or a special number like 121 / voicemail.
+    if len(sloppy_formatted_msisdn) < 9:
+        msisdn, created = MSISDN.objects.get_or_create(msisdn=sloppy_formatted_msisdn)
+        return msisdn
+    
     # Assume the MSISDNs are always formatted as +27761234567, normalize
     # to 761234567
     end_of_msisdn = sloppy_formatted_msisdn[-9:]
+    
     # it could be formatted as 27761234567,+27761234567 or 0761234567
     possible_msisdns = MSISDN.objects.filter(msisdn__endswith=end_of_msisdn)
-    if possible_msisdns.count():
+    if possible_msisdns.exists():
         # priority for an MSISDN with a patient set
         for msisdn in possible_msisdns:
-            if msisdn.patient_set.count():
+            if msisdn.patient_set.exists():
                 return msisdn # just so you know what's going on
         # otherwise we'll settle for a patient that has used this MSISDN 
         # previously
         for msisdn in possible_msisdns:
-            if msisdn.contacts.count():
+            if msisdn.contacts.exists():
                 return msisdn
+        
         # all possible MSISDNs have no patients linked to them
         # if that's the case then just default to the most recent
         # MSISDN registered for that given number.
-        return possible_msisdns.order_by('id')[0]
+        return possible_msisdns.latest('id')
     # nothing matches, so create one
     else:
-        return MSISDN.objects.create(msisdn=sloppy_formatted_msisdn)
+        msisdn, created = MSISDN.objects.get_or_create(msisdn=sloppy_formatted_msisdn)
+        return msisdn
 
 def track_please_call_me(opera_pcm):
     """Track a MSISDN we receive from a PCM back to a specific contact. This is
