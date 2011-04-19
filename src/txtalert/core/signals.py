@@ -47,49 +47,45 @@ def track_please_call_me(opera_pcm):
     """Track a MSISDN we receive from a PCM back to a specific contact. This is
     tricky because MSISDNs in txtAlert are involved in all sorts of ManyToMany 
     relationships."""
-    # handle voicemail special case
-    if opera_pcm.sender_msisdn == '121':
-        return handle_voicemail_sms(opera_pcm)
+    msisdn = sloppy_get_or_create_possible_msisdn(opera_pcm.sender_msisdn)
+    patients = Patient.objects.filter(active_msisdn=msisdn) or \
+                msisdn.contacts.all()
+    if patients.count() == 1:
+        patient = patients[0]
+        clinic = patient.last_clinic or patient.get_last_clinic()
+    
+        pcm = PleaseCallMe.objects.create(msisdn=msisdn,
+                                            timestamp=datetime.now(),
+                                            clinic=clinic,
+                                            user=opera_pcm.user,
+                                            message=opera_pcm.message)
+        logger.info("track_please_call_me: PCM registered for %s at %s for clinic %s from opera PCM: %s" % (
+            pcm.msisdn,
+            pcm.timestamp,
+            pcm.clinic,
+            opera_pcm
+        ))
+        # msg = 'Thank you for your Please Call Me. ' + \
+        #         'An administrator will phone you back within 24 hours ' + \
+        #         'to offer assistance.'
+        # from gateway import gateway
+        # gateway.send_sms([msisdn.msisdn],[msg])
+    elif patients.count() == 0:
+        # not sure what to do in this situation yet, lets minimally store the PCM
+        # so we don't loose track of any.
+        pcm = PleaseCallMe.objects.create(msisdn=msisdn,
+                                            timestamp=datetime.now(),
+                                            user=opera_pcm.user, 
+                                            message=opera_pcm.message)
+        logger.error('track_please_call_me: No contacts found for MSISDN: %s, registering without clinic.' % msisdn)
     else:
-        msisdn = sloppy_get_or_create_possible_msisdn(opera_pcm.sender_msisdn)
-        patients = Patient.objects.filter(active_msisdn=msisdn) or \
-                    msisdn.contacts.all()
-        if patients.count() == 1:
-            patient = patients[0]
-            clinic = patient.last_clinic or patient.get_last_clinic()
-        
-            pcm = PleaseCallMe.objects.create(msisdn=msisdn,
-                                                timestamp=datetime.now(),
-                                                clinic=clinic,
-                                                user=opera_pcm.user,
-                                                message=opera_pcm.message)
-            logger.info("track_please_call_me: PCM registered for %s at %s for clinic %s from opera PCM: %s" % (
-                pcm.msisdn,
-                pcm.timestamp,
-                pcm.clinic,
-                opera_pcm
-            ))
-            # msg = 'Thank you for your Please Call Me. ' + \
-            #         'An administrator will phone you back within 24 hours ' + \
-            #         'to offer assistance.'
-            # from gateway import gateway
-            # gateway.send_sms([msisdn.msisdn],[msg])
-        elif patients.count() == 0:
-            # not sure what to do in this situation yet, lets minimally store the PCM
-            # so we don't loose track of any.
-            pcm = PleaseCallMe.objects.create(msisdn=msisdn,
-                                                timestamp=datetime.now(),
-                                                user=opera_pcm.user, 
-                                                message=opera_pcm.message)
-            logger.error('track_please_call_me: No contacts found for MSISDN: %s, registering without clinic.' % msisdn)
-        else:
-            # not sure what to do in this situation yet, lets minimally store the PCM
-            # so we don't loose track of any.
-            pcm = PleaseCallMe.objects.create(msisdn=msisdn,
-                                                timestamp=datetime.now(),
-                                                user=opera_pcm.user,
-                                                message=opera_pcm.message)
-            logger.error("track_please_call_me: More than one contact found for MSISDN: %s" % msisdn)
+        # not sure what to do in this situation yet, lets minimally store the PCM
+        # so we don't loose track of any.
+        pcm = PleaseCallMe.objects.create(msisdn=msisdn,
+                                            timestamp=datetime.now(),
+                                            user=opera_pcm.user,
+                                            message=opera_pcm.message)
+        logger.error("track_please_call_me: More than one contact found for MSISDN: %s" % msisdn)
 
 
 def calculate_risk_profile_handler(sender, **kwargs):
