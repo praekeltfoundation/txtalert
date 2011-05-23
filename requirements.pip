@@ -1,6 +1,6 @@
 django==1.2.4
 flup
-MySQL-python
+psycopg2==2.2.2
 coverage
 xlrd
 django-dirtyfields
