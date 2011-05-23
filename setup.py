@@ -12,8 +12,7 @@ setup(
     long_description = open('README.rst', 'r').read(),
     author = 'Praekelt Foundation',
     author_email = "dev@praekeltfoundation.org",
-    packages = find_packages('src'),
-    package_dir = {'': 'src'},
+    packages = find_packages(),
     install_requires = listify('requirements.pip'),
     classifiers = listify('CLASSIFIERS.txt')
 )
