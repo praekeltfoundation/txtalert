@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <widget xmlns="http://www.w3.org/ns/widgets"
-  id="http://www.opera.com/exampleWidget"
+  id="http://txtalert.praekeltfoundation.org/widget"
   version="1.0"
-  height="208"
-  width="176"
-  viewmodes="fullscreen">
-
+  viewmodes="fullscreen"
+  network="public">
+  
   <name short="txtAlert">
     txtAlert Widget
   </name>
