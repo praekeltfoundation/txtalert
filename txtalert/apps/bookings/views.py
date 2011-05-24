@@ -10,6 +10,3 @@ LOGIN_URL = '/bookings/sign-in/'
 def index(request):
     return HttpResponse("hi!")
 
-def signin(request):
-    return render_to_response('signin.html', locals(), 
-                                context_instance=RequestContext(request))
