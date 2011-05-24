@@ -1,16 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <link rel="stylesheet" href="style/base.css">
-  <title>txtAlert</title>
+	<meta charset="utf-8">
+	<script src="scripts/base.js"></script>
+	<link rel="stylesheet" href="style/base.css">
+	<title>txtAlert</title>
 </head>
 <body>
-  <header>
-    <h1>txtAlert</h1>
-  </header>
-  <div id="main">
-    <p>Hi, this is the txtAlert Widget for Opera Mini</p>
-  </div>
+	<header>
+		<img src="images/logo.jpg">
+	</header>
+	<div id="main">
+	    <form id="signin_form">
+			<label>Cell Phone Number</label><br>
+			<input type="text" name='msisdn' value=""><br>
+			<label>Patient ID</label><br>
+			<input type="text" name='patient_id' value=""><br>
+			<input type="submit" id="submit" value="Sign In" class="submit">
+        </form>
+	</div>
 </body>
 </html>
