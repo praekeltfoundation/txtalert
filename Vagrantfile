@@ -10,6 +10,6 @@ Vagrant::Config.run do |config|
     puppet.manifest_file = "txtalert.pp"
   end
   
-  # config.vm.forward_port "web", 7000, 7000
-  # config.vm.forward_port "supervisord", 7010, 7010
+  config.vm.forward_port "web", 7000, 7000
+  config.vm.forward_port "supervisord", 7010, 7010
 end
