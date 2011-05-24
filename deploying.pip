@@ -1,2 +1,0 @@
-fabric
--e git+git@github.com:praekelt/springfield.git#egg=praekelt-springfield
