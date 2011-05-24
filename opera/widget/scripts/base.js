@@ -79,6 +79,7 @@ var Format = {
 };
 
 var login_failed = function() {
+    $('#signin .error').css('display', 'block');
     $('#signin .error').html('Wrong Phone Number and Patient ID.<br/>' + 
                                 '<strong>Please try again.</strong>');
 };
@@ -86,8 +87,6 @@ var login_failed = function() {
 var show_next_appointment_for = function(patient) {
     $('#signin').hide();
     $('#appointment').show();
-    $('#appointment').html('<div>Your Next Appointment is:<br/>' +
-                            '<strong>' + Format.date(patient.next_appointment) + '</strong><br/>' +
-                            patient.clinic+'<div>'+
-                            '<p><a href="http://qa.txtalert.praekeltfoundation.org/">Do you need to change this?</a>');
+    $('#appointment .info h1').html(Format.date(patient.next_appointment));
+    $('#appointment .info h2').html(patient.clinic);
 };
