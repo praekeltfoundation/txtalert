@@ -6,9 +6,9 @@ def listify(filename):
 setup(
     name = "txtalert",
     version = "0.1",
-    url = 'http://github.com/smn/praekelt',
+    url = 'http://github.com/praekelt/txtalert',
     license = 'BSD',
-    description = "TxtAlert sends automated, personalized SMS reminders to patients on chronic medication.",
+    description = "txtAlert sends automated, personalized SMS reminders to patients on chronic medication.",
     long_description = open('README.rst', 'r').read(),
     author = 'Praekelt Foundation',
     author_email = "dev@praekeltfoundation.org",
