@@ -11,7 +11,6 @@ south
 ipython
 gunicorn
 supervisor
--e git+http://github.com/smn/django-geckoboard.git#egg=django-geckoboard
 Sphinx
 django-geckoboard
 -e git+http://github.com/smn/vumi-client.git#egg=vumi-client

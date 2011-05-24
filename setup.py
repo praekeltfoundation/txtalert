@@ -8,7 +8,7 @@ setup(
     version = "0.1",
     url = 'http://github.com/smn/txtalert',
     license = 'GPL',
-    description = "TxtAlert sends automated, personalized SMS reminders to patients on chronic medication.",
+    description = "txtAlert sends automated, personalized SMS reminders to patients on chronic medication.",
     long_description = open('README.rst', 'r').read(),
     author = 'Praekelt Foundation',
     author_email = "dev@praekeltfoundation.org",
