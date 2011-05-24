@@ -1,54 +1,75 @@
-window.addEventListener('load', function() {
-    var preferences = get_credentials();
-    var form = document.getElementById('signin_form');
-    if(preferences.msisdn && preferences.patient_id) {
-        form.msisdn.value = preferences.msisdn;
-        form.patient_id.value = preferences.patient_id;
-    } else {
-        init_signin_form(form);
+// mock Opera mini's widget API while we're developing in
+// a desktop browser
+var widget = {
+    storage: {},
+    
+    setPreferenceForKey: function(key, value) {
+        this.storage[key] = value;
+        return value;
+    },
+    
+    preferenceForKey: function(key) {
+        return this.storage[key];
     }
-  // var main = document.getElementById('main');
-  // var about = document.getElementById('about');
-  // var btn_header = document.getElementById('btn_header');
-  //    
-  // function showMain() {
-  //   about.style.display = 'none';
-  //   main.style.display = 'block';
-  //   btn_header.textContent = 'About';
-  // }
-  //    
-  // function showAbout() {
-  //   about.style.display = 'block';
-  //   main.style.display = 'none';
-  //   btn_header.textContent = 'Back';
-  // }
-  //    
-  // function flip() {
-  //   if (main.currentStyle.display === 'block') {
-  //     showAbout();
-  //   } else {
-  //     showMain();
-  //   }
-  // }
-  //    
-  // btn_header.addEventListener('click', flip, false);
-}, false);
-
-var get_credentials = function() {
-    return {
-        msisdn: widget.preferenceForKey('msisdn'),
-        patient_id: widget.preferenceForKey('patient_id')
-    };
 };
 
-var init_signin_form = function(form) {
-    form.addEventListener('submit', function() {
-       widget.setPreferenceForKey('msisdn', form.msisdn.value);
-       widget.setPreferenceForKey('patient_id', form.patient_id.value);
+// Mock the txtalert patient Api
+var Patient = {
+    
+    patients: [{
+        msisdn: '0761234567',
+        patient_id: '123',
+        next_appointment: Date(2012,1,1)
+    }],
+    
+    find: function(msisdn, patient_id) {
+        console.log(this.patients);
+        for(idx in this.patients) {
+            patient = this.patients[idx];
+            console.log(patient);
+            if(patient.msisdn == msisdn && patient.patient_id == patient_id) {
+                return patient;
+            }
+        }
+        return false;
+    }
+};
+
+$(document).ready(function() {
+    var form = $('#signin_form');
+    var msisdn = widget.preferenceForKey('msisdn');
+    var patient_id = widget.preferenceForKey('patient_id');
+    if(msisdn) {
+        form.value = msisdn;
+    }
+    
+    if(patient_id) {
+        form.value = patient_id;
+    }
+    
+    form.submit(function(evt) {
+        form = evt.target;
+        msisdn = form.msisdn.value;
+        patient_id = form.patient_id.value;
+        widget.setPreferenceForKey('msisdn', msisdn);
+        widget.setPreferenceForKey('patient_id', msisdn);
+        
+        patient = Patient.find(msisdn, patient_id);
+        if(patient) {
+            login_success();
+        } else {
+            login_failed();
+        }
+        
+        return false;
     });
+});
+
+var login_failed = function() {
+    $('#signin .error').html('Wrong Phone Number and Patient ID.<br/>' + 
+                                '<strong>Please try again.</strong>');
 };
 
-var display_preferences = function(form) {
-    form.msisdn.value = widget.preferenceForKey('msisdn');
-    form.patient_id.value = widget.preferenceForKey('patient_id');
+var login_success = function() {
+    alert('yay!');
 };
