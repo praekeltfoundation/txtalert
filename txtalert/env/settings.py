@@ -49,11 +49,15 @@ TEST_DATABASE_CHARSET = 'utf8'
 
 DEBUG = True
 
-DATABASE_ENGINE = 'postgresql_psycopg2'
-DATABASE_NAME = 'txtalert_dev'
-DATABASE_USER = ''
-DATABASE_PASSWORD = ''
-DATABASE_PORT = ''
+DATABASES = {
+    'default': {
+        'ENGINE': 'postgresql_psycopg2',
+        'NAME': 'txtalert_dev',
+        'USER': '',
+        'PASSWORD': '',
+        'PORT': ''
+    }
+}
 
 OPERA_SERVICE = os.environ.get('OPERA_SERVICE')
 OPERA_PASSWORD = os.environ.get('OPERA_PASSWORD')

@@ -126,13 +126,20 @@ file {
     "/var/praekelt/txtalert/environments/develop.py":
         ensure => "file",
         owner => "ubuntu",
-        content => "from txtalert.env.settings import *
-DATABASE_ENGINE = 'postgresql_psycopg2'
-DATABASE_NAME = 'txtalert_dev'
-DATABASE_USER = 'txtalert'
-DATABASE_PASSWORD = 'txtalert'
-DATABASE_HOST = 'localhost'
-DATABASE_PORT = ''
+        content => "
+
+from txtalert.env.settings import *
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'postgresql_psycopg2',
+        'NAME': 'txtalert_dev',
+        'USER': 'txtalert',
+        'PASSWORD': 'txtalert',
+        'HOST': 'localhost',
+        'PORT': ''
+    }
+}
 
 "
 }
