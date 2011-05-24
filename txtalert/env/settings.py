@@ -30,7 +30,7 @@ TEMPLATE_DEBUG = DEBUG
 
 DATABASES = {
     'default': {
-        'ENGINE': 'postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'txtalert_dev',
         'USER': '',
         'PASSWORD': '',
@@ -55,9 +55,8 @@ USE_I18N = True
 
 UPLOAD_ROOT = "upload"
 MEDIA_ROOT = join(APP_ROOT, 'webroot', 'media')
-MEDIA_URL = '/static/'
-
-ADMIN_MEDIA_PREFIX = '/media/'
+MEDIA_URL = '/media/'
+STATIC_URL = '/static/'
 
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -82,8 +81,10 @@ INSTALLED_APPS = (
     'txtalert.apps.general.settings',
     'txtalert.apps.general.jquery',
     'txtalert.apps.therapyedge',
-    # booking tool is currently broken
+    # booking tool is on its way out
     'txtalert.apps.bookingtool',
+    # bookings is on its way in
+    'txtalert.apps.bookings',
     'txtalert.apps.gateway',
     'txtalert.apps.api',
     'txtalert.apps.cd4',
@@ -97,6 +98,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'django.contrib.staticfiles',
 )
 
 SMS_GATEWAY_CLASS = 'txtalert.apps.gateway.backends.vumi'

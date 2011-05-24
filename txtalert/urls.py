@@ -19,6 +19,7 @@ from django.conf.urls.defaults import *
 from django.contrib import admin
 from django.conf import settings
 from django.conf import settings
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 admin.autodiscover()
 
@@ -30,6 +31,7 @@ urlpatterns = patterns('',
     (r'', include('txtalert.apps.general.jquery.urls')),
     (r'^therapyedge/', include('txtalert.apps.therapyedge.urls')),
     (r'^bookingtool/', include('txtalert.apps.bookingtool.urls')),
+    (r'^bookings/', include('txtalert.apps.bookings.urls', namespace='bookings')),
     (r'^geckoboard/', include('txtalert.apps.geckoboard.urls')),
     # (r'^sms/', include('opera.urls')),
     (r'^admin/', include(admin.site.urls)),
@@ -41,3 +43,6 @@ urlpatterns = patterns('',
 urlpatterns += patterns('',
    (r'^api/v1/', include('txtalert.apps.api.urls')),
 )
+
+# statics
+urlpatterns += staticfiles_urlpatterns()

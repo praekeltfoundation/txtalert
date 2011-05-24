@@ -13,3 +13,4 @@ ve/
 *.egg-info
 webroot/media/upload/*
 .vagrant
+docs/_build/*
