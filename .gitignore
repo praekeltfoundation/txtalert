@@ -12,3 +12,4 @@ environments/*
 ve/
 *.egg-info
 webroot/media/upload/*
+.vagrant
