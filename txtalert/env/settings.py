@@ -30,7 +30,7 @@ TEMPLATE_DEBUG = DEBUG
 
 DATABASES = {
     'default': {
-        'ENGINE': 'postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'txtalert_dev',
         'USER': '',
         'PASSWORD': '',
@@ -82,8 +82,10 @@ INSTALLED_APPS = (
     'txtalert.apps.general.settings',
     'txtalert.apps.general.jquery',
     'txtalert.apps.therapyedge',
-    # booking tool is currently broken
+    # booking tool is on its way out
     'txtalert.apps.bookingtool',
+    # bookings is on its way in
+    'txtalert.apps.bookings',
     'txtalert.apps.widget',
     'txtalert.apps.gateway',
     'txtalert.apps.api',

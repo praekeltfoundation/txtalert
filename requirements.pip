@@ -1,5 +1,4 @@
-django==1.2.4
-flup
+Django==1.3
 psycopg2==2.2.2
 coverage
 xlrd
