@@ -20,14 +20,17 @@
 	<div class="alert">
 		<span class="error">Unable to sign in. Incorrect Details</span>
 	</div>
-	
 	<div class="widget border">
-		<label>Cell Phone Number</label><br>
-		<input type="text" value=""><br>
-		<label>Patient ID</label><br>
-		<input type="text" value=""><br>
-		<input type="submit" value="Sign In" class="submit">
-		<a href="#">I forgot my Patient ID</a><br>
+	    <form action="" method="post" accept-charset="utf-8">
+    		<label>Cell Phone Number</label><br>
+    		{{form.username}}<br>
+    		<label>Patient ID</label><br>
+    		{{form.password}}<br>
+    		<input type="submit" value="Sign In" class="submit">
+    		<input type="hidden" name="next" value="{{next}}">
+    		<a href="#">I forgot my Patient ID</a><br>
+    		{% csrf_token %}
+    	</form>
 	</div>
 	
 	<div class="widget">
