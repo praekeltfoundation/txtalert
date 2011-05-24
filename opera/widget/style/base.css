@@ -13,10 +13,18 @@ header {
     text-align: center;
 }
 
-#main {
+#signin {
     text-align: center;
 }
 
 input[type^=submit] {
     padding: 0.3em;
+}
+
+span.error { 
+    float:left; 
+    width:100%; 
+    background:#f7f7c9; 
+    color:#333; 
+    display:block; 
 }
