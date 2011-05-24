@@ -86,7 +86,7 @@ var login_failed = function() {
 
 var show_next_appointment_for = function(patient) {
     $('#signin').hide();
-    $('#appointment').show();
     $('#appointment .info h1').html(Format.date(patient.next_appointment));
     $('#appointment .info h2').html(patient.clinic);
+    $('#appointment').show();
 };
