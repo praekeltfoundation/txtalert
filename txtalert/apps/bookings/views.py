@@ -4,7 +4,9 @@ from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 
-@login_required(login_url='/bookings/signin/')
+LOGIN_URL = '/bookings/sign-in/'
+
+@login_required(login_url=LOGIN_URL)
 def index(request):
     return HttpResponse("hi!")
 
