@@ -3,6 +3,6 @@ from txtalert.apps.bookings import views
 
 urlpatterns = patterns('',
     (r'^$', views.index, {}, 'index'),
-    (r'^signin/$', views.signin, {}, 'signin'),
+    (r'^sign-in/$', views.signin, {}, 'signin'),
 )
 
