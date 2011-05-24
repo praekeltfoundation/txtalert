@@ -19,7 +19,8 @@ var Patient = {
     patients: [{
         msisdn: '0761234567',
         patient_id: '123',
-        next_appointment: Date(2012,1,1)
+        next_appointment: new Date(2012,1,1),
+        clinic: 'Temba Lethu Clinic'
     }],
     
     find: function(msisdn, patient_id) {
@@ -56,7 +57,7 @@ $(document).ready(function() {
         
         patient = Patient.find(msisdn, patient_id);
         if(patient) {
-            login_success();
+            show_next_appointment_for(patient);
         } else {
             login_failed();
         }
@@ -65,11 +66,28 @@ $(document).ready(function() {
     });
 });
 
+var Format = {
+    months: [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ],
+    
+    date: function(date) {
+        abbr_month = this.months[date.getMonth()];
+        return [date.getDate(), abbr_month, date.getFullYear()].join(" ");
+    }
+};
+
 var login_failed = function() {
     $('#signin .error').html('Wrong Phone Number and Patient ID.<br/>' + 
                                 '<strong>Please try again.</strong>');
 };
 
-var login_success = function() {
-    alert('yay!');
+var show_next_appointment_for = function(patient) {
+    $('#signin').hide();
+    $('#appointment').show();
+    $('#appointment').html('<div>Your Next Appointment is:<br/>' +
+                            '<strong>' + Format.date(patient.next_appointment) + '</strong><br/>' +
+                            patient.clinic+'<div>'+
+                            '<p><a href="http://qa.txtalert.praekeltfoundation.org/">Do you need to change this?</a>');
 };
