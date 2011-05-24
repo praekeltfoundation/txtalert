@@ -23,31 +23,10 @@ from logging.handlers import TimedRotatingFileHandler
 APP_ROOT = os.getcwd()
 PROJECT_NAME = os.path.basename(APP_ROOT)
 
-# Initialize logger that's rotated daily
-LOG_FORMAT = '[%(name)s] %(asctime)s %(levelname)s %(message)s'
-LOG_FILE = join(APP_ROOT, 'logs/%s.log' % PROJECT_NAME)
-
-LOGGER = logging.getLogger()
-LOGGER.name = PROJECT_NAME
-LOGGER.level = logging.DEBUG
-
-# Due to a stupid bug in Django it'll load the settings file twice unless 
-# ./manage.py is called with the --settings option set. This potentially
-# creates two different loggers doing exactly the same thing. So we check if 
-# the current list of handlers already contains an instance of TimedRotatingFileHandler
-if not any(isinstance(h, TimedRotatingFileHandler) for h in LOGGER.handlers):
-    handler = TimedRotatingFileHandler(LOG_FILE, when='midnight', interval=1, backupCount=14)
-    handler.setFormatter(logging.Formatter(LOG_FORMAT))
-    LOGGER.addHandler(handler)
-
 SECRET_KEY = ''
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
-
-TEST_DATABASE_CHARSET = 'utf8'
-
-DEBUG = True
 
 DATABASES = {
     'default': {
@@ -59,25 +38,15 @@ DATABASES = {
     }
 }
 
-OPERA_SERVICE = os.environ.get('OPERA_SERVICE')
-OPERA_PASSWORD = os.environ.get('OPERA_PASSWORD')
-OPERA_CHANNEL = os.environ.get('OPERA_CHANNEL')
-
 ADMINS = (
-    ('Simon de Haan', 'simon@praekeltfoundation.org'),
-    ('David Maclay', 'david@praekeltfoundation.org'),
+    ('Foundation Developers', 'dev+txtalert@praekeltfoundation.org'),
 )
 
 MANAGERS = ADMINS
 
-SERVER_EMAIL = 'txtalert@localhost'
+SERVER_EMAIL = 'txtalert@txtalert.praekeltfoundation.org'
 
-EMAIL_SUBJECT_PREFIX = '[TxtAlert] '
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 25
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'email_user'
-# EMAIL_HOST_PASSWORD = 'email_user_password'
+EMAIL_SUBJECT_PREFIX = '[txtAlert] '
 
 TIME_ZONE = 'Africa/Johannesburg'
 LANGUAGE_CODE = 'en-us'
@@ -91,8 +60,8 @@ STATIC_URL = '/static/'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
     'django.template.loaders.eggs.Loader',
 )
 
