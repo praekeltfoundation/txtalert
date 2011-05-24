@@ -2,6 +2,8 @@
 <widget xmlns="http://www.w3.org/ns/widgets"
   id="http://txtalert.praekeltfoundation.org/widget"
   version="1.0"
+  height="208"
+  width="176"
   viewmodes="fullscreen"
   network="public">
   
