@@ -13,7 +13,6 @@ class PatientBackend(ModelBackend):
             except AuthProfile.DoesNotExist, e:
                 user = User(username=msisdn)
                 user.set_password(patient_id)
-                user.groups.add
                 user.save()
                 AuthProfile.objects.create(user=user, patient=patient)
                 return user
