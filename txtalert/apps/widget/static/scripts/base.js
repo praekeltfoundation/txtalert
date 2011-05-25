@@ -61,7 +61,7 @@ var Format = {
     
     date: function(triplet) {
         abbr_month = this.months[triplet[1]];
-        return [triplet[0], abbr_month, triplet[2]].join(" ");
+        return [triplet[2], abbr_month, triplet[1]].join(" ");
     }
 };
 
