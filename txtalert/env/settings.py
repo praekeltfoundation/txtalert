@@ -86,9 +86,9 @@ USE_I18N = True
 
 UPLOAD_ROOT = "upload"
 MEDIA_ROOT = join(APP_ROOT, 'webroot', 'media')
-MEDIA_URL = '/static/'
-
-ADMIN_MEDIA_PREFIX = '/media/'
+MEDIA_URL = '/media/'
+STATIC_URL = '/static/'
+ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
@@ -115,6 +115,7 @@ INSTALLED_APPS = (
     'txtalert.apps.therapyedge',
     # booking tool is currently broken
     'txtalert.apps.bookingtool',
+    'txtalert.apps.widget',
     'txtalert.apps.gateway',
     'txtalert.apps.api',
     'txtalert.apps.cd4',
@@ -128,6 +129,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'django.contrib.staticfiles',
 )
 
 SMS_GATEWAY_CLASS = 'txtalert.apps.gateway.backends.vumi'

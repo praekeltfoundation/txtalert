@@ -1,0 +1,92 @@
+* {
+  margin:0;
+  padding:0;
+}
+
+body {
+  background:#fff;
+  color:#000;
+  font-family: helvetica, arial, sans-serif;
+}
+
+header {
+    text-align: center;
+}
+
+#signin span, #appointment span { 
+    font-size: small;
+    color: white;
+    clear:both; 
+    display:block; 
+/*    width:100%; */
+    height:18px; 
+    padding:5px 5px; 
+    background: #7f7f7f; 
+}
+
+#signin, #appointment {
+    text-align: center;
+}
+
+#appointment {
+    display: none;
+}
+
+#appointment .info {
+    font-size: small;
+    background-color: #000;
+    padding: 10px;
+}
+
+#appointment .info em {
+    font-style: normal;
+    color: #999;
+}
+
+#appointment h1 {
+    color: white;
+    font-size: large;
+    font-weight: normal;
+}
+
+#appointment h2 {
+    color: white;
+    font-size: small;
+    font-weight: normal;
+}
+
+#appointment a {
+    color: #70AF00;
+    text-decoration: none;
+}
+
+#launcher {
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+    padding: 100px 100px;
+    text-align: center;
+}
+
+#launcher a {
+    color: blue;
+}
+
+input[type^=submit] {
+    padding: 0.3em;
+}
+
+label {
+    font-size: small;
+}
+
+div.error { 
+    float:left; 
+    width:100%; 
+    background:#f7f7c9; 
+    color:#333; 
+    display:none; 
+    border-bottom:1px solid #d8d7a9; 
+    font-size:small; 
+    padding:8px 5px; 
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <script src="{{ STATIC_URL }}scripts/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function() {
+            $('#widget').click(function(evt) {
+                window.open(evt.target.href, 'widget', 'height=208,width=176,toolbar=0,location=0,menuBar=0');
+                return false;
+            });
+        });
+    </script>
+    <link rel="stylesheet" href="{{ STATIC_URL }}style/base.css">
+    <title>txtAlert widget</title>
+</head>
+<body>
+    <div id="launcher">
+        <p>
+            <img src="{{ STATIC_URL }}images/logo.jpg"><br/>
+            Launch the widget <a id="widget" href="widget.html">in a popup</a><br/>
+            or <a href="widget.html">in this window</a>.
+        </p>
+    </div>
+</body>
+</html>

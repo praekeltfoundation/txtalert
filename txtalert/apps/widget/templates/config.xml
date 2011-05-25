@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets"
+  id="http://txtalert.praekeltfoundation.org/widget"
+  version="1.0"
+  height="208"
+  width="176"
+  viewmodes="fullscreen"
+  network="public">
+  
+  <name short="txtAlert">
+    txtAlert Widget
+  </name>
+
+  <description>
+    Check when your next appointment is scheduled for!
+  </description>
+
+  <author href="http://www.praekeltfoundation.org/">Praekelt Foundation</author>
+
+  <icon src="images/icon_128.png" width="128" height="128"/>
+  <icon src="images/icon_64.png" width="64" height="64"/>
+  <icon src="images/icon_32.png" width="32" height="32"/>
+  <icon src="images/icon_16.png" width="16" height="16"/>
+</widget>
