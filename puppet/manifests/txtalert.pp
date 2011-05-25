@@ -181,6 +181,13 @@ exec { "Start txtAlert":
     unless => "ps -p `cat tmp/pids/supervisord.pid`"
 }
 
+exec { "Collect static":
+    command => ". ve/bin/activate && \
+                    ./manage.py collectstatic --settings=environments.develop --noinput && \
+                deactivate",
+    cwd => "/var/praekelt/txtalert"
+}
+
 class txtalert {
     include apt::update,
                 txtalert::accounts,
@@ -206,6 +213,7 @@ User["ubuntu"]
     -> File['/var/praekelt/txtalert/environments/develop.py']
     -> Exec['Syncdb']
     -> Exec['Migrate']
+    -> Exec['Collect static']
     -> Exec["Restart txtAlert"]
     -> Exec["Start txtAlert"]
 

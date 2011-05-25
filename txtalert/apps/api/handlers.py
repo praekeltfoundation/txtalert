@@ -170,3 +170,25 @@ class PCMHandler(BaseHandler):
             return resp
         return rc.BAD_REQUEST
     
+class PatientHandler(BaseHandler):
+    allowed_methods = ('GET',)
+    
+    def read(self, request):
+        if 'patient_id' in request.GET \
+            and 'msisdn' in request.GET:
+            
+            try:
+                msisdn = request.GET.get('msisdn')
+                patient_id = request.GET.get('patient_id')
+                patient = Patient.objects.get(active_msisdn__msisdn=msisdn,
+                                                te_id=patient_id)
+                visit = patient.next_visit()
+                return {
+                    'msisdn': msisdn,
+                    'patient_id': patient_id,
+                    'next_appointment': (visit.date.year, visit.date.month, visit.date.day),
+                    'clinic': visit.clinic.name,
+                }
+            except (Patient.DoesNotExist, Visit.DoesNotExist):
+                pass
+        return {}
