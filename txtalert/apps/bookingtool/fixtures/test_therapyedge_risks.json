@@ -168,7 +168,7 @@
         "te_id": "01-12345",
         "opted_in": true,
         "deceased": false,
-        "user": 1
+        "owner": 1
     }
 },
 {
@@ -188,7 +188,7 @@
         "te_id": "02-12345",
         "opted_in": true,
         "deceased": false,
-        "user": 1
+        "owner": 1
     }
 },
 {
@@ -208,7 +208,7 @@
         "te_id": "1234567890",
         "opted_in": false,
         "deceased": false,
-        "user": 1
+        "owner": 1
     }
 },
 {

@@ -312,7 +312,7 @@ class ImporterTestCase(TestCase):
         
         # create the patient for which we'll get the visits
         patient = Patient.objects.create(te_id='02-82088', age=29, sex='m',
-                                            user=self.user)
+                                            owner=self.user)
         
         # importer
         importer = Importer()
