@@ -172,7 +172,7 @@ class PleaseCallMeTestCase(TestCase):
         for i in range(0,2):
             Patient.objects.create(
                 active_msisdn = msisdn,
-                user=self.user,
+                owner=self.user,
                 te_id='06-%s2345' % i,
                 age=23
             )

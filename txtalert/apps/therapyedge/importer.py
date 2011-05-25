@@ -132,10 +132,10 @@ class Importer(object):
             except IntegrityError, e:
                 logger.exception('Failed to create Patient for: %s' % (remote_patient,))
     
-    def update_local_patient(self, user, remote_patient):
+    def update_local_patient(self, owner, remote_patient):
         logger.debug('Processing: %s' % remote_patient._asdict())
         patient, created, updated = Update(Patient) \
-                                .get(te_id=remote_patient.te_id, user=user) \
+                                .get(te_id=remote_patient.te_id, owner=owner) \
                                 .update_attributes(
                                     age = int(Age(remote_patient.age)),
                                     sex = Sex(remote_patient.sex)
@@ -177,10 +177,10 @@ class Importer(object):
             except Patient.DoesNotExist, e:
                 logger.exception('Could not find Patient for Visit.te_id')
     
-    def update_local_coming_visit(self, user, clinic, remote_visit):
+    def update_local_coming_visit(self, owner, clinic, remote_visit):
         # I'm assuming we'll always have the patient being referenced
         # in the Visit object, if not - raise hell
-        patient = Patient.objects.get(te_id=remote_visit.te_id, user=user)
+        patient = Patient.objects.get(te_id=remote_visit.te_id, owner=owner)
         coming_date = iso8601.parse_date(remote_visit.scheduled_visit_date)
         
         # FIXME:    a lot of duplication between update_local_coming_visit and
@@ -245,9 +245,9 @@ class Importer(object):
             except VisitException, e:
                 logger.exception('VisitException')
     
-    def update_local_missed_visit(self, user, clinic, remote_visit):
+    def update_local_missed_visit(self, owner, clinic, remote_visit):
         # get the patient or raise error
-        patient = Patient.objects.get(te_id=remote_visit.te_id, user=user)
+        patient = Patient.objects.get(te_id=remote_visit.te_id, owner=owner)
         missed_date = iso8601.parse_date(remote_visit.missed_date).date()
         
         try:
@@ -312,9 +312,9 @@ class Importer(object):
                 logger.exception('Could not find Patient for Visit.te_id')
         
     
-    def update_local_done_visit(self, user, clinic, remote_visit):
+    def update_local_done_visit(self, owner, clinic, remote_visit):
         # get patient or raise error
-        patient = Patient.objects.get(te_id=remote_visit.te_id, user=user)
+        patient = Patient.objects.get(te_id=remote_visit.te_id, owner=owner)
         done_date = iso8601.parse_date(remote_visit.done_date).date()
         
         visit, created, updated = Update(Visit) \
@@ -357,8 +357,8 @@ class Importer(object):
             except Visit.DoesNotExist, e:
                 logger.exception('Could not find Visit to delete')
     
-    def update_local_deleted_visit(self, user, remote_visit):
-        visit = Visit.objects.get(te_visit_id=remote_visit.key_id, patient__user=user)
+    def update_local_deleted_visit(self, owner, remote_visit):
+        visit = Visit.objects.get(te_visit_id=remote_visit.key_id, patient__owner=owner)
         visit.delete()
         logger.debug('Deleted Visit: %s' % visit.id)
         return visit

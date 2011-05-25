@@ -102,6 +102,7 @@ INSTALLED_APPS = (
     'history',
     'south',
     'gunicorn',
+    'django_nose',
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.sessions',
@@ -120,3 +121,6 @@ BOOKING_TOOL_RISK_LEVELS = {
     'medium': lambda pc: 50 <= pc <= 100,
     'low': lambda pc: pc < 50,
 }
+
+SOUTH_TESTS_MIGRATE = False 
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
