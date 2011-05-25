@@ -96,9 +96,9 @@ class SoftDeleteMixin(object):
     
 
 
-# class UserProfile(object):
-#     user = models.OneToOneField('auth.User')
-#     patient = models.ForeignKey(Patient)
+class AuthProfile(models.Model):
+    user = models.OneToOneField('auth.User')
+    patient = models.OneToOneField('Patient')
 
 class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     SEX_CHOICES = (
