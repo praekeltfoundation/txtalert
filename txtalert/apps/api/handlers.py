@@ -191,11 +191,18 @@ class PatientHandler(BaseHandler):
                     visit_info = []
                     clinic_name = ''
                 
+                visits = patient.visit_set.all()
+                
                 return {
                     'msisdn': msisdn,
                     'patient_id': patient_id,
                     'next_appointment': visit_info,
                     'clinic': clinic_name,
+                    'attendance': int((1.0 - patient.risk_profile) * 100),
+                    'total': visits.count(),
+                    'attended': visits.filter(status='a').count(),
+                    'rescheduled': visits.filter(status='r').count(),
+                    'missed': visits.filter(status='m').count(),
                 }
             except Patient.DoesNotExist:
                 pass
