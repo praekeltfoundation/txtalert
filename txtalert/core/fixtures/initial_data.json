@@ -121,6 +121,15 @@
 },
 {
     "pk": 1,
+    "model": "auth.user",
+    "fields": {
+        "username": "kumbu",
+        "is_active": "True",
+        "is_staff": "True"
+    }
+},
+{
+    "pk": 1,
     "model": "core.clinic",
     "fields": {
         "user": 1,
