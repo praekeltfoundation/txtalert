@@ -145,6 +145,11 @@ DATABASES = {
 "
 }
 
+file { "/etc/nginx/sites-enabled/development.txtalert.conf":
+    ensure => symlink,
+    target => "/var/praekelt/txtalert/config/nginx/development.conf"
+}
+
 exec { "Syncdb":
     command => ". ve/bin/activate && \
                     ./manage.py syncdb --noinput --settings=environments.develop && \
@@ -192,6 +197,7 @@ User["ubuntu"]
     -> Class["txtalert::packages"] 
     -> Class["txtalert::accounts"]
     -> Class["txtalert::database"]
+    -> File["/etc/nginx/sites-enabled/development.txtalert.conf"]
     -> Exec["Clone git repository"]
     -> Exec["Update git repository"]
     -> Exec["Checkout development branch"] 
