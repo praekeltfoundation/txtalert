@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <script src="scripts/jquery.min.js"></script>
+    <script src="{{ STATIC_URL }}scripts/jquery.min.js"></script>
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function() {
             $('#widget').click(function(evt) {
@@ -11,13 +11,13 @@
             });
         });
     </script>
-    <link rel="stylesheet" href="style/base.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}style/base.css">
     <title>txtAlert widget</title>
 </head>
 <body>
     <div id="launcher">
         <p>
-            <img src="images/logo.jpg"><br/>
+            <img src="{{ STATIC_URL }}images/logo.jpg"><br/>
             Launch the widget <a id="widget" href="widget.html">in a popup</a><br/>
             or <a href="widget.html">in this window</a>.
         </p>
