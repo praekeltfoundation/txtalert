@@ -85,10 +85,10 @@ SITE_ID = 1
 USE_I18N = True
 
 UPLOAD_ROOT = "upload"
-MEDIA_ROOT = join(APP_ROOT, 'webroot', 'media')
 MEDIA_URL = '/media/'
+MEDIA_ROOT = join(APP_ROOT, 'webroot', 'media')
 STATIC_URL = '/static/'
-ADMIN_MEDIA_PREFIX = '/static/admin/'
+STATIC_ROOT = join(APP_ROOT, 'webroot', 'static')
 
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
