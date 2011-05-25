@@ -35,7 +35,7 @@ def process_receipts(receipts):
             sms_sent.save()
             success.append(receipt)
         except SendSMS.DoesNotExist, error:
-            logging.error(error)
+            logging.info(error)
             fail.append(receipt)
     return success, fail
 

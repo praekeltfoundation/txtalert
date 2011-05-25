@@ -1,9 +1,7 @@
 from txtalert.core.models import PleaseCallMe, MSISDN, Visit, Patient
 from datetime import datetime
 from django.db.models import Q
-
 import logging
-logger = logging.getLogger("signals")
 
 def track_please_call_me_handler(sender, **kwargs):
     if kwargs.get('created', False):
@@ -59,7 +57,7 @@ def track_please_call_me(opera_pcm):
                                             clinic=clinic,
                                             user=opera_pcm.user,
                                             message=opera_pcm.message)
-        logger.info("track_please_call_me: PCM registered for %s at %s for clinic %s from opera PCM: %s" % (
+        logging.info("track_please_call_me: PCM registered for %s at %s for clinic %s from opera PCM: %s" % (
             pcm.msisdn,
             pcm.timestamp,
             pcm.clinic,
@@ -77,7 +75,7 @@ def track_please_call_me(opera_pcm):
                                             timestamp=datetime.now(),
                                             user=opera_pcm.user, 
                                             message=opera_pcm.message)
-        logger.error('track_please_call_me: No contacts found for MSISDN: %s, registering without clinic.' % msisdn)
+        logging.info('track_please_call_me: No contacts found for MSISDN: %s, registering without clinic.' % msisdn)
     else:
         # not sure what to do in this situation yet, lets minimally store the PCM
         # so we don't loose track of any.
@@ -85,7 +83,7 @@ def track_please_call_me(opera_pcm):
                                             timestamp=datetime.now(),
                                             user=opera_pcm.user,
                                             message=opera_pcm.message)
-        logger.error("track_please_call_me: More than one contact found for MSISDN: %s" % msisdn)
+        logging.info("track_please_call_me: More than one contact found for MSISDN: %s" % msisdn)
 
 
 def calculate_risk_profile_handler(sender, **kwargs):
@@ -117,7 +115,7 @@ def check_for_opt_in_changes(patient):
     if 'opted_in' in patient.get_dirty_fields():
         # here we should notify api client of the change in opt-in status 
         # mb via an HTTP push
-        logger.debug('I should push changes somewhere')
+        logging.debug('I should push changes somewhere')
     
 
 
@@ -132,7 +130,7 @@ def find_clinic_for_please_call_me(pcm):
             patient = Patient.objects.get(id=contacts_for_msisdn[0].pk)
             pcm.clinic = patient.get_last_clinic()
         else:
-            logger.error("find_clinic_for_please_call_me: Unable to determine clinic for %s" % pcm.msisdn)
+            logging.info("find_clinic_for_please_call_me: Unable to determine clinic for %s" % pcm.msisdn)
 
 
 def update_active_msisdn_handler(sender, **kwargs):

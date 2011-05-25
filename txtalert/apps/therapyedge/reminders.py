@@ -66,7 +66,7 @@ def send_stats_for_group(gateway, today, group):
     
     users = group.user_set.all()
     visits = Visit.objects.filter(patient__opted_in=True, 
-                                    patient__user__in=users)
+                                    patient__owner__in=users)
     
     # get stats for today's bulk of SMSs sent
     tomorrow_count = visits.filter(date__exact=tomorrow).count()

@@ -24,7 +24,7 @@ def create_booking_patient():
     
     booking_patient.name = 'name'
     booking_patient.surname = 'surname'
-    booking_patient.user = User.objects.get(username='kumbu')
+    booking_patient.owner = User.objects.get(username='kumbu')
     
     booking_patient.te_id = '123456789'
     booking_patient.mrs_id = 'A1234567890-1'
@@ -95,7 +95,7 @@ class BookingPatientTestCase(TestCase):
             patient_ptr=patient.pk
         )
         bp = BookingPatient.objects.create(
-            user = User.objects.get(username='kumbu'),
+            owner = User.objects.get(username='kumbu'),
             patient_ptr=patient,
             created_at=datetime.now(),
             age=20,
