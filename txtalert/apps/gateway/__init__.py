@@ -15,8 +15,6 @@ def load_backend(backend):
         setattr(mod, 'sms_receipt_handler', backend.sms_receipt_handler)
         return backend, backend.gateway, backend.sms_receipt_handler
     except ImportError, e:
-        logging.exception('ImportError while trying to load SMS gateway backend: %s'
-                            % backend)
         raise GatewayException, 'SMS Backend %s does not exist' % backend
 
 
