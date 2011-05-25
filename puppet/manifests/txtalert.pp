@@ -48,6 +48,7 @@ class txtalert::packages {
     apt::package { "memcached": ensure => latest }
     apt::package { "tidy": ensure => latest }
     apt::package { "curl": ensure => latest }
+    apt::package { "nginx": ensure => latest }
 }
 
 
