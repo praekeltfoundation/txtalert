@@ -17,5 +17,5 @@ class PatientBackend(ModelBackend):
                 user.save()
                 AuthProfile.objects.create(user=user, patient=patient)
                 return user
-        except Patient.DoestNotExist, e:
+        except Patient.DoesNotExist, e:
             return False
