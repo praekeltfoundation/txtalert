@@ -96,6 +96,10 @@ class SoftDeleteMixin(object):
     
 
 
+# class UserProfile(object):
+#     user = models.OneToOneField('auth.User')
+#     patient = models.ForeignKey(Patient)
+
 class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     SEX_CHOICES = (
         ('m', 'male'),
@@ -105,7 +109,7 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         ('m>f', 'transgender m>f'),
     )
     
-    user = models.ForeignKey(User)
+    user = models.ForeignKey('auth.User')
     te_id = models.CharField('MRS ID', max_length=10, unique=True)
     msisdns = models.ManyToManyField(MSISDN, related_name='contacts')
     active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', 

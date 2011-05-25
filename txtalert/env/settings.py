@@ -71,6 +71,13 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    # 'txtalert.core.auth.backends.PatientBackend'
+)
+
+# AUTH_PROFILE_MODULE = 'core.UserProfile'
+
 TEMPLATE_DIRS = (
     'templates',
 )

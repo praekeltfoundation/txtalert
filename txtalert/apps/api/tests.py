@@ -116,12 +116,9 @@ class OperaTestCase(TestCase):
         # mimick POSTed receipt from Opera
         add_perms_to_user('user','can_place_sms_receipt')
         
-        from django.http import HttpRequest
-        request = HttpRequest()
-        request.method = 'POST'
-        request.raw_post_data = raw_xml_post.strip()
-        request.META['CONTENT_TYPE'] = 'text/xml'
-        request.META['HTTP_AUTHORIZATION'] = basic_auth_string('user', 'password')
+        from django.test.client import RequestFactory
+        factory = RequestFactory(HTTP_AUTHORIZATION=basic_auth_string('user', 'password'))
+        request = factory.post('/', raw_xml_post.strip(), content_type='application/xml; charset=utf-8;')
         request.user = User.objects.get(username='user')
         
         # ugly monkey patching to avoid us having to use a URL to test the opera
@@ -172,12 +169,9 @@ class OperaTestCase(TestCase):
         </receipts>
         """
         
-        from django.http import HttpRequest
-        request = HttpRequest()
-        request.method = 'POST'
-        request.raw_post_data = raw_xml_post.strip()
-        request.META['CONTENT_TYPE'] = 'text/xml'
-        request.META['HTTP_AUTHORIZATION'] = basic_auth_string('user', 'password')
+        from django.test.client import RequestFactory
+        factory = RequestFactory(HTTP_AUTHORIZATION=basic_auth_string('user', 'password'))
+        request = factory.post('/', raw_xml_post.strip(), content_type='application/xml; charset=utf-8;')
         request.user = User.objects.get(username='user')
         
         # ugly monkey patching to avoid us having to use a URL to test the opera
@@ -236,12 +230,9 @@ class OperaTestCase(TestCase):
         # mimick POSTed receipt from Opera
         add_perms_to_user('user','can_place_sms_receipt')
         
-        from django.http import HttpRequest
-        request = HttpRequest()
-        request.method = 'POST'
-        request.raw_post_data = raw_xml_post.strip()
-        request.META['CONTENT_TYPE'] = 'text/xml'
-        request.META['HTTP_AUTHORIZATION'] = basic_auth_string('user', 'password')
+        from django.test.client import RequestFactory
+        factory = RequestFactory(HTTP_AUTHORIZATION=basic_auth_string('user', 'password'))
+        request = factory.post('/', raw_xml_post.strip(), content_type='application/xml; charset=utf-8;')
         request.user = User.objects.get(username='user')
         
         from txtalert.apps.gateway.backends.opera.views import sms_receipt_handler
