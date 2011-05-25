@@ -15,24 +15,11 @@ var widget = {
 
 // Mock the txtalert patient Api
 var Patient = {
-    
-    patients: [{
-        msisdn: '0761234567',
-        patient_id: '123',
-        next_appointment: new Date(2012,1,1),
-        clinic: 'Temba Lethu Clinic'
-    }],
-    
-    find: function(msisdn, patient_id) {
-        console.log(this.patients);
-        for(idx in this.patients) {
-            patient = this.patients[idx];
-            console.log(patient);
-            if(patient.msisdn == msisdn && patient.patient_id == patient_id) {
-                return patient;
-            }
-        }
-        return false;
+    find: function(msisdn, patient_id, callback) {
+        $.getJSON('/api/v1/patient.json', {
+            msisdn: msisdn,
+            patient_id: patient_id
+        }, callback);
     }
 };
 
@@ -55,13 +42,13 @@ $(document).ready(function() {
         widget.setPreferenceForKey('msisdn', msisdn);
         widget.setPreferenceForKey('patient_id', msisdn);
         
-        patient = Patient.find(msisdn, patient_id);
-        if(patient) {
-            show_next_appointment_for(patient);
-        } else {
-            login_failed();
-        }
-        
+        Patient.find(msisdn, patient_id, function(patient) {
+            if(patient.msisdn && patient.patient_id) {
+                show_next_appointment_for(patient);
+            } else {
+                login_failed();
+            }
+        });
         return false;
     });
 });
@@ -72,9 +59,9 @@ var Format = {
         'July', 'August', 'September', 'October', 'November', 'December'
     ],
     
-    date: function(date) {
-        abbr_month = this.months[date.getMonth()];
-        return [date.getDate(), abbr_month, date.getFullYear()].join(" ");
+    date: function(triplet) {
+        abbr_month = this.months[triplet[1]];
+        return [triplet[0], abbr_month, triplet[2]].join(" ");
     }
 };
 
@@ -85,8 +72,14 @@ var login_failed = function() {
 };
 
 var show_next_appointment_for = function(patient) {
-    $('#signin').hide();
-    $('#appointment .info h1').html(Format.date(patient.next_appointment));
-    $('#appointment .info h2').html(patient.clinic);
-    $('#appointment').show();
+    if(patient.next_appointment.length == 0) {
+        $('#signin .error').css('display', 'block');
+        $('#signin .error').html("You don't have a next appointment.<br/>" + 
+                                    "<strong>Please contact your clinic.</strong>");
+    } else {
+        $('#signin').hide();
+        $('#appointment .info h1').html(Format.date(patient.next_appointment));
+        $('#appointment .info h2').html(patient.clinic);
+        $('#appointment').show();
+    }
 };

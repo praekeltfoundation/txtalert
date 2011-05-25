@@ -6,6 +6,7 @@ from piston.utils import rc, require_mime, throttle
 
 from txtalert.apps.gateway.models import SendSMS, PleaseCallMe
 from txtalert.apps.gateway import gateway, sms_receipt_handler
+from txtalert.core.models import Patient, Visit
 
 from datetime import datetime, timedelta
 import logging
@@ -182,13 +183,20 @@ class PatientHandler(BaseHandler):
                 patient_id = request.GET.get('patient_id')
                 patient = Patient.objects.get(active_msisdn__msisdn=msisdn,
                                                 te_id=patient_id)
-                visit = patient.next_visit()
+                try:
+                    visit = patient.next_visit()
+                    visit_info = [visit.date.year, visit.date.month, visit.date.day]
+                    clinic_name = visit.clinic.name
+                except Visit.DoesNotExist:
+                    visit_info = []
+                    clinic_name = ''
+                
                 return {
                     'msisdn': msisdn,
                     'patient_id': patient_id,
-                    'next_appointment': (visit.date.year, visit.date.month, visit.date.day),
-                    'clinic': visit.clinic.name,
+                    'next_appointment': visit_info,
+                    'clinic': clinic_name,
                 }
-            except (Patient.DoesNotExist, Visit.DoesNotExist):
+            except Patient.DoesNotExist:
                 pass
         return {}

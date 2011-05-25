@@ -160,7 +160,7 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         return None
     
     def next_visit(self):
-        self.visit_set.filter(status__in=['s','r']).latest()
+        return self.visit_set.filter(status__in=['s','r']).latest()
     
 
 class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
