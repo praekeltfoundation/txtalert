@@ -27,8 +27,9 @@ admin.autodiscover()
 urlpatterns = patterns('',
     # Uncomment this for admin docs:
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
+    
     (r'', include('txtalert.apps.general.jquery.urls')),
+    (r'', include('txtalert.core.urls')),
     (r'^therapyedge/', include('txtalert.apps.therapyedge.urls')),
     (r'^bookingtool/', include('txtalert.apps.bookingtool.urls')),
     (r'^bookings/', include('txtalert.apps.bookings.urls', namespace='bookings')),
