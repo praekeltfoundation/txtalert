@@ -1,27 +1,33 @@
-// mock Opera mini's widget API while we're developing in
-// a desktop browser
-var widget = {
-    storage: {},
-    
-    setPreferenceForKey: function(key, value) {
-        this.storage[key] = value;
-        return value;
-    },
-    
-    preferenceForKey: function(key) {
-        return this.storage[key];
-    }
-};
-
-// Mock the txtalert patient Api
+// Access to txtalert patient json API
 var Patient = {
+    URL: 'http://qa.txtalert.praekeltfoundation.org/api/v1/patient.json',
     find: function(msisdn, patient_id, callback) {
-        $.getJSON('/api/v1/patient.json', {
+        $.getJSON(this.URL, {
             msisdn: msisdn,
             patient_id: patient_id
         }, callback);
     }
 };
+
+// Allow the widget to run outside the widget environment
+if(typeof window.widget == "undefined") {
+    console.log('Mocking widget, not running in the Widget environment');
+    window.widget = {
+        storage: {},
+
+        setPreferenceForKey: function(key, value) {
+            this.storage[key] = value;
+            return value;
+        },
+
+        preferenceForKey: function(key) {
+            return this.storage[key];
+        }
+    };
+    
+    console.log('Mocking URL to use relative Ajax URL');
+    Patient.URL = '/api/v1/patient.json';
+}
 
 $(document).ready(function() {
     var form = $('#signin_form');
