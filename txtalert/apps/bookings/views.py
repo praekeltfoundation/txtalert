@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -94,3 +94,11 @@ def request_call(request):
 def todo(request):
     """Anything that resolves to here still needs to be completed"""
     return HttpResponse("This still needs to be implemented.")
+
+def not_found(request):
+    """test 404 template rendering"""
+    raise Http404
+
+def server_error(request):
+    """test 500 template rendering"""
+    raise Exception, '500 testing'

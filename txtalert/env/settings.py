@@ -25,7 +25,7 @@ PROJECT_NAME = os.path.basename(APP_ROOT)
 
 SECRET_KEY = ''
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 DATABASES = {
