@@ -7,9 +7,9 @@ from django.core.paginator import Paginator
 from txtalert.core.models import Visit
 from datetime import date
 
-def effective_page_range_for(page,paginator):
-    return [p for p in range(page.number-3,page.number+4) 
-                            if (p > 0 and p <= paginator.num_pages)]
+def effective_page_range_for(page,paginator,delta=3):
+    return [p for p in range(page.number-delta,page.number+delta+1) 
+                if (p > 0 and p <= paginator.num_pages)]
 @login_required
 def index(request):
     profile = request.user.get_profile()

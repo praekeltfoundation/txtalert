@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:index %}">Home</a> &raquo; Internal Server Error</span>
+{% endblock %}
+		
+
+{% block content %}
+<div class="widget">
+	There appears to be some technical difficulties right now, but be sure our engineers are working on it furiously!<br>
+	Please come back a little later.<br>
+	We apologize for any inconvenience this outage might have caused. 
+</div>
+
+{% include "includes/menu.html" %}
+
+{% endblock %}
