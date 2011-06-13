@@ -6,6 +6,7 @@ urlpatterns = patterns('',
     (r'^todo/.*', views.todo, {}, 'todo'),
     (r'^appointment/change/(?P<visit_id>\d+)/$', views.appointment_change, {}, 'appointment_change'),
     (r'^appointment/upcoming/$', views.appointment_upcoming, {}, 'appointment_upcoming'),
+    (r'^appointment/history/$', views.appointment_history, {}, 'appointment_history'),
     (r'^sign-in/$', 'django.contrib.auth.views.login', { 
             'template_name': 'signin.html' 
         }, 'signin'),

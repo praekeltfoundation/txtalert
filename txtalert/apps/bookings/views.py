@@ -6,6 +6,9 @@ from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 from txtalert.core.models import Visit
 
+def effective_page_range_for(page,paginator):
+    return [p for p in range(page.number-3,page.number+4) 
+                            if (p > 0 and p <= paginator.num_pages)]
 @login_required
 def index(request):
     profile = request.user.get_profile()
@@ -37,15 +40,27 @@ def appointment_upcoming(request):
     patient = profile.patient
     paginator = Paginator(patient.visit_set.upcoming(), 5)
     page = paginator.page(request.GET.get('p', 1))
-    effective_page_range = [p for p in range(page.number-3,page.number+3) 
-                            if (p > 0 and p <= paginator.num_pages)]
     return render_to_response("appointment/upcoming.html", {
+        'profile': profile,
+        'patient': patient,
+        'paginator': paginator,
+        'page': page,
+        'effective_page_range': effective_page_range_for(page, paginator)
+    }, context_instance = RequestContext(request))
+
+@login_required
+def appointment_history(request):
+    profile = request.user.get_profile()
+    patient = profile.patient
+    paginator = Paginator(patient.visit_set.past(), 5)
+    page = paginator.page(request.GET.get('p', 1))
+    return render_to_response("appointment/history.html", {
         'profile': profile,
         'patient': profile.patient,
         'paginator': paginator,
         'page': page,
-        'effective_page_range': effective_page_range
-    }, context_instance = RequestContext(request))
+        'effective_page_range': effective_page_range_for(page, paginator)
+    }, context_instance=RequestContext(request))
 
 def todo(request):
     """Anything that resolves to here still needs to be completed"""

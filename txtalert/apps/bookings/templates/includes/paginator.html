@@ -1,0 +1,21 @@
+{% if page.has_other_pages %}
+    <div class="pagination">
+    
+        {% if page.has_previous %}
+            <a href="?p={{page.previous_page_number}}">&laquo; Previous</a>
+        {% endif %}
+    
+        {% for page_number in effective_page_range %}
+            {% if page_number == page.number %}
+                <b>{{page_number}}</b>
+            {% else %}
+                <a href="?p={{page_number}}">{{page_number}}</a>
+            {% endif %}
+            {% if not forloop.last %}|{% endif %}
+        {% endfor %}
+    
+        {% if page.has_next %}
+            <a href="?p={{page.next_page_number}}">&raquo; Next</a>
+        {% endif %}
+    </div>
+{% endif %}
