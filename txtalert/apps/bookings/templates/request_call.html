@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block header %}
+<span><a href="{% url bookings:index  %}">Home</a> &raquo; Request Call</span>
+{% endblock %}
+
+{% block content %}
+<div class="widget">
+	<span class="black">Click on the button below to request a call from the clinic.</span>
+	<pre>
+	    TODO:
+	    We need to change this to the following:
+	    
+	    1. Use a form
+	    2. Allow the user to specify a different phone number to be called on
+	</pre>
+	<div class="clear"></div>
+	<a href="#" class="block">Send Request</a>
+</div>
+
+<div class="clear"></div>
+
+{% include "includes/menu.html" %}
+{% endblock %}

@@ -169,6 +169,8 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
                 .order_by('date')[0]
     
 
+    
+
 class VisitManager(FilteredQuerySetManager):
     def upcoming(self):
         return self.get_query_set().filter(date__gte=date.today())

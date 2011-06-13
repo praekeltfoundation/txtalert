@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 from txtalert.core.models import Visit
+from datetime import date
 
 def effective_page_range_for(page,paginator):
     return [p for p in range(page.number-3,page.number+4) 
@@ -60,6 +61,34 @@ def appointment_history(request):
         'paginator': paginator,
         'page': page,
         'effective_page_range': effective_page_range_for(page, paginator)
+    }, context_instance=RequestContext(request))
+    
+@login_required
+def attendance_barometer(request):
+    profile = request.user.get_profile()
+    patient = profile.patient
+    visits = patient.visit_set.all()
+    attended = visits.filter(status='a').count()
+    missed = visits.filter(status='m').count()
+    total = visits.filter(date__lt=date.today()).count()
+    return render_to_response("attendance_barometer.html", {
+        'profile': profile,
+        'patient': patient,
+        'attendance': int(float(attended) / float(total) * 100),
+        'attended': attended,
+        'missed': missed,
+        'total': total
+    }, context_instance=RequestContext(request))
+
+def request_call(request):
+    if not request.user.is_anonymous():
+        profile = request.user.get_profile()
+        patient = profile.patient
+    else:
+        profile = patient = None
+    return render_to_response('request_call.html', {
+        'profile': profile,
+        'patient': patient,
     }, context_instance=RequestContext(request))
 
 def todo(request):
