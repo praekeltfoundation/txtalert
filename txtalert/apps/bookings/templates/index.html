@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <span class="profile">Hello Patient {{patient.te_id}}</span>
+{% endblock %}
+    
+{% block content %}
+    <div class="widget appointment">
+        <!--<span class="alert">Your appointment schedule has been updated. <br>
+        <a href="#">Review upcoming appointments</a></span>-->
+        <span class="record">Your next appointment is:</span><br>
+        <span class="large">{{patient.next_visit.date|date:"j F Y"}}</span><br>
+        {{patient.next_visit.clinic.name}}<br>
+        <a href="{% url bookings:appointment_change visit_id=patient.next_visit.pk %}">Do you need to change this?</a>
+    </div>
+
+    <div class="clear"></div>
+
+    {% include "includes/menu.html" %}
+
+{% endblock %}
+    
+{% block post_content %}
+<div class="widget grey">
+    Young Africa Live
+</div>
+
+<div class="widget links">
+    <a href="{% url bookings:todo %}">HIV: The Facts</a><br>
+    <a href="{% url bookings:todo %}">Help: At Hand</a><br>
+    <a href="{% url bookings:todo %}">Take Our STI Quiz and Win Airtime</a><br>
+    <a href="{% url bookings:todo %}young-africa-live.html">More Young Africa Live...</a>
+</div>
+<div class="clear"></div>
+{% endblock %}

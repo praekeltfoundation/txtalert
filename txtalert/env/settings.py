@@ -59,6 +59,12 @@ MEDIA_ROOT = join(APP_ROOT, 'webroot', 'media')
 STATIC_URL = '/static/'
 STATIC_ROOT = join(APP_ROOT, 'webroot', 'static')
 
+AUTH_PROFILE_MODULE = 'core.AuthProfile'
+LOGIN_URL = '/bookings/sign-in/'
+LOGOUT_URL = '/bookings/sign-out/'
+LOGIN_REDIRECT_URL = '/bookings/'
+
+
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',

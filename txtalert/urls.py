@@ -37,8 +37,6 @@ urlpatterns = patterns('',
     (r'^geckoboard/', include('txtalert.apps.geckoboard.urls')),
     # (r'^sms/', include('opera.urls')),
     (r'^admin/', include(admin.site.urls)),
-    (r'^static/(.*)$', 'django.views.static.serve', \
-                            {'document_root': settings.MEDIA_ROOT}, "static"),
 )
 
 # web API

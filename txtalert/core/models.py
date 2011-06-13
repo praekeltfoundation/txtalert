@@ -20,6 +20,8 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_save
 from dirtyfields import DirtyFieldsMixin
 from history.models import HistoricalRecords
+from datetime import datetime, date
+import logging
 
 VISIT_STATUS_CHOICES = (
     ('m', 'Missed'),
@@ -99,6 +101,9 @@ class SoftDeleteMixin(object):
 class AuthProfile(models.Model):
     user = models.OneToOneField('auth.User')
     patient = models.OneToOneField('Patient')
+    
+    def __unicode__(self):
+        return u"AuthProfile for %s - %s" % (self.patient, self.user)
 
 class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     SEX_CHOICES = (
@@ -160,8 +165,16 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         return None
     
     def next_visit(self):
-        return self.visit_set.filter(status__in=['s','r']).latest()
+        return self.visit_set.filter(status__in=['s','r'], date__gte=date.today())\
+                .order_by('date')[0]
     
+
+class VisitManager(FilteredQuerySetManager):
+    def upcoming(self):
+        return self.get_query_set().filter(date__gte=date.today())
+    
+    def past(self):
+        return self.get_query_set().filter(date__lt=date.today())
 
 class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     
@@ -192,7 +205,7 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     # custom manager that excludes all deleted patients
-    objects = FilteredQuerySetManager(deleted=False)
+    objects = VisitManager(deleted=False)
     
     # normal custom manager, including deleted patients
     all_objects = models.Manager()
@@ -206,9 +219,16 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         ordering = ['date']
         get_latest_by = 'id'
     
+    def reschedule_earlier(self):
+        logging.warning('TODO: reschedule_earlier for %s' % self)
+        return True
+    
+    def reschedule_later(self):
+        logging.warning('TODO: reschedule_later for %s' % self)
+        return True
     
     def __unicode__(self):
-        return self.get_visit_type_display()
+        return "%s at %s" % (self.get_visit_type_display(), self.date)
     
 
 

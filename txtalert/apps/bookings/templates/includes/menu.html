@@ -1,0 +1,12 @@
+<div class="nav">
+    {% if patient.visit_set.upcoming %}
+	    <a href="{% url bookings:appointment_upcoming %}">Upcoming Appointments</a>
+    {% endif %}
+    {% if patient.visit_set.past %}
+	    <a href="{% url bookings:todo %}appointment-history.html">Appointment History</a>
+    {% endif %}
+	<a href="{% url bookings:todo %}attendance-barometer.html">Attendance Barometer</a>
+	<a href="{% url bookings:todo %}request-call.html">Request A Call From Clinic</a>
+</div>
+
+<div class="clear"></div>
