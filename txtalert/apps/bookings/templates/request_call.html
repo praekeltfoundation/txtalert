@@ -4,30 +4,46 @@
 <span><a href="{% url bookings:index  %}">Home</a> &raquo; Request Call</span>
 {% endblock %}
 
+{% block error %}
+    {% if form.errors %}
+        <div class="alert">
+            <span class="error">
+                {% for field in form.visible_fields %}
+                    {% for error in field.errors %}
+                        <li>{{error}}</li>
+                    {% endfor %}
+                {% endfor %}
+            </span>
+        </div>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="widget">
-	<span class="black">Click on the button below to request a call from the clinic.</span>
-    <div class="widget">
-        <form action="" method="post">
-            <label><strong>What number can reach you on?</strong></label><br>
-            <br/>
-            {% if user.is_anonymous %}
-                    <label for="id_name">Enter your name: </label>
-                    <input type="text" name="name" id="id_name" value=""/><br>
-                    <br/>
-                    <label for="id_msisdn">Enter phone number: </label>
-                    <input type="text" name="msisdn" id="id_msisdn" value=""/><br>
-                    <br/>
-            {% else %}
-                <input type="radio" name="number" id="id_existing" value="{{user.username}}" checked="true">
-                    <label for="id_existing">My existing number: </label> {{user.username}}<br>
-                    <br/>
-                <input type="radio" name="number" id="id_unknown">
-                    <label for="id_unknown">On a different number: </label> <input type="text" name="msisdn" value=""/><br>
-                    <br/>
-            {% endif %}
-            <input type="submit" class="request" value="Send Request"><br>
-        </form>
+    {% if user.is_anonymous %}
+        <span class="black">Fill in the following details to request a call.</span>
+        <div class="widget">
+            <form action="" method="post" accept-charset="utf-8">
+                {% for field in form.visible_fields %}
+                <label for="id_{{field.name}}"><strong>{{field.help_text}}</strong></label><br/>
+                {{field}}<br/>
+                <br/>
+                {% endfor %}
+                <input type="submit" class="request" value="Send Request"><br>
+            </form>
+        </div>
+    {% else %}
+        <span class="black">Click on the button below to request a call from the clinic.</span>
+        <div class="widget">
+            <form action="" method="post">
+                <input type="hidden" name="{{form.clinic.name}}" value="{{patient.last_clinic.pk}}" id="id_{{form.clinic.name}}">
+                <label for="id_{{form.msisdn.name}}"><strong>{{form.msisdn.help_text}}</strong></label><br/>
+                {{form.msisdn}}<br/>
+                <br/>
+                <br/>
+                <input type="submit" class="request" value="Send Request"><br>
+            </form>
+        {% endif %}
     </div>
 
     <div class="clear"></div>

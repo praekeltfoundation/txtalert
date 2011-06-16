@@ -15,6 +15,15 @@
         <div class="clear"></div>
     </div>
     <div class="clear"></div>
+    {% if messages %}
+        <div class="alert">
+            <span class="error">
+            {% for message in messages %}
+                {{message}}<br/>
+            {% endfor %}
+            </span>
+        </div>
+    {% endif %}
     {% block error %}
     {% endblock %}
     {% block pre_content %}

@@ -1,11 +1,15 @@
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
-from txtalert.core.models import Visit
-from datetime import date
+import logging
+from txtalert.core.models import Visit, PleaseCallMe, MSISDN
+from txtalert.core.forms import RequestCallForm
+from txtalert.core.utils import normalize_msisdn
+from datetime import date, datetime
 
 def effective_page_range_for(page,paginator,delta=3):
     return [p for p in range(page.number-delta,page.number+delta+1) 
@@ -81,14 +85,37 @@ def attendance_barometer(request):
     }, context_instance=RequestContext(request))
 
 def request_call(request):
-    if not request.user.is_anonymous():
+    if request.POST:
+        form = RequestCallForm(request.POST)
+        if form.is_valid():
+            clinic = form.cleaned_data['clinic']
+            # normalize
+            msisdn = normalize_msisdn(form.cleaned_data['msisdn'])
+            # orm object
+            msisdn_record, _ = MSISDN.objects.get_or_create(msisdn=msisdn)
+            pcm = PleaseCallMe(user=clinic.user, clinic=clinic, 
+                msisdn=msisdn_record, timestamp=datetime.now(), 
+                message='Called request via txtAlert Bookings')
+            pcm.save()
+            messages.add_message(request, messages.INFO, 
+                        'Your call request has been registered. '\
+                        'The clinic will call you back as soon as possible.')
+            return HttpResponseRedirect(reverse('bookings:request_call'))
+    else:
+        form = RequestCallForm(initial={
+            'msisdn': '' if request.user.is_anonymous() else request.user.username
+        })
+    
+    if request.user.is_anonymous():
+        profile = patient = None
+    else:
         profile = request.user.get_profile()
         patient = profile.patient
-    else:
-        profile = patient = None
+    
     return render_to_response('request_call.html', {
         'profile': profile,
         'patient': patient,
+        'form': form,
     }, context_instance=RequestContext(request))
 
 def todo(request):

@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from txtalert.apps.gateway.models import SendSMS
+from txtalert.core.utils import normalize_msisdn
 from utils import read_cd4_document
 
 # column layout in sample.xls
@@ -39,16 +40,6 @@ class CD4Document(models.Model):
     def __unicode__(self):
         return u"CD4Document uploaded at %s" % (self.created_at,)
     
-
-def normalize_msisdn(raw):
-    raw = str(int(raw))
-    if raw.startswith('0'):
-        return '27' + raw[1:]
-    if raw.startswith('+'):
-        return raw[1:]
-    if raw.startswith('27'):
-        return raw
-    return '27' + raw
 
 def load_cd4_records(sender, **kwargs):
     created = kwargs.get('created', False)
