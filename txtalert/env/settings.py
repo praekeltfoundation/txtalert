@@ -94,9 +94,6 @@ INSTALLED_APPS = (
     'txtalert.apps.general.settings',
     'txtalert.apps.general.jquery',
     'txtalert.apps.therapyedge',
-    # booking tool is on its way out
-    'txtalert.apps.bookingtool',
-    # bookings is on its way in
     'txtalert.apps.bookings',
     'txtalert.apps.widget',
     'txtalert.apps.gateway',
