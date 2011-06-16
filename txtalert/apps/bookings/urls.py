@@ -4,6 +4,7 @@ from txtalert.apps.bookings import views
 
 urlpatterns = patterns('',
     (r'^$', views.index, {}, 'index'),
+    (r'^admin/', include('txtalert.apps.bookings.admin.urls', namespace='admin')),
     (r'^todo/.*', views.todo, {}, 'todo'),
     (r'^appointment/change/(?P<visit_id>\d+)/$', views.appointment_change, {}, 'appointment_change'),
     (r'^appointment/upcoming/$', views.appointment_upcoming, {}, 'appointment_upcoming'),

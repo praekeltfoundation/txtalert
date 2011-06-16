@@ -1,0 +1,26 @@
+{% extends "admin/admin_base.html" %}
+
+{% block header %}
+    <span>Sign In</span>
+{% endblock %}
+
+{% block content %}
+    <div class="widget border">
+        <form action="" method="post" accept-charset="utf-8">
+            <label>Username</label><br>
+            {{form.username}}<br>
+            <label>Password</label><br>
+            {{form.password}}<br>
+            <input type="submit" value="Sign In" class="submit">
+            <input type="hidden" name="next" value="{{next}}">
+            {% csrf_token %}
+        </form>
+    </div>
+{% endblock %}
+
+{% block post_content %}
+    <div class="widget">
+        Forgot your passowrd?<br>
+        <a href="">Contact Support</a>
+    </div>
+{% endblock %}
