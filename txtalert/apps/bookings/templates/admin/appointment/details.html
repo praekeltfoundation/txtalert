@@ -1,0 +1,32 @@
+{% extends "admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; New Appointment</span>
+{% endblock %}
+
+{% block content %}
+    <div class="widget alert border">
+        {{patient.te_id}}<br> {{patient.get_display_name}}
+        </div>
+
+    <div class="widget border">
+        <form method="post" action="new-appointment-complete.html">
+            <label>Select time on 14 April 2011:</label>
+            <select>
+                <option>14:00</option>
+            </select>
+            <label>Appointment Type:</label>
+            <select>
+                <option>Lorem Ipsum</option>
+            </select>
+            <label>Appointment Notes:</label>
+            <textarea rows="2"></textarea>
+            <input type="submit" class="submit" value="Make Appointment">
+        </form>
+        <a href="new-appointment-step-2.html" class="green">&laquo; Back</a>
+        <a href="index.html" class="cancel">Cancel</a>
+    </div>
+
+    <div class="clear"></div>
+
+{% endblock %}

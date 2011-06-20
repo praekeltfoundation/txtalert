@@ -4,6 +4,11 @@ from txtalert.apps.bookings.admin import views
 
 urlpatterns = patterns('',
     (r'^$', views.index, {}, 'index'),
+    (r'^patient/new/$', views.new_patient, {}, 'new_patient'),
+    (r'^patient/details/$', views.new_patient_details, {}, 'new_patient_details'),
+    (r'^patient/find/$', views.find_patient, {}, 'find_patient'),
+    (r'^appointment/new/$', views.new_appointment, {}, 'new_appointment'),
+    (r'^appointment/details/$', views.new_appointment_details, {}, 'new_appointment_details'),
     (r'^sign-in/$', 'django.contrib.auth.views.login', { 
             'template_name': 'admin/signin.html' 
         }, 'signin'),

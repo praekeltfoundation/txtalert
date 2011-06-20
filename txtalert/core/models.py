@@ -20,7 +20,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_save
 from dirtyfields import DirtyFieldsMixin
 from history.models import HistoricalRecords
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import logging
 
 VISIT_STATUS_CHOICES = (
@@ -114,18 +114,27 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         ('m>f', 'transgender m>f'),
     )
     
+    REGIMENT_CHOICES = (
+        (28, 'Monthly'),
+        (28*2, 'Bi-monthly'),
+        (28*3, 'Tri-monthly'),
+    )
+    
     owner = models.ForeignKey('auth.User')
     te_id = models.CharField('MRS ID', max_length=10, unique=True)
+    name = models.CharField(blank=True, max_length=100)
+    surname = models.CharField(blank=True, max_length=100)
     msisdns = models.ManyToManyField(MSISDN, related_name='contacts')
     active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', 
                                         null=True, blank=True)
     
     age = models.IntegerField('Age')
-    sex = models.CharField('Sex', max_length=3, choices=SEX_CHOICES)
+    regiment = models.IntegerField(blank=True, null=True, choices=REGIMENT_CHOICES)
+    sex = models.CharField('Gender', max_length=3, choices=SEX_CHOICES)
     opted_in = models.BooleanField('Opted In', default=True)
     disclosed = models.BooleanField('Disclosed', default=False)
     deceased = models.BooleanField('Deceased', default=False)
-    last_clinic = models.ForeignKey(Clinic, verbose_name='Last Clinic', 
+    last_clinic = models.ForeignKey(Clinic, verbose_name='Clinic', 
                                         blank=True, null=True)
     risk_profile = models.FloatField('Risk Profile', blank=True, null=True)
     language = models.ForeignKey(Language, verbose_name='Language', default=1)
@@ -168,8 +177,37 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         return self.visit_set.filter(status__in=['s','r'], date__gte=date.today())\
                 .order_by('date')[0]
     
-
+    def last_visit(self):
+        try:
+            return self.visit_set.past().filter(status='a')[0]
+        except IndexError:
+            return None
     
+    def get_display_name(self):
+        if self.surname and self.name:
+            return u'%s, %s' % (self.surname, self.name)
+        else:
+            return u'Anonymous'
+    
+    def regiment_remaining(self):
+        last_visit = self.last_visit()
+        if last_visit:
+            next_visit = last_visit.date + timedelta(days=self.regiment)
+            delta = next_visit - date.today()
+            return delta
+        else:
+            return None
+    
+    def next_visit_dates(self):
+        last_visit = self.last_visit()
+        if last_visit:
+            last_visit_date = last_visit.date
+        else:
+            last_visit_date = date.today()
+        
+        next_visit = last_visit_date + timedelta(days=self.regiment)
+        return [next_visit + timedelta(days=i) for i in range(-8, 8)]
+        
 
 class VisitManager(FilteredQuerySetManager):
     def upcoming(self):

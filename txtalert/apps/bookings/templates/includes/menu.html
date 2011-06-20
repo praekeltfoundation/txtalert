@@ -1,4 +1,4 @@
-{% if not user.is_anonymous %}
+{% if user.get_profile %}
 <div class="nav">
     {% if patient.visit_set.upcoming %}
 	    <a href="{% url bookings:appointment_upcoming %}">Upcoming Appointments</a>
