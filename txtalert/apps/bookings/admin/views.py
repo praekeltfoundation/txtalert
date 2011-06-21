@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from txtalert.apps.bookings.admin import forms
 from txtalert.apps.bookings.views import effective_page_range_for
-from txtalert.core.models import Patient, Visit
+from txtalert.core.models import Patient, Visit, ChangeRequest
 from txtalert.core.utils import normalize_msisdn
 import logging
 from datetime import datetime, date
@@ -183,4 +183,67 @@ def appointments(request):
         'first_upcoming_visit': first_upcoming_visit,
         'query_string': '&'.join(['date_%s=%s' % (part, getattr(day, part)) 
             for part in date_parts])
+    }, context_instance=RequestContext(request))
+
+@permission_required(LOGIN_PERMISSION, login_url=LOGIN_URL)
+def view_patient(request):
+    patient = get_object_or_404(Patient, pk=request.GET.get('patient_id'))
+    return HttpResponseRedirect(reverse('bookings:admin:edit_patient', kwargs={
+        'patient_id': patient.pk
+    }))
+
+@permission_required(LOGIN_PERMISSION, login_url=LOGIN_URL)
+def edit_patient(request, patient_id):
+    patient = get_object_or_404(Patient, pk=patient_id)
+    visits = patient.visit_set.all()
+    attended = visits.filter(status='a').count()
+    missed = visits.filter(status='m').count()
+    rescheduled = visits.filter(status='r').count()
+    total = visits.filter(date__lt=date.today()).count()
+    if attended > 0:
+        attendance = int(float(attended) / float(total) * 100)
+    else: 
+        attendance = 0
+    
+    if request.POST:
+        form = forms.PatientForm(request.POST, instance=patient)
+        if form.is_valid():
+            patient = form.save()
+            messages.add_message(request, messages.INFO, 'Patient updated')
+            return HttpResponseRedirect(reverse('bookings:admin:edit_patient', kwargs={
+                'patient_id': patient.pk
+            }))
+    else:
+        form = forms.PatientForm(instance=patient, initial={
+            'active_msisdn': patient.active_msisdn.msisdn
+        })
+    return render_to_response('admin/patient/view.html', {
+        'patient': patient,
+        'form': form,
+        'attendance': attendance,
+        'attended': attended,
+        'rescheduled': rescheduled,
+        'missed': missed,
+        'total': total,
+    }, context_instance=RequestContext(request))
+
+@permission_required(LOGIN_PERMISSION, login_url=LOGIN_URL)
+def change_requests(request):
+    change_requests = ChangeRequest.objects.all()
+    
+    paginator = Paginator(change_requests, 5)
+    page = paginator.page(request.GET.get('p', 1))
+    
+    return render_to_response('admin/change_request/index.html', {
+        'paginator': paginator,
+        'page': page
+    }, context_instance=RequestContext(request))
+
+@permission_required(LOGIN_PERMISSION, login_url=LOGIN_URL)
+def change_request_details(request, change_request_id):
+    change_request = get_object_or_404(ChangeRequest, pk=change_request_id)
+    return render_to_response('admin/change_request/date.html', {
+        'change_request': change_request,
+        'visit': change_request.visit,
+        'patient': change_request.visit.patient,
     }, context_instance=RequestContext(request))

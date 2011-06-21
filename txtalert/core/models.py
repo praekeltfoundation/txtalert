@@ -260,12 +260,12 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         get_latest_by = 'id'
     
     def reschedule_earlier(self):
-        logging.warning('TODO: reschedule_earlier for %s' % self)
-        return True
+        return self.changerequest_set.create(request='Patient has requested '
+            'the appointment to be rescheduled to an earlier date')
     
     def reschedule_later(self):
-        logging.warning('TODO: reschedule_later for %s' % self)
-        return True
+        return self.changerequest_set.create(request='Patient has requested '
+            'the appointment to be rescheduled to a later date')
     
     def __unicode__(self):
         return "%s at %s" % (self.get_visit_type_display(), self.date)
@@ -309,6 +309,20 @@ class Event(models.Model):
 
     def __unicode__(self):
         return u"%s... on %s" % (self.description[:50], self.created_at)
+
+class ChangeRequest(models.Model):
+    visit = models.ForeignKey(Visit)
+    request = models.TextField(blank=False)
+    created_at = models.DateTimeField(blank=False, auto_now_add=True)
+    updated_at = models.DateTimeField(blank=False, auto_now=True)
+    status = models.CharField(blank=False, max_length=100, choices=(
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('denied', 'Denied'),
+    ))
+    
+    def __unicode__(self):
+        return u"ChangeRequest for %s" % self.visit
 
 
 # signals
