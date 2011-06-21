@@ -37,6 +37,11 @@ textarea { resize:none; width:100%;}
 a.green { display:block; font-size:small; text-align:center; background:#5da500; color:#fff; border-bottom:1px solid #fff; width:100%; margin:0; }
 a.cancel { display:block; font-size:small; text-align:center; background:#ececec; color:#666; border:none; width:100%; margin:0; }
 select { width:100%; }
+select#id_date_month,
+select#id_date_day,
+select#id_date_year {
+    width: auto !important;
+}
 .date-pick select { float:left; width:60px; }
 
 .space { float:left; display:block; height:10px; }

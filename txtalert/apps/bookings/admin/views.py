@@ -4,11 +4,14 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db.models import Q
 from txtalert.apps.bookings.admin import forms
-from txtalert.core.models import Patient
+from txtalert.apps.bookings.views import effective_page_range_for
+from txtalert.core.models import Patient, Visit
 from txtalert.core.utils import normalize_msisdn
 import logging
+from datetime import datetime, date
 
 LOGIN_PERMISSION = 'core.add_patient'
 LOGIN_URL = '/bookings/admin/sign-in/'
@@ -91,6 +94,93 @@ def new_appointment(request):
 
 @permission_required(LOGIN_PERMISSION, login_url=LOGIN_URL)
 def new_appointment_details(request):
+    
+    date = datetime.strptime(request.GET.get('date'), '%d-%b-%Y')
+    patient = get_object_or_404(Patient, pk=request.GET.get('patient_id'))
+    
+    if request.POST:
+        form = forms.VisitForm(request.POST, initial={
+            'date': date
+        })
+        if form.is_valid():
+            visit = form.save(commit=False)
+            visit.patient = patient
+            visit.date = date
+            visit.te_visit_id = 'bookings-visit-%s' % Visit.objects.count()
+            visit.status = 's' # scheduled
+            visit.save()
+            messages.add_message(request, messages.INFO, 'Appointment made')
+            return HttpResponseRedirect(reverse('bookings:admin:view_appointment', 
+                kwargs={'visit_id': visit.pk}))
+        else:
+            messages.add_message(request, messages.ERROR, 'Please correct '
+                'the errors below')
+    else:
+        form = forms.VisitForm(initial={
+            'visit_type': 'arv',
+            'clinic': patient.get_last_clinic(),
+            'date': date
+        })
+    return render_to_response('admin/appointment/new_details.html', {
+        'date': date,
+        'patient': patient,
+        'form': form
+    }, context_instance=RequestContext(request))
+
+@permission_required(LOGIN_PERMISSION, login_url=LOGIN_URL)
+def view_appointment(request, visit_id):
+    visit = get_object_or_404(Visit, pk=visit_id)
     return render_to_response('admin/appointment/details.html', {
-        # 'date': ''.strptime()
+        'visit': visit
+    }, context_instance=RequestContext(request))
+
+@permission_required(LOGIN_PERMISSION, login_url=LOGIN_URL)
+def change_appointment(request, visit_id):
+    visit = get_object_or_404(Visit, pk=visit_id)
+    if request.POST:
+        form = forms.EditVisitForm(request.POST, instance=visit)
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.INFO, 'Appointment changed')
+    else:
+        form = forms.EditVisitForm(instance=visit)
+    return render_to_response('admin/appointment/change.html', {
+        'visit': visit,
+        'patient': visit.patient,
+        'form': form
+    }, context_instance=RequestContext(request))
+
+@permission_required(LOGIN_PERMISSION, login_url=LOGIN_URL)
+def appointments(request):
+    date_parts = ['year', 'month', 'day']
+    if all(['date_%s' % p in request.GET for p in date_parts]):
+        day = date(*[int(request.GET.get('date_%s' % v)) for v in date_parts])
+        day_label = day.strftime('%d %B %Y')
+    else:
+        day = date.today()
+        day_label = 'Today'
+    
+    form = forms.SimpleDateForm(initial={
+        'date': day
+    })
+    
+    visits = Visit.objects.filter(date=day)
+    try:
+        first_upcoming_visit = Visit.objects.upcoming()[0]
+    except IndexError:
+        first_upcoming_visit = None
+    
+    paginator = Paginator(visits, 5)
+    page = paginator.page(request.GET.get('p', 1))
+    
+    return render_to_response('admin/appointment/index.html', {
+        'day': day,
+        'day_label': day_label,
+        'paginator': paginator,
+        'page': page,
+        'effective_page_range': effective_page_range_for(page, paginator),
+        'form': form,
+        'first_upcoming_visit': first_upcoming_visit,
+        'query_string': '&'.join(['date_%s=%s' % (part, getattr(day, part)) 
+            for part in date_parts])
     }, context_instance=RequestContext(request))

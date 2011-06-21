@@ -169,7 +169,7 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     
     def get_last_clinic(self):
         visit_qs = Visit.objects.filter(patient=self)
-        if visit_qs.count(): 
+        if visit_qs.exists(): 
             return visit_qs.latest('id').clinic
         return None
     
@@ -206,7 +206,7 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
             last_visit_date = date.today()
         
         next_visit = last_visit_date + timedelta(days=self.regiment)
-        return [next_visit + timedelta(days=i) for i in range(-8, 8)]
+        return [next_visit + timedelta(days=i) for i in range(-7, 7)]
         
 
 class VisitManager(FilteredQuerySetManager):

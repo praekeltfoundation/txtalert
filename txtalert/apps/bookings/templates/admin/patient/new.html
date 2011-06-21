@@ -9,8 +9,8 @@
         <form action="" method="post" accept-charset="utf-8">
             <label>Patient's Cellphone Number</label><br>
             {{form.msisdn}}<br>
-            <a href="new-patient-step-2.html" class="green">Verify</a>
-            <a href="index.html" class="cancel">Cancel</a>
+            <input type="submit" name="some_name" value="Verify" id="some_name">
+            <a href="{% url bookings:todo %}" class="cancel">Cancel</a>
         </form>
     </div>
     <div class="clear"></div>

@@ -9,6 +9,9 @@ urlpatterns = patterns('',
     (r'^patient/find/$', views.find_patient, {}, 'find_patient'),
     (r'^appointment/new/$', views.new_appointment, {}, 'new_appointment'),
     (r'^appointment/details/$', views.new_appointment_details, {}, 'new_appointment_details'),
+    (r'^appointment/(?P<visit_id>\d+)/$', views.view_appointment, {}, 'view_appointment'),
+    (r'^appointment/(?P<visit_id>\d+)/edit/$', views.change_appointment, {}, 'change_appointment'),
+    (r'^appointments/$', views.appointments, {}, 'appointments'),
     (r'^sign-in/$', 'django.contrib.auth.views.login', { 
             'template_name': 'admin/signin.html' 
         }, 'signin'),
