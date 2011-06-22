@@ -5,8 +5,9 @@ from txtalert.core.utils import normalize_msisdn
 
 class PatientBackend(ModelBackend):
     def authenticate(self, username, password):
-        msisdn, patient_id = normalize_msisdn(username), password
         try:
+            # get the msisdn
+            msisdn, patient_id = normalize_msisdn(username), password
             # try and find the patient
             patient = Patient.objects.get(active_msisdn__msisdn=msisdn, te_id=patient_id)
             try:
@@ -18,4 +19,8 @@ class PatientBackend(ModelBackend):
                 AuthProfile.objects.create(user=user, patient=patient)
                 return user
         except Patient.DoesNotExist, e:
+            pass
+        except ValueError, e:
+            # normalize_msisdn raised an error, probably a regular string
+            # was passed in which it tried to convert to an integer
             pass
