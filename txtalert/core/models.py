@@ -198,15 +198,17 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         else:
             return None
     
-    def next_visit_dates(self):
-        last_visit = self.last_visit()
+    def next_visit_dates(self, visit = None, span=7):
+        last_visit = visit or self.last_visit()
         if last_visit:
             last_visit_date = last_visit.date
         else:
             last_visit_date = date.today()
-        
-        next_visit = last_visit_date + timedelta(days=self.regiment)
-        return [next_visit + timedelta(days=i) for i in range(-7, 7)]
+        if self.regiment:
+            next_visit = last_visit_date + timedelta(days=self.regiment)
+            return [next_visit + timedelta(days=i) for i in range(-span, span)]
+        else:
+            return [last_visit_date + timedelta(days=i) for i in range(-span,span)]
         
 
 class VisitManager(FilteredQuerySetManager):
@@ -261,11 +263,13 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     
     def reschedule_earlier(self):
         return self.changerequest_set.create(request='Patient has requested '
-            'the appointment to be rescheduled to an earlier date')
+            'the appointment to be rescheduled to an earlier date.', 
+            request_type='earlier_date', status='pending')
     
     def reschedule_later(self):
         return self.changerequest_set.create(request='Patient has requested '
-            'the appointment to be rescheduled to a later date')
+            'the appointment to be rescheduled to a later date.', 
+            request_type='later_date', status='pending')
     
     def __unicode__(self):
         return "%s at %s" % (self.get_visit_type_display(), self.date)
@@ -315,11 +319,18 @@ class ChangeRequest(models.Model):
     request = models.TextField(blank=False)
     created_at = models.DateTimeField(blank=False, auto_now_add=True)
     updated_at = models.DateTimeField(blank=False, auto_now=True)
+    request_type = models.CharField(blank=False, max_length=100, choices=(
+        ('earlier_date', 'Earlier date'),
+        ('later_date', 'Later date'),
+    ))
     status = models.CharField(blank=False, max_length=100, choices=(
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('denied', 'Denied'),
-    ))
+    ), default='pending')
+    
+    class Meta:
+        ordering = ['-created_at']
     
     def __unicode__(self):
         return u"ChangeRequest for %s" % self.visit

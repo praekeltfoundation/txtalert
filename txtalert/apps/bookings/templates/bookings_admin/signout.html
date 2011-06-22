@@ -1,0 +1,18 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span>Sign Out</span>
+{% endblock %}
+
+{% block error %}
+    <div class="widget alert border">
+        <span>You've been signed out.</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="widget">
+        <a href="{% url bookings:admin:index %}">Continue &rarr;</a>
+    </div>
+{% endblock %}
+

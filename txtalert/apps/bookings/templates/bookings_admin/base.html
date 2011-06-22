@@ -6,11 +6,11 @@
     <title>{% block title %}{{title|default:"txtAlert"}}{% endblock %}</title>
     <meta name="viewport" content="width=device-width, user-scalable=no" />
     <meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
-    <link rel="stylesheet" href="{{ STATIC_URL }}admin/includes/styles.css" type="text/css" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}bookings_admin/includes/styles.css" type="text/css" />
 </head>
 <body>
     <div class="header">
-        <div class="logo"><img src="{{ STATIC_URL }}admin/images/logo.jpg" alt="" /></div>
+        <div class="logo"><img src="{{ STATIC_URL }}bookings_admin/images/logo.jpg" alt="" /></div>
         {% block header %}<span>{{header|default:"Bookings"}}</span>{% endblock %}
         <div class="clear"></div>
     </div>

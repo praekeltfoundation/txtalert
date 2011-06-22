@@ -1,4 +1,4 @@
-{% extends "admin/base.html" %}
+{% extends "bookings_admin/base.html" %}
 
 {% block header %}
     <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; Change Requests</span>    
@@ -26,5 +26,7 @@
     </div>
     
     <div class="clear"></div>
+    
+    {% include "includes/paginator.html" %}
 
 {% endblock %}

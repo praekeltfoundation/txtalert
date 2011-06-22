@@ -74,7 +74,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.static',
 #    'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
-    'txtalert.apps.bookings.admin.context_processors.change_requests',
+    'txtalert.apps.bookings.bookings_admin.context_processors.change_requests',
 )
 
 

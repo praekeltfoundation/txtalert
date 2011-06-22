@@ -1,10 +1,11 @@
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import User
 from txtalert.core.models import Patient, AuthProfile
+from txtalert.core.utils import normalize_msisdn
 
 class PatientBackend(ModelBackend):
     def authenticate(self, username, password):
-        msisdn, patient_id = username, password
+        msisdn, patient_id = normalize_msisdn(username), password
         try:
             # try and find the patient
             patient = Patient.objects.get(active_msisdn__msisdn=msisdn, te_id=patient_id)

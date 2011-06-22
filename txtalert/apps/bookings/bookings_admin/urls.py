@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
 from django.contrib.flatpages.views import flatpage
-from txtalert.apps.bookings.admin import views
+from txtalert.apps.bookings.bookings_admin import views
 
 urlpatterns = patterns('',
     (r'^$', views.index, {}, 'index'),
