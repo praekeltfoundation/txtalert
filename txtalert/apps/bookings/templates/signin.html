@@ -22,7 +22,7 @@
             {{form.password}}<br>
             <input type="submit" value="Sign In" class="submit">
             <input type="hidden" name="next" value="{{next}}">
-            {# <a href="{% url bookings:todo %}">I forgot my Patient ID</a><br> #}
+            <a href="{% url bookings:request_call %}">I forgot my Patient ID</a><br>
             {% csrf_token %}
         </form>
     </div>
