@@ -6,7 +6,15 @@
 
 {% block content %}
     <div class="widget missed border">
-        {{day_label}}
+        {% ifequal day_label 'Today'  %}
+            <a href="?date_year={{yesterday.year}}&amp;date_month={{yesterday.month}}&amp;date_day={{yesterday.day}}">&laquo; Yesterday</a>
+            <strong>{{day_label}}</strong>
+            <a href="?date_year={{tomorrow.year}}&amp;date_month={{tomorrow.month}}&amp;date_day={{tomorrow.day}}">Tomorrow &raquo;</a>
+        {% else %}
+            <a href="?date_year={{yesterday.year}}&amp;date_month={{yesterday.month}}&amp;date_day={{yesterday.day}}">&laquo; Previous Day</a>
+            <strong>{{day_label}}</strong>
+            <a href="?date_year={{tomorrow.year}}&amp;date_month={{tomorrow.month}}&amp;date_day={{tomorrow.day}}">Next Day &raquo;</a>
+        {% endifequal %}
     </div>
 
     <div class="widget border date-pick">

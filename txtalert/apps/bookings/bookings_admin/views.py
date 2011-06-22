@@ -11,7 +11,7 @@ from txtalert.apps.bookings.views import effective_page_range_for
 from txtalert.core.models import Patient, Visit, ChangeRequest
 from txtalert.core.utils import normalize_msisdn
 import logging
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 LOGIN_PERMISSION = 'core.add_patient'
 LOGIN_URL = '/bookings/admin/sign-in/'
@@ -51,8 +51,11 @@ def new_patient_details(request):
             patient.te_id = 'bookings-%s' % Patient.objects.count()
             patient.save()
             logging.debug('Created new patient: %s' % patient)
-            messages.add_message(request, messages.INFO, 'Patient %(name)s '
-                '%(surname)s registered' % form.cleaned_data)
+            msg = 'Patient %s %s registered. ' \
+                    '<a href="%s?patient_id=%s">Create an appointment?</a>' % (
+                    form.cleaned_data['name'], form.cleaned_data['surname'], 
+                    reverse('bookings:admin:new_appointment'), patient.pk)
+            messages.add_message(request, messages.INFO, msg)
             return HttpResponseRedirect(reverse('bookings:admin:index'))
         else:
             messages.add_message(request, messages.ERROR,
@@ -175,6 +178,8 @@ def appointments(request):
     
     return render_to_response('bookings_admin/appointment/index.html', {
         'day': day,
+        'tomorrow': day + timedelta(days=1),
+        'yesterday': day - timedelta(days=1),
         'day_label': day_label,
         'paginator': paginator,
         'page': page,

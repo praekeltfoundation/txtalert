@@ -121,7 +121,7 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     )
     
     owner = models.ForeignKey('auth.User')
-    te_id = models.CharField('MRS ID', max_length=10, unique=True)
+    te_id = models.CharField('MRS ID', max_length=255, unique=True)
     name = models.CharField(blank=True, max_length=100)
     surname = models.CharField(blank=True, max_length=100)
     msisdns = models.ManyToManyField(MSISDN, related_name='contacts')

@@ -17,10 +17,10 @@ urlpatterns = patterns('',
     (r'^change-requests/$', views.change_requests, {}, 'change_requests'),
     (r'^change-requests/(?P<change_request_id>\d+)/$', views.change_request_details, {}, 'change_request_details'),
     (r'^sign-in/$', 'django.contrib.auth.views.login', { 
-            'template_name': 'admin/signin.html' 
+            'template_name': 'bookings_admin/signin.html' 
         }, 'signin'),
     (r'^sign-out/$', 'django.contrib.auth.views.logout', {
-            'template_name': 'admin/signout.html'
+            'template_name': 'bookings_admin/signout.html'
         }, 'signout'),
 )
 

@@ -17,9 +17,7 @@
     <div class="clear"></div>
     {% if messages %}
         <div class="widget alert">
-            {% for message in messages %}
-                {{message}}<br/>
-            {% endfor %}
+            {{messages|safeseq|join:"<br/>"}}
         </div>
     {% endif %}
     {% block error %}
