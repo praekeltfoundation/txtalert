@@ -1,0 +1,16 @@
+{% extends "bookings_admin/base.html" %}
+{% load markup %}
+
+{% block header %}
+<span><a href="{% url bookings:admin:index %}">Home</a> &raquo; {{flatpage.title|title}}</span>
+{% endblock %}
+
+{% block content %}
+    <div class="widget">
+    	{{flatpage.content}}
+    </div>
+
+    <div class="clear"></div>
+
+    {% include "bookings_admin/includes/menu.html" %}
+{% endblock %}

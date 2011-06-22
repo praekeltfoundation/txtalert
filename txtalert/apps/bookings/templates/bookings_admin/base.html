@@ -35,9 +35,9 @@
              <span>&copy; {% now "Y" %} Praekelt Foundation</span>
              <div class="clear"></div>
              <span>
-                 <a href="/bookings/terms-of-service/">Terms of Service</a> <span class="pipe">|</span> 
-                 <a href="/bookings/privacy/">Privacy Policy</a> <span class="pipe">|</span> 
-                  <a href="{% url bookings:todo %}help.html">Help</a> <span class="pipe">|</span> 
+                 <a href="/bookings/admin/terms-of-service/">Terms of Service</a> <span class="pipe">|</span> 
+                 <a href="/bookings/admin/privacy/">Privacy Policy</a> <span class="pipe">|</span> 
+                  <a href="/bookings/admin/help/">Help</a> <span class="pipe">|</span> 
                   {% if user.is_anonymous %}
                       <a href="{% url bookings:admin:signin %}">Sign In</a></span>
                   {% else %}
