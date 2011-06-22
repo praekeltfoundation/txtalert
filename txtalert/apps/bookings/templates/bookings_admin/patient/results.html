@@ -1,0 +1,25 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; New Appointment</span>
+{% endblock %}
+
+{% block content %}
+    <div class="widget border">
+            {% if patients %}
+            <form method="get" action="{{next}}">
+                <label>{{patients|length}} record{{patients|pluralize}} found. Please select required patient:</label><br>
+                {% for patient in patients %}
+                    <input type="radio" name="patient_id" value="{{ patient.pk }}"> {{patient.get_display_name}} ({{patient.te_id}})<br>
+                {% endfor %}
+                <input type="submit" class="submit" value="Next &raquo;">
+            </form>
+            {% else %}
+                <p>No patients found matching your search criteria</p>
+            {% endif %}
+        <a href="{% url bookings:admin:new_appointment %}" class="cancel">Cancel</a>
+    </div>
+
+    <div class="clear"></div>
+    
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; New Appointment</span>
+{% endblock %}
+
+{% block content %}
+    <div class="widget">
+        {{visit.date|date:"j F Y"}}<br>
+        {{visit.patient.te_id}}<br>
+        {{visit.patient.get_display_name}}<br>
+        {{visit.clinic.name}}. <a href="{% url bookings:admin:change_appointment visit_id=visit.pk %}">Change</a>
+    </div>
+{% endblock %}
+
+{% block post_content %}
+    {% include "bookings_admin/includes/menu.html" %}
+{% endblock %}

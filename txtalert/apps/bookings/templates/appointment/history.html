@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:index %}">Home</a> &raquo; Appointment History</span>
+{% endblock %}
+	
+
+{% block content %}
+    {% for visit in page.object_list %}
+        <div class="widget border {{visit.get_status_display|lower}}">
+        	<span class="black">{{visit.date|date:"j F Y"}}</span><br>{{visit.clinic.name}}
+        </div>
+    {% endfor %}
+
+    {% include "includes/paginator.html" %}
+    {% include "includes/menu.html" %}
+
+{% endblock %}
+
+	

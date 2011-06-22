@@ -1,0 +1,14 @@
+{% if user.get_profile %}
+<div class="nav">
+    {% if patient.visit_set.upcoming %}
+	    <a href="{% url bookings:appointment_upcoming %}">Upcoming Appointments</a>
+    {% endif %}
+    {% if patient.visit_set.past %}
+	    <a href="{% url bookings:appointment_history %}">Appointment History</a>
+    {% endif %}
+	<a href="{% url bookings:attendance_barometer %}">Attendance Barometer</a>
+	<a href="{% url bookings:request_call %}">Request A Call From Clinic</a>
+</div>
+
+<div class="clear"></div>
+{% endif %}

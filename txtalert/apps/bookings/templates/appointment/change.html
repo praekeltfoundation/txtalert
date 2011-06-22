@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:index %}">Home</a> &raquo; Change Appointment</span>
+{% endblock %}
+
+{% block content %}
+    <div class="widget border">
+        <span class="black"><strong>Next:</strong> {{visit.date|date:"j F Y"}}</span><br>
+        {{visit.clinic.name}}
+    </div>
+    
+    {% if change_requested %}
+        <div class="widget">
+        	<span class="error">
+        	    Your request to change the above appointment has been sent to 
+        	    the clinic. You will be notified as soon as possible.
+        	</span>
+        </div>
+    {% else %}
+        <div class="widget">
+            <form action="" method="post">
+                <label>What would you like to request?*</label><br>
+                <input type="radio" name="when" value="earlier">Earlier Date<br>
+                <input type="radio" name="when" value="later" checked="true">Later Date<br>
+                <input type="submit" class="request" value="Submit Request"><br>
+            </form>
+            *Change request will be evaluated by a clinic administrator. Changes will not always be possible.
+        </div>
+    
+        <div class="clear"></div>
+    {% endif %}
+    
+    {% include "includes/menu.html" %}
+    
+{% endblock %}
+

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load markup %}
+
+{% block header %}
+<span><a href="{% url bookings:index %}">Home</a> &raquo; {{flatpage.title|title}}</span>
+{% endblock %}
+
+{% block content %}
+    <div class="widget">
+    	{{flatpage.content}}
+    </div>
+    <div class="clear"></div>
+
+    {% if not user.is_anonymous %}
+        {% with patient=user.get_profile.patient %}
+            {% include "includes/menu.html"  %}
+        {% endwith %}
+    {% endif %}
+    {% include "includes/young_africa_live.html" %}
+{% endblock %}

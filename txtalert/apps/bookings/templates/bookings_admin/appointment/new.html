@@ -1,0 +1,31 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; New Appointment</span>
+{% endblock %}
+
+{% block content %}
+    <div class="widget alert border">
+        {{patient.te_id}}<br> {{patient.get_display_name}}
+    </div>
+
+    <div class="widget border">
+        <form method="get" action="{% url bookings:admin:new_appointment_details %}">
+            <label>
+                {% if patient.visit_set.past.exists %}
+                This patient runs out of meds in 
+                {{patient.regiment_remaining.days}} days. 
+                {% endif %}
+                Suggested Appointment Dates:</label>
+            <select name="date">
+                {% for date in patient.next_visit_dates %}
+                    <option value="{{date|date:"j-M-Y"}}" {% if forloop.counter == 5 %}selected="selected"{% endif %}>{{date|date:"j M Y (l)"}}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="patient_id" value="{{patient.pk}}" id="patient_id">
+            <input type="submit" class="submit" value="Next &raquo;">
+        </form>
+        <a href="{% url bookings:admin:index %}" class="cancel">Cancel</a>
+    </div>
+    <div class="clear"></div>
+{% endblock %}

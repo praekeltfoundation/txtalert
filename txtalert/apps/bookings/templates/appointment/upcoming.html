@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:index %}">Home</a> &raquo; Upcoming Appointments</span>
+{% endblock %}
+    
+
+{% block content %}
+{% for visit in page.object_list %}
+    {% if forloop.first %}
+        <div class="widget rescheduled border">
+            <span class="black">
+                <strong>Next:</strong>{{visit.date|date:"j F Y"}}
+            </span><br>
+            {{visit.clinic.name}} <a href="{% url bookings:appointment_change visit_id=visit.pk %}">(Change)</a>
+        </div>
+    {% else %}
+        <div class="widget border">
+            <span class="black">{{visit.date|date:"j F Y"}}</span><br>
+            {{visit.clinic.name}} <a href="{% url bookings:appointment_change visit_id=visit.pk %}">(Change)</a>
+        </div>
+    {% endif %}
+{% endfor %}
+    {% include "includes/paginator.html" %}
+    {% include "includes/menu.html" %}
+{% endblock %}
+    

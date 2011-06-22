@@ -1,0 +1,7 @@
+<div class="nav">
+    <a href="{% url bookings:admin:new_patient %}">+ New Patient</a>
+    <a href="{% url bookings:admin:find_patient %}?next={% url bookings:admin:new_appointment %}">+ New Appointment</a>
+    <a href="{% url bookings:admin:appointments %}">Appointments</a>
+    <a href="{% url bookings:admin:find_patient %}?next={% url bookings:admin:view_patient %}">Patients</a>
+    <a href="{% url bookings:admin:change_requests %}">Change Requests ({{ change_requests.count }})</a>
+</div>

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block header %}
+<span><a href="{% url bookings:index  %}">Home</a> &raquo; Request Call</span>
+{% endblock %}
+
+{% block error %}
+    {% if form.errors %}
+        <div class="alert">
+            <span class="error">
+                {% for field in form.visible_fields %}
+                    {% for error in field.errors %}
+                        <li>{{error}}</li>
+                    {% endfor %}
+                {% endfor %}
+            </span>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="widget">
+    {% if user.is_anonymous %}
+        <span class="black">Fill in the following details to request a call.</span>
+        <div class="widget">
+            <form action="" method="post" accept-charset="utf-8">
+                {% for field in form.visible_fields %}
+                <label for="id_{{field.name}}"><strong>{{field.help_text}}</strong></label><br/>
+                {{field}}<br/>
+                <br/>
+                {% endfor %}
+                <input type="submit" class="request" value="Send Request"><br>
+            </form>
+        </div>
+    {% else %}
+        <span class="black">Click on the button below to request a call from the clinic.</span>
+        <div class="widget">
+            <form action="" method="post">
+                <input type="hidden" name="{{form.clinic.name}}" value="{{patient.last_clinic.pk}}" id="id_{{form.clinic.name}}">
+                <label for="id_{{form.msisdn.name}}"><strong>{{form.msisdn.help_text}}</strong></label><br/>
+                {{form.msisdn}}<br/>
+                <br/>
+                <br/>
+                <input type="submit" class="request" value="Send Request"><br>
+            </form>
+        {% endif %}
+    </div>
+
+    <div class="clear"></div>
+
+</div>
+
+<div class="clear"></div>
+
+{% include "includes/menu.html" %}
+{% endblock %}

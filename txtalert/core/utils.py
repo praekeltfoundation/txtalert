@@ -13,6 +13,15 @@ def random_string(val=None):
     m.update(str(val))
     return m.hexdigest()
 
+def normalize_msisdn(raw):
+    raw = str(int(raw))
+    if raw.startswith('0'):
+        return '27' + raw[1:]
+    if raw.startswith('+'):
+        return raw[1:]
+    if raw.startswith('27'):
+        return raw
+    return '27' + raw
 
 class MuninCommand(BaseCommand):
     def handle(self, *args, **kwargs):

@@ -20,6 +20,8 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_save
 from dirtyfields import DirtyFieldsMixin
 from history.models import HistoricalRecords
+from datetime import datetime, date, timedelta
+import logging
 
 VISIT_STATUS_CHOICES = (
     ('m', 'Missed'),
@@ -99,6 +101,9 @@ class SoftDeleteMixin(object):
 class AuthProfile(models.Model):
     user = models.OneToOneField('auth.User')
     patient = models.OneToOneField('Patient')
+    
+    def __unicode__(self):
+        return u"AuthProfile for %s - %s" % (self.patient, self.user)
 
 class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     SEX_CHOICES = (
@@ -109,18 +114,27 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         ('m>f', 'transgender m>f'),
     )
     
+    REGIMENT_CHOICES = (
+        (28, 'Monthly'),
+        (28*2, 'Bi-monthly'),
+        (28*3, 'Tri-monthly'),
+    )
+    
     owner = models.ForeignKey('auth.User')
-    te_id = models.CharField('MRS ID', max_length=10, unique=True)
+    te_id = models.CharField('MRS ID', max_length=255, unique=True)
+    name = models.CharField(blank=True, max_length=100)
+    surname = models.CharField(blank=True, max_length=100)
     msisdns = models.ManyToManyField(MSISDN, related_name='contacts')
     active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', 
                                         null=True, blank=True)
     
     age = models.IntegerField('Age')
-    sex = models.CharField('Sex', max_length=3, choices=SEX_CHOICES)
+    regiment = models.IntegerField(blank=True, null=True, choices=REGIMENT_CHOICES)
+    sex = models.CharField('Gender', max_length=3, choices=SEX_CHOICES)
     opted_in = models.BooleanField('Opted In', default=True)
     disclosed = models.BooleanField('Disclosed', default=False)
     deceased = models.BooleanField('Deceased', default=False)
-    last_clinic = models.ForeignKey(Clinic, verbose_name='Last Clinic', 
+    last_clinic = models.ForeignKey(Clinic, verbose_name='Clinic', 
                                         blank=True, null=True)
     risk_profile = models.FloatField('Risk Profile', blank=True, null=True)
     language = models.ForeignKey(Language, verbose_name='Language', default=1)
@@ -155,13 +169,54 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     
     def get_last_clinic(self):
         visit_qs = Visit.objects.filter(patient=self)
-        if visit_qs.count(): 
+        if visit_qs.exists(): 
             return visit_qs.latest('id').clinic
         return None
     
     def next_visit(self):
-        return self.visit_set.filter(status__in=['s','r']).latest()
+        return self.visit_set.filter(status__in=['s','r'], date__gte=date.today())\
+                .order_by('date')[0]
     
+    def last_visit(self):
+        try:
+            return self.visit_set.past().filter(status='a')[0]
+        except IndexError:
+            return None
+    
+    def get_display_name(self):
+        if self.surname and self.name:
+            return u'%s, %s' % (self.surname, self.name)
+        else:
+            return u'Anonymous'
+    
+    def regiment_remaining(self):
+        last_visit = self.last_visit()
+        if last_visit:
+            next_visit = last_visit.date + timedelta(days=self.regiment)
+            delta = next_visit - date.today()
+            return delta
+        else:
+            return None
+    
+    def next_visit_dates(self, visit = None, span=7):
+        last_visit = visit or self.last_visit()
+        if last_visit:
+            last_visit_date = last_visit.date
+        else:
+            last_visit_date = date.today()
+        if self.regiment:
+            next_visit = last_visit_date + timedelta(days=self.regiment)
+            return [next_visit + timedelta(days=i) for i in range(-span, span)]
+        else:
+            return [last_visit_date + timedelta(days=i) for i in range(-span,span)]
+        
+
+class VisitManager(FilteredQuerySetManager):
+    def upcoming(self):
+        return self.get_query_set().filter(date__gte=date.today())
+    
+    def past(self):
+        return self.get_query_set().filter(date__lt=date.today())
 
 class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     
@@ -192,7 +247,7 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     # custom manager that excludes all deleted patients
-    objects = FilteredQuerySetManager(deleted=False)
+    objects = VisitManager(deleted=False)
     
     # normal custom manager, including deleted patients
     all_objects = models.Manager()
@@ -206,9 +261,18 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         ordering = ['date']
         get_latest_by = 'id'
     
+    def reschedule_earlier(self):
+        return self.changerequest_set.create(request='Patient has requested '
+            'the appointment to be rescheduled to an earlier date.', 
+            request_type='earlier_date', status='pending')
+    
+    def reschedule_later(self):
+        return self.changerequest_set.create(request='Patient has requested '
+            'the appointment to be rescheduled to a later date.', 
+            request_type='later_date', status='pending')
     
     def __unicode__(self):
-        return self.get_visit_type_display()
+        return "%s at %s" % (self.get_visit_type_display(), self.date)
     
 
 
@@ -249,6 +313,27 @@ class Event(models.Model):
 
     def __unicode__(self):
         return u"%s... on %s" % (self.description[:50], self.created_at)
+
+class ChangeRequest(models.Model):
+    visit = models.ForeignKey(Visit)
+    request = models.TextField(blank=False)
+    created_at = models.DateTimeField(blank=False, auto_now_add=True)
+    updated_at = models.DateTimeField(blank=False, auto_now=True)
+    request_type = models.CharField(blank=False, max_length=100, choices=(
+        ('earlier_date', 'Earlier date'),
+        ('later_date', 'Later date'),
+    ))
+    status = models.CharField(blank=False, max_length=100, choices=(
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('denied', 'Denied'),
+    ), default='pending')
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __unicode__(self):
+        return u"ChangeRequest for %s" % self.visit
 
 
 # signals

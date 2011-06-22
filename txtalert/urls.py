@@ -31,14 +31,11 @@ urlpatterns = patterns('',
     (r'', include('txtalert.apps.general.jquery.urls')),
     (r'', include('txtalert.core.urls')),
     (r'^therapyedge/', include('txtalert.apps.therapyedge.urls')),
-    (r'^bookingtool/', include('txtalert.apps.bookingtool.urls')),
     (r'^bookings/', include('txtalert.apps.bookings.urls', namespace='bookings')),
     (r'^widget/', include('txtalert.apps.widget.urls')),
     (r'^geckoboard/', include('txtalert.apps.geckoboard.urls')),
     # (r'^sms/', include('opera.urls')),
     (r'^admin/', include(admin.site.urls)),
-    (r'^static/(.*)$', 'django.views.static.serve', \
-                            {'document_root': settings.MEDIA_ROOT}, "static"),
 )
 
 # web API

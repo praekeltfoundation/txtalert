@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <span>Sign Out</span>
+{% endblock %}
+
+{% block error %}
+    <div class="alert">
+        <span>You've been signed out.</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="widget">
+        <a href="{% url bookings:index %}">Continue &rarr;</a>
+    </div>
+{% endblock %}
+

@@ -15,3 +15,4 @@ webroot/media/upload/*
 .vagrant
 widget.wgt
 docs/_build/*
+cover/

@@ -1,0 +1,18 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; New Patient</span>
+{% endblock %}
+
+{% block content %}
+    <div class="widget border">
+        <form action="" method="post" accept-charset="utf-8">
+            <label>Patient's Cellphone Number</label><br>
+            {{form.msisdn}}<br>
+            <input type="submit" name="some_name" value="Verify" id="some_name">
+            <a href="{% url bookings:admin:index %}" class="cancel">Cancel</a>
+        </form>
+    </div>
+    <div class="clear"></div>
+    
+{% endblock %}

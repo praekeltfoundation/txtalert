@@ -59,6 +59,25 @@ MEDIA_ROOT = join(APP_ROOT, 'webroot', 'media')
 STATIC_URL = '/static/'
 STATIC_ROOT = join(APP_ROOT, 'webroot', 'static')
 
+AUTH_PROFILE_MODULE = 'core.AuthProfile'
+LOGIN_URL = '/bookings/sign-in/'
+LOGOUT_URL = '/bookings/sign-out/'
+LOGIN_REDIRECT_URL = '/bookings/'
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+#    'django.core.context_processors.request',
+    'django.contrib.messages.context_processors.messages',
+    'txtalert.apps.bookings.bookings_admin.context_processors.change_requests',
+)
+
+
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
@@ -69,6 +88,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -87,9 +108,6 @@ INSTALLED_APPS = (
     'txtalert.apps.general.settings',
     'txtalert.apps.general.jquery',
     'txtalert.apps.therapyedge',
-    # booking tool is on its way out
-    'txtalert.apps.bookingtool',
-    # bookings is on its way in
     'txtalert.apps.bookings',
     'txtalert.apps.widget',
     'txtalert.apps.gateway',
@@ -106,7 +124,10 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.flatpages',
+    'django.contrib.markup',
 )
 
 SMS_GATEWAY_CLASS = 'txtalert.apps.gateway.backends.vumi'

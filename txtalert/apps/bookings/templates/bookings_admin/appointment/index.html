@@ -1,0 +1,67 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; Appointments</span>    
+{% endblock %}
+
+{% block content %}
+    <div class="widget missed border">
+        {% ifequal day_label 'Today'  %}
+            <a href="?date_year={{yesterday.year}}&amp;date_month={{yesterday.month}}&amp;date_day={{yesterday.day}}">&laquo; Yesterday</a>
+            <strong>{{day_label}}</strong>
+            <a href="?date_year={{tomorrow.year}}&amp;date_month={{tomorrow.month}}&amp;date_day={{tomorrow.day}}">Tomorrow &raquo;</a>
+        {% else %}
+            <a href="?date_year={{yesterday.year}}&amp;date_month={{yesterday.month}}&amp;date_day={{yesterday.day}}">&laquo; Previous Day</a>
+            <strong>{{day_label}}</strong>
+            <a href="?date_year={{tomorrow.year}}&amp;date_month={{tomorrow.month}}&amp;date_day={{tomorrow.day}}">Next Day &raquo;</a>
+        {% endifequal %}
+    </div>
+
+    <div class="widget border date-pick">
+    <form action="" method="get" accept-charset="utf-8">
+        <label for="id_{{form.date.name}}_month">{{form.date.label}}</label><br/>
+        {{form.date}}
+        <input type="submit" value="Ok">
+    </form>
+    </div>
+
+    {% for visit in page.object_list %}
+        <div class="widget border">
+        <span class="black">{{visit.date|date:"j F Y"}}<br>{{visit.patient.te_id}}</span><br>
+        {{visit.patient.get_display_name}}<br>
+        {{visit.clinic.name}}.<a href="{% url bookings:admin:change_appointment visit_id=visit.pk %}">More</a>
+        </div>
+    {% empty %}
+        <div class="widget">
+            {% if next_visit %}
+                No visits today, next visit is scheduled for the 
+                <a href="{% url bookings:admin:appointments %}?date_day={{next_visit.date.day}}&amp;date_month={{next_visit.date.month}}&amp;date_year={{next_visit.date.year}}">{{next_visit.date|date:"j F Y"}}</a>
+            {% else %}
+                No visits today.
+            {% endif %}
+        </div>
+    {% endfor %}
+    
+    {% if page.has_other_pages %}
+    <div class="pagination">
+
+        {% if page.has_previous %}
+            <a href="?p={{page.previous_page_number}}&amp;{{query_string}}">&laquo; Previous</a>
+        {% endif %}
+
+        {% for page_number in effective_page_range %}
+            {% if page_number == page.number %}
+                <b>{{page_number}}</b>
+            {% else %}
+                <a href="?p={{page_number}}&amp;{{query_string}}">{{page_number}}</a>
+            {% endif %}
+            {% if not forloop.last %}|{% endif %}
+        {% endfor %}
+
+        {% if page.has_next %}
+            <a href="?p={{page.next_page_number}}&amp;{{query_string}}">&raquo; Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+{% endblock %}

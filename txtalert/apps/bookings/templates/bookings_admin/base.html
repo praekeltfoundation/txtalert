@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <title>{% block title %}{{title|default:"txtAlert"}}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}bookings_admin/includes/styles.css" type="text/css" />
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><img src="{{ STATIC_URL }}bookings_admin/images/logo.jpg" alt="" /></div>
+        {% block header %}<span>{{header|default:"Bookings"}}</span>{% endblock %}
+        <div class="clear"></div>
+    </div>
+    <div class="clear"></div>
+    {% if messages %}
+        <div class="widget alert">
+            {{messages|safeseq|join:"<br/>"}}
+        </div>
+    {% endif %}
+    {% block error %}
+    {% endblock %}
+    {% block pre_content %}
+    {% endblock %}
+    {% block content %}
+    {% endblock %}
+    {% block post_content %}
+    {% endblock %}
+    <div class="clear"></div>
+    {% block footer %}
+    <div class="footer">
+        <div class="footer_text">
+             <span>&copy; {% now "Y" %} Praekelt Foundation</span>
+             <div class="clear"></div>
+             <span>
+                 <a href="/bookings/admin/terms-of-service/">Terms of Service</a> <span class="pipe">|</span> 
+                 <a href="/bookings/admin/privacy/">Privacy Policy</a> <span class="pipe">|</span> 
+                  <a href="/bookings/admin/help/">Help</a> <span class="pipe">|</span> 
+                  {% if user.is_anonymous %}
+                      <a href="{% url bookings:admin:signin %}">Sign In</a></span>
+                  {% else %}
+                      <a href="{% url bookings:admin:signout %}">Sign Out</a></span>
+                  {% endif %}
+             </span>
+        </div>     
+        <div class="clear"></div>
+    </div>
+    {% endblock %}
+</body>
+</html>

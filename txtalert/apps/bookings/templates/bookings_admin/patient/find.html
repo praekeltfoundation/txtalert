@@ -1,0 +1,22 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; New Appointment</span>
+{% endblock %}
+
+{% block content %}
+    <div class="widget border">
+        <form method="get" action="">
+            <label>Enter Patient MRS ID:</label><br>
+            <input type="text" name="patient_id" value=""><br>
+            <label>Or, MSISDN(Cellphone Number):</label><br>
+            <input type="text" name="msisdn" value=""><br>
+            <label>Or, Surname:</label><br>
+            <input type="text" name="surname" value=""><br>
+            <input type="submit" class="submit" value="Next &raquo;">
+            <input type="hidden" name="next" value="{{next}}" id="next">
+        </form>
+        <a href="{% url bookings:admin:index %}" class="cancel">Cancel</a>
+    </div>
+    <div class="clear"></div>
+{% endblock %}

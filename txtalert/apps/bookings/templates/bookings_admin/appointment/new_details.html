@@ -1,0 +1,32 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; New Appointment</span>
+{% endblock %}
+
+{% block content %}
+    <div class="widget alert border">
+        {{patient.te_id}}<br>
+        {{patient.get_display_name}} on {{date|date:"j F Y"}}
+    </div>
+    
+    <div class="widget border">
+        <form method="post" action="">
+            {% for field in form.visible_fields  %}
+                {% if field.errors %}
+                    <span class="error">
+                        {{field.errors|join:", "}}
+                    </span><br/>
+                {% endif %}
+                <label for="id_{{field.name}}">{{field.label}}</label>
+                {{field}}
+            {% endfor %}
+            <input type="submit" class="submit" value="Make Appointment">
+        </form>
+        <a href="{% url bookings:admin:new_appointment %}?patient_id={{patient.pk}}" class="green">&laquo; Back</a>
+        <a href="{% url bookings:admin:index %}" class="cancel">Cancel</a>
+    </div>
+
+    <div class="clear"></div>
+
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; Patients</span>
+{% endblock %}
+
+{% block content %}
+    <div class="widget border">
+        <span class="black">{{patient.te_id}}</span><br>
+        {{patient.get_display_name}}<br>
+        {{patient.clinic.name}}
+        </div>
+
+        <div class="widget appointment">
+            {{attendance}}% Attendance Record<br>
+            <span class="record">{{attended}}/{{total}} Appointments Attended</span>
+            <span class="alert">{{rescheduled}} Appoinments Rescheduled</span>
+        </div>
+
+        <div class="clear"></div>
+
+        <div class="widget missed">{{missed}} Appointments Missed</div>
+
+        <div class="clear"></div>
+        {# todo: probability stuff #}
+        <div class="widget incentive border">INCENTIVE PROBABILITY BLOCK</div>
+
+        <div class="clear"></div>
+
+        <div class="widget form">
+            <form method="post" action="">
+                {% for field in form.visible_fields  %}
+                    {% if field.errors %}
+                        <span class="error">
+                            {{field.errors|join:", "}}
+                        </span><br/>
+                    {% endif %}
+                    <label for="id_{{field.name}}">{{field.label}}</label><br>
+                    {{field}}<br>
+                {% endfor %}
+                <br/>
+                <input type="submit" class="submit" value="Update Patient">
+            </form>
+        </div>
+
+        <div class="widget">
+            <a href="{% url bookings:admin:index %}" class="green">Main Menu</a>
+        </div>
+
+    
+{% endblock %}

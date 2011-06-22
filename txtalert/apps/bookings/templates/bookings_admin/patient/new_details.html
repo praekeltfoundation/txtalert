@@ -1,0 +1,28 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; New Patient</span>
+{% endblock %}
+
+{% block content %}
+    
+    <div class="widget form">
+        <form method="post" action="">
+            {% for field in form.visible_fields %}
+                {% if field.errors %}
+                    <span class="error">
+                        {{field.errors|join:", "}}
+                    </span><br/>
+                {% endif %}
+                {{field.label}}<br>
+                {{field}}<br>
+            {% endfor %}
+            <input type="submit" class="submit" value="Register Patient">
+        </form>
+    </div>
+    
+    <div class="widget border">
+        <a href="index.html" class="cancel">Cancel</a>
+    </div>
+    
+{% endblock %}

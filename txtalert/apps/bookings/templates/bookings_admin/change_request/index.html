@@ -1,0 +1,32 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; Change Requests</span>    
+{% endblock %}
+
+{% block content %}
+    {% for change_request in page.object_list %}
+        {% with change_request.visit as visit %}
+        {% with visit.patient as patient %}
+        <div class="widget border">
+            <span class="black">{{visit.date|date:"j F Y"}}<br>{{patient.te_id}}</span><br>
+            {{patient.get_display_name}}<br>
+            {{visit.clinic.name}}.<a href="{% url bookings:admin:change_request_details change_request_id=change_request.pk %}">Change</a>
+        </div>
+        {% endwith %}
+        {% endwith %}
+    {% empty %}
+        <div class="widget border">
+            There are no pending change requests
+        </div>
+    {% endfor %}
+    
+    <div class="widget">
+        <a href="{% url bookings:admin:index %}" class="green">Main Menu</a>
+    </div>
+    
+    <div class="clear"></div>
+    
+    {% include "includes/paginator.html" %}
+
+{% endblock %}

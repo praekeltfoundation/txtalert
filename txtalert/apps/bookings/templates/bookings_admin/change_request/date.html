@@ -1,0 +1,45 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; Change Request</span>    
+{% endblock %}
+
+{% block content %}
+    <div class="widget request border">
+        <span class="black">{{visit.date|date:"j F Y"}}<br>{{patient.te_id}}</span><br>
+        {{patient.get_display_name}}<br>
+        {{visit.clinic.name}}.
+    </div>
+
+    <div class="widget border">
+    <span class="black">{{change_request.request}}</span>
+    </div>
+    
+    <div class="widget">
+        <form method="post" action="">    
+            <label>
+                {% if patient.visit_set.past.exists and patient.regiment %}
+                This patient runs out of meds in 
+                {{patient.regiment_remaining.days}} days. 
+                {% endif %}
+                Suggested Appointment Dates:
+            </label>
+            <select name="date">
+                {% for date in next_visit_dates %}
+                    <option value="{{date|date:"j-M-Y"}}" {% if date == visit.date %}selected="selected"{% endif %}>{{date|date:"j M Y (l)"}}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="patient_id" value="{{patient.pk}}" id="patient_id">
+            <input type="submit" name="approve" value="Make change" id="approve">
+            <input type="submit" name="deny" value="Deny change" id="deny">
+        </form>
+    </div>
+
+    <div class="widget">
+        <a href="{% url bookings:admin:change_requests %}" class="green">More Change Requests &raquo;</a>
+        <a href="{% url bookings:admin:index %}" class="green">Main Menu</a>
+    </div>
+
+    <div class="clear"></div>
+
+{% endblock %}
