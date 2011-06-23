@@ -7,6 +7,7 @@ from piston.utils import rc, require_mime, throttle
 from txtalert.apps.gateway.models import SendSMS, PleaseCallMe
 from txtalert.apps.gateway import gateway, sms_receipt_handler
 from txtalert.core.models import Patient, Visit
+from txtalert.core.utils import normalize_msisdn
 
 from datetime import datetime, timedelta
 import logging
@@ -179,7 +180,7 @@ class PatientHandler(BaseHandler):
             and 'msisdn' in request.GET:
             
             try:
-                msisdn = request.GET.get('msisdn')
+                msisdn = normalize_msisdn(request.GET.get('msisdn'))
                 patient_id = request.GET.get('patient_id')
                 patient = Patient.objects.get(active_msisdn__msisdn=msisdn,
                                                 te_id=patient_id)
@@ -188,6 +189,7 @@ class PatientHandler(BaseHandler):
                     visit_info = [visit.date.year, visit.date.month, visit.date.day]
                     clinic_name = visit.clinic.name
                 except Visit.DoesNotExist:
+                    visit = None
                     visit_info = []
                     clinic_name = ''
                 
@@ -196,7 +198,10 @@ class PatientHandler(BaseHandler):
                 return {
                     'msisdn': msisdn,
                     'patient_id': patient_id,
+                    'name': patient.name,
+                    'surname': patient.surname,
                     'next_appointment': visit_info,
+                    'visit_id': visit.pk if visit else '',
                     'clinic': clinic_name,
                     'attendance': int((1.0 - patient.risk_profile) * 100),
                     'total': visits.count(),

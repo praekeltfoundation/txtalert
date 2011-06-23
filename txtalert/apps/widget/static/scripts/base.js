@@ -84,6 +84,7 @@ var show_next_appointment_for = function(patient) {
                                     "<strong>Please contact your clinic.</strong>");
     } else {
         $('#signin').hide();
+        $('#appointment span').html('Hello '+patient.name+' '+patient.surname);
         $('#appointment .info h1').html(Format.date(patient.next_appointment));
         $('#appointment .info h2').html(patient.clinic);
         $('#appointment').show();
