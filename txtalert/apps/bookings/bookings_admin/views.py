@@ -72,18 +72,24 @@ def new_patient_details(request):
 def find_patient(request):
     if 'patient_id' in request.GET:
         
-        msisdn = request.GET.get('msisdn', '')
+        msisdn = request.GET.get('msisdn') or '0100000000'
         if msisdn:
             msisdn = normalize_msisdn(msisdn)
         
         patients = Patient.objects.filter(
-            Q(te_id__icontains=request.GET.get('patient_id','')) |
-            Q(active_msisdn__msisdn=msisdn))
-            # TODO: add surname to patient model field
-        return render_to_response('bookings_admin/patient/results.html', {
-            'patients': patients,
-            'next': request.GET.get('next')
-        }, context_instance=RequestContext(request))
+            Q(te_id__icontains=request.GET.get('patient_id') or 'False') |
+            Q(active_msisdn__msisdn__icontains=msisdn) |
+            Q(name__contains=request.GET.get('name') or 'False') | 
+            Q(surname__icontains=request.GET.get('surname') or 'False'))
+        
+        if patients.count() == 1:
+            return HttpResponseRedirect(reverse('bookings:admin:edit_patient', 
+                kwargs={'patient_id': patients[0].pk}))
+        else:
+            return render_to_response('bookings_admin/patient/results.html', {
+                'patients': patients,
+                'next': request.GET.get('next')
+            }, context_instance=RequestContext(request))
     else:
         return render_to_response('bookings_admin/patient/find.html', {
             'next': request.GET.get('next')
@@ -145,6 +151,7 @@ def change_appointment(request, visit_id):
         if form.is_valid():
             form.save()
             messages.add_message(request, messages.INFO, 'Appointment changed')
+            return HttpResponseRedirect(reverse('bookings:admin:appointment'))
     else:
         form = forms.EditVisitForm(instance=visit)
     return render_to_response('bookings_admin/appointment/change.html', {

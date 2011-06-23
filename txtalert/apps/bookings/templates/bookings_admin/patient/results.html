@@ -10,7 +10,8 @@
             <form method="get" action="{{next}}">
                 <label>{{patients|length}} record{{patients|pluralize}} found. Please select required patient:</label><br>
                 {% for patient in patients %}
-                    <input type="radio" name="patient_id" value="{{ patient.pk }}"> {{patient.get_display_name}} ({{patient.te_id}})<br>
+                    <input type="radio" name="patient_id" id="patient_{{patient.pk}}" value="{{ patient.pk }}">
+                    <label for="patient_{{patient.pk}}">{{patient.get_display_name}} ({{patient.te_id}})</label><br>
                 {% endfor %}
                 <input type="submit" class="submit" value="Next &raquo;">
             </form>

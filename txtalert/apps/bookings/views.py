@@ -75,10 +75,14 @@ def attendance_barometer(request):
     attended = visits.filter(status='a').count()
     missed = visits.filter(status='m').count()
     total = visits.filter(date__lt=date.today()).count()
+    if total:
+        attendance = int(float(attended) / float(total) * 100)
+    else:
+        attendance = 0.0
     return render_to_response("attendance_barometer.html", {
         'profile': profile,
         'patient': patient,
-        'attendance': int(float(attended) / float(total) * 100),
+        'attendance': attendance,
         'attended': attended,
         'missed': missed,
         'total': total

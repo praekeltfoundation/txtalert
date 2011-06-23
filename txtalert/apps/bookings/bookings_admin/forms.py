@@ -70,6 +70,7 @@ class EditVisitForm(forms.ModelForm):
         fields = [
             'clinic',
             'visit_type',
+            'status',
             'comment',
             'date',
         ]
