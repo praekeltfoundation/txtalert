@@ -57,7 +57,7 @@ def appointment_upcoming(request):
 def appointment_history(request):
     profile = request.user.get_profile()
     patient = profile.patient
-    paginator = Paginator(patient.visit_set.past(), 5)
+    paginator = Paginator(patient.visit_set.past().order_by('-date'), 5)
     page = paginator.page(request.GET.get('p', 1))
     return render_to_response("appointment/history.html", {
         'profile': profile,
