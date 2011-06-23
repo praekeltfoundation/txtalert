@@ -19,10 +19,11 @@
                     </span><br/>
                 {% endif %}
                 <label for="id_{{field.name}}">{{field.label}}</label>
-                {{field}}
+                {{field}}<br/>
             {% endfor %}
-            <br/>
+            <br>
             <input type="submit" class="submit" value="Save Appointment">
+            <br><br>
         </form>
         <a href="{% url bookings:admin:appointments %}" class="green">&laquo; Back</a>
         <a href="{% url bookings:admin:index %}" class="cancel">Cancel</a>

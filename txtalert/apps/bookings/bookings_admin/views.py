@@ -151,7 +151,7 @@ def change_appointment(request, visit_id):
         if form.is_valid():
             form.save()
             messages.add_message(request, messages.INFO, 'Appointment changed')
-            return HttpResponseRedirect(reverse('bookings:admin:appointment'))
+            return HttpResponseRedirect(reverse('bookings:admin:appointments'))
     else:
         form = forms.EditVisitForm(instance=visit)
     return render_to_response('bookings_admin/appointment/change.html', {
