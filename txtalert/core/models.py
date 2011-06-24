@@ -174,7 +174,8 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         return None
     
     def next_visit(self):
-        return self.visit_set.filter(status__in=['s','r'], date__gte=date.today())\
+        if self.visit_set.upcoming.exists():
+            return self.visit_set.filter(status__in=['s','r'], date__gte=date.today())\
                 .order_by('date')[0]
     
     def last_visit(self):
