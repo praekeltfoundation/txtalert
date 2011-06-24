@@ -13,4 +13,4 @@ gunicorn
 supervisor
 Sphinx
 django-geckoboard
--e git+http://github.com/smn/vumi-client.git#egg=vumi-client
+-e git+git://github.com/smn/vumi-client.git#egg=vumi-client
