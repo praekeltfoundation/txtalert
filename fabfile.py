@@ -219,15 +219,15 @@ def update(branch):
 
 @_setup_env
 def start(branch):
-    return managepy(branch, "run_gunicorn --log-file=%(logs_path)s/txtalert.log --daemon 127.0.0.1:9992 --pid=%(pids_path)s/txtalert.pid" % env)
+    return execute(branch, "supervisorctl -c supervisord.%(branch)s.conf start gunicorn:*" % env)
 
 @_setup_env
 def stop(branch):
-    return run("kill `cat %s/txtalert.pid`" % env.pids_path) or True
+    return execute(branch, "supervisorctl -c supervisord.%(branch)s.conf stop gunicorn:*" % env)
 
 @_setup_env
 def restart(branch):
-    return run("kill -HUP `cat %s/txtalert.pid`" % env.pids_path)
+    return execute(branch, "supervisorctl -c supervisord.%(branch)s.conf restart gunicorn:*" % env)
 
 @_setup_env
 def cleanup(branch,limit=5):
