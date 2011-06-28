@@ -33,7 +33,7 @@ span.record { color:#999; font-size:small; }
 	 
 /*FORMS*/
 label { color:#000; }
-textarea { resize:none; width:100%;}
+textarea { resize:none; width:98%;}
 a.green { display:block; font-size:small; text-align:center; background:#5da500; color:#fff; border-bottom:1px solid #fff; width:100%; margin:0; }
 a.cancel { display:block; font-size:small; text-align:center; background:#ececec; color:#666; border:none; width:100%; margin:0; }
 select { width:98%; }
