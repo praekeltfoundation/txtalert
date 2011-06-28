@@ -22,6 +22,7 @@ PAGES = (
     ('Help', '/bookings/admin/help/', 'flatpages/admin.html'),
     ('Take Our STI Quiz and Win Airtime', '/bookings/young-africa-live/sti-quiz/', None),
     ('More Young Africa Live...', '/bookings/young-africa-live/more/', None),
+    ('About txtAlert...', '/bookings/about-txtalert/', None),
 )
 
 class Command(BaseCommand):

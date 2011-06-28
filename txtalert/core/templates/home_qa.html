@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>txtAlert</title>
+	<meta name="generator" content="TextMate http://macromates.com/">
+	<meta name="author" content="Simon de Haan">
+	<!-- Date: 2011-05-26 -->
+	<style type="text/css" media="screen">
+	   * {
+	       font-family: Helvetica, sans-serif;
+	   }
+	   
+	   code {
+	       font-family: Courier, mono;
+	       background-color: #999;
+	       padding: 2px;
+	   }
+	   
+	   #main {
+	       width: 572px;
+	       margin: 100px auto;
+	   }
+	</style>
+</head>
+<body>
+    <div id="main">
+        <h1>txtAlert QA instance</h1>
+        <p>
+            This is a QA version of txtAlert, all content is for testing purposes
+            only and are not in anyway related to real people at real clinics.
+        </p>
+        <h2>Available documents</h2>
+        <div>
+            <strong>Wireframes</strong>
+            <ul>
+                <li><a href="/html/wireframes/txtAlert.mobi.1.pdf">txtAlert Mobi wireframes</a></li>
+                <li><a href="/html/wireframes/txtAlert.USSD.2.pdf">txtAlert USSD wireframes</a></li>
+            </ul>
+            <strong>Static HTML for Opera mini</strong>
+            <ul>
+                <li><a href="/html/admin/">txtAlert Mobi Admin Booking tool HTML files</a></li>
+                <li><a href="/html/bookings/">txtAlert Mobi Patient Booking tool HTML files</a></li>
+            </ul>
+            <strong>QA instances</strong>
+            <ul>
+                <li><a href="/bookings/">Mobi Booking tool</a> (phone number: <code>0761234567</code>, patient id: <code>111</code>)</li>
+                <li><a href="/bookings/admin/">Mobi Booking Admin tool</a> (username: <code>bookings</code>, password: <code>admin</code>)</li>
+            </ul>
+            <strong>Opera Widget</strong>
+            <ul>
+                <li><a href="/widget/">Test the widget in your browser</a></li>
+            </ul>
+            <strong>USSD Booking tool</strong>
+            <p>
+                While the USSD provider and gateway are still in the process of 
+                being setup, the USSD booking tool can in the mean time be
+                tested by using GTalk or any other Jabber/XMPP based chat client 
+                by following these instructions:
+            </p>
+            <ul>
+                <li>
+                    Add <code>vumi.txtalert@praekeltfoundation.org</code> as a 
+                    contact to your Gtalk contact list.
+                </li>
+                <li>
+                    Send your phonenumber as registered in txtAlert as the first 
+                    chat message. Remember to format your number in full 
+                    international format without a leading `+` (plus) sign. 
+                    For <code>0761234567</code>, which is the patient account's phone
+                    number as mentioned above, the correct formatting would be:
+                    <code>27761234567</code>.
+                </li>
+                <li>
+                    The menu will return and ask you for your patient id.
+                </li>
+                <li>
+                    Send your patient id as the next chat message.
+                </li>
+                <li>
+                    Follow the instructions on the screen. From this point on
+                    it works like a multiple choice menu.
+                </li>
+            </ul>
+            <strong>Sample USSD Booking tool session (over Gtalk)</strong>
+            <p>
+                <img src="https://img.skitch.com/20110526-jhbab93j38mm3c8yf1ew7fh4be.jpg" alt="Vumi TxtAlert" />
+            </p>
+        </div>
+    </div>
+</body>
+</html>
