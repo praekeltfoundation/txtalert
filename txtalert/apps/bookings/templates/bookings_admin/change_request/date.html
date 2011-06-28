@@ -29,6 +29,7 @@
                     <option value="{{date|date:"j-M-Y"}}" {% if date == visit.date %}selected="selected"{% endif %}>{{date|date:"j M Y (l)"}}</option>
                 {% endfor %}
             </select>
+            <br/><br/>
             <input type="hidden" name="patient_id" value="{{patient.pk}}" id="patient_id">
             <input type="submit" name="approve" value="Make change" id="approve">
             <input type="submit" name="deny" value="Deny change" id="deny">
