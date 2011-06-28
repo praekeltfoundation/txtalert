@@ -20,10 +20,8 @@ PAGES = (
     ('Terms of Service', '/bookings/admin/terms-of-service/', 'flatpages/admin.html'),
     ('Privacy', '/bookings/admin/privacy/', 'flatpages/admin.html'),
     ('Help', '/bookings/admin/help/', 'flatpages/admin.html'),
-    ('HIV: The Facts', '/bookings/young_africa_live/hiv_the_facts/', None),
-    ('Help: At hand', '/bookings/young_africa_live/help_is_at_hand/', None),
-    ('Take Our STI Quiz and Win Airtime', '/bookings/young_africa_live/sti_quiz/', None),
-    ('More Young Africa Live...', '/bookings/young_africa_live/more/', None),
+    ('Take Our STI Quiz and Win Airtime', '/bookings/young-africa-live/sti_quiz/', None),
+    ('More Young Africa Live...', '/bookings/young-africa-live/more/', None),
 )
 
 class Command(BaseCommand):
