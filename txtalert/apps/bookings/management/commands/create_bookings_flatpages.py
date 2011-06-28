@@ -20,7 +20,7 @@ PAGES = (
     ('Terms of Service', '/bookings/admin/terms-of-service/', 'flatpages/admin.html'),
     ('Privacy', '/bookings/admin/privacy/', 'flatpages/admin.html'),
     ('Help', '/bookings/admin/help/', 'flatpages/admin.html'),
-    ('Take Our STI Quiz and Win Airtime', '/bookings/young-africa-live/sti_quiz/', None),
+    ('Take Our STI Quiz and Win Airtime', '/bookings/young-africa-live/sti-quiz/', None),
     ('More Young Africa Live...', '/bookings/young-africa-live/more/', None),
 )
 
