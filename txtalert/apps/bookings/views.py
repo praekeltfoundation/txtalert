@@ -6,15 +6,28 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 import logging
-from txtalert.core.models import Visit, PleaseCallMe, MSISDN
+from txtalert.core.models import Visit, PleaseCallMe, MSISDN, AuthProfile
 from txtalert.core.forms import RequestCallForm
 from txtalert.core.utils import normalize_msisdn
 from datetime import date, datetime
+from functools import wraps
 
 def effective_page_range_for(page,paginator,delta=3):
     return [p for p in range(page.number-delta,page.number+delta+1) 
                 if (p > 0 and p <= paginator.num_pages)]
+
+def auth_profile_required(func):
+    @wraps(func)
+    def wrapper(request, *args, **kwargs):
+        try:
+            return func(request, *args, **kwargs)
+        except AuthProfile.DoesNotExist:
+            return render_to_response('auth_profile_error.html', {
+            }, context_instance = RequestContext(request))
+    return wrapper
+
 @login_required
+@auth_profile_required
 def index(request):
     profile = request.user.get_profile()
     return render_to_response("index.html", {
@@ -29,8 +42,14 @@ def appointment_change(request, visit_id):
     change_requested = request.POST.get('when')
     if change_requested == 'later':
         visit.reschedule_later()
+        messages.add_message(request, messages.INFO, 
+            "Your request to change the appointment has been sent to " \
+            "the clinic. You will be notified as soon as possible.")
     elif change_requested == 'earlier':
         visit.reschedule_earlier()
+        messages.add_message(request, messages.INFO, 
+            "Your request to change the appointment has been sent to " \
+            "the clinic. You will be notified as soon as possible.")
     
     return render_to_response("appointment/change.html", {
         'profile': profile,

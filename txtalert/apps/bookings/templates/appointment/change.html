@@ -10,22 +10,20 @@
         {{visit.clinic.name}}
     </div>
     
-    {% if change_requested %}
-        <div class="widget">
-        	<span class="error">
-        	    Your request to change the above appointment has been sent to 
-        	    the clinic. You will be notified as soon as possible.
-        	</span>
-        </div>
-    {% else %}
+    {% if not change_requested %}
         <div class="widget">
             <form action="" method="post">
-                <label>What would you like to request?*</label><br>
-                <input type="radio" name="when" value="earlier">Earlier Date<br>
-                <input type="radio" name="when" value="later" checked="true">Later Date<br>
+                <label>What would you like to request?*</label><br><br>
+                <input type="radio" name="when" value="earlier">Earlier Date<br><br>
+                <input type="radio" name="when" value="later" checked="true">Later Date<br><br>
+                <span class="alert">
+                    <strong>Please Note: </strong>
+                    Change request will be evaluated by a clinic administrator. 
+                    Changes will not always be possible.
+                </span><br><br><br>
                 <input type="submit" class="request" value="Submit Request"><br>
             </form>
-            *Change request will be evaluated by a clinic administrator. Changes will not always be possible.
+            <br/>
         </div>
     
         <div class="clear"></div>

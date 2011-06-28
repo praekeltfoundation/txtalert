@@ -3,7 +3,7 @@ from django.views.generic.base import TemplateView
 from django.conf import settings
 
 if settings.DEBUG:
-    template_name = 'qa_home.html'
+    template_name = 'home_qa.html'
 else:
     template_name = 'home.html'
 
