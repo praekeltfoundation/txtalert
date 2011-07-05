@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 import logging
-from txtalert.core.models import Visit, PleaseCallMe, MSISDN, AuthProfile
+from txtalert.core.models import Visit, PleaseCallMe, MSISDN, AuthProfile, Patient
 from txtalert.core.forms import RequestCallForm
 from txtalert.core.utils import normalize_msisdn
 from datetime import date, datetime
@@ -140,6 +140,51 @@ def request_call(request):
         'patient': patient,
         'form': form,
     }, context_instance=RequestContext(request))
+
+def widget_landing(request):
+    if 'patient_id' in request.GET \
+        and 'msisdn' in request.GET:
+        
+        try:
+            msisdn = normalize_msisdn(request.GET.get('msisdn'))
+            patient_id = request.GET.get('patient_id')
+            patient = Patient.objects.get(active_msisdn__msisdn=msisdn,
+                                            te_id=patient_id)
+            try:
+                visit = patient.next_visit()
+            except Visit.DoesNotExist:
+                visit = None
+            
+            visits = patient.visit_set.all()
+            
+            context = {
+                'msisdn': msisdn,
+                'patient_id': patient_id,
+                'patient': patient,
+                'name': patient.name,
+                'surname': patient.surname,
+                'next_appointment': visit.date if visit else '',
+                'visit_id': visit.pk if visit else '',
+                'clinic': visit.clinic.name if visit else '',
+                'attendance': int((1.0 - patient.risk_profile) * 100),
+                'total': visits.count(),
+                'attended': visits.filter(status='a').count(),
+                'rescheduled': visits.filter(status='r').count(),
+                'missed': visits.filter(status='m').count(),
+            }
+        except Patient.DoesNotExist:
+            context = {
+                'patient_id': patient_id,
+                'msisdn': msisdn,
+            }
+    else:
+        context = {
+            'patient_id': request.GET.get('patient_id', ''),
+            'msisdn': request.GET.get('msisdn', ''),
+        }
+    print context
+    return render_to_response('widget_landing.html', context, 
+        context_instance=RequestContext(request))
 
 def todo(request):
     """Anything that resolves to here still needs to be completed"""

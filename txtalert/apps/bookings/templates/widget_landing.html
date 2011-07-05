@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}style/base.css">
+    <title>txtAlert</title>
+</head>
+<body>
+    <header>
+        <div class="logo"><img src="{{ STATIC_URL }}images/logo.jpg" alt="" /></div>
+    </header>
+    {% if patient %}
+    <div id="appointment" style="display: block;">
+        <span>Hello {{name}} {{surname}}</span>
+        <div class="info">
+            <em>Your next appointment is:</em><br/>
+            <h1>{{next_appointment|date:"j F Y"}}</h1>
+            <h2>{{clinic}}</h2>
+            <p><a target="_blank" href="{% url bookings:index %}">Do you need to change this?</a></p>
+        </div>
+    </div>
+    {% else %}
+    <div id="signin">
+        <span>Sign In</span>
+        <div class="error" style="display: block;">
+            Wrong Phone Number and Patient ID.<br/>
+            <strong>Please try again.</strong>
+        </div>
+        <form id="signin_form" method="get" action="{% url bookings:widget_landing %}">
+            <label>Cell Phone Number</label><br>
+            <input type="text" name='msisdn' value="{{msisdn}}"><br>
+            <label>Patient ID</label><br>
+            <input type="text" name='patient_id' value="{{patient_id}}"><br>
+            <input type="submit" id="submit" value="Sign In" class="submit">
+        </form>
+    </div>
+    {% endif %}
+</body>
+</html>
