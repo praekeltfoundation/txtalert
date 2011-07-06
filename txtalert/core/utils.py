@@ -14,7 +14,7 @@ def random_string(val=None):
     return m.hexdigest()
 
 def normalize_msisdn(raw):
-    raw = str(int(raw))
+    raw = ''.join([c for c in str(raw) if c.isdigit()])
     if raw.startswith('0'):
         return '27' + raw[1:]
     if raw.startswith('+'):

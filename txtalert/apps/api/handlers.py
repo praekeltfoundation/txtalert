@@ -176,13 +176,14 @@ class PatientHandler(BaseHandler):
     allowed_methods = ('GET',)
     
     def read(self, request):
-        if 'patient_id' in request.GET \
-            and 'msisdn' in request.GET:
-            
+        
+        patient_id = request.GET.get('patient_id') or None
+        msisdn = request.GET.get('msisdn') or None
+        
+        if patient_id and msisdn:
             try:
-                msisdn = normalize_msisdn(request.GET.get('msisdn'))
-                patient_id = request.GET.get('patient_id')
-                patient = Patient.objects.get(active_msisdn__msisdn=msisdn,
+                normalized_msisdn = normalize_msisdn(msisdn)
+                patient = Patient.objects.get(active_msisdn__msisdn=normalized_msisdn,
                                                 te_id=patient_id)
                 try:
                     visit = patient.next_visit()

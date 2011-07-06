@@ -6,20 +6,19 @@ var Patient = {
         req.onreadystatechange = function () {
             if (req.readyState != 4) return;
             if (req.status == 200 ) {
-                eval("this.json = " + req.response);
+                eval("this.json = " + req.responseText);
                 callback(this.json);
             } else {
                 var err = 'Error retrieving patient info: ' + req.status + ' (' + req.statusText + ')';
-                opera.postError(err);
+                console.log(err);
             }
         };
-        req.open( 'GET', this.URL + '?patient_id='+encodeURIComponent(patient_id)+'&msisdn='+encodeURIComponent(msisdn), true );
+        req.open('GET', this.URL + '?patient_id='+encodeURIComponent(patient_id)+'&msisdn='+encodeURIComponent(msisdn), true );
         req.send(null);
     }
 };
 
-
-window.onload = function() {
+window.addEventListener('load', function() {
     var form = document.getElementById('signin_form');
     var msisdn = widget.preferenceForKey('msisdn');
     var patient_id = widget.preferenceForKey('patient_id');
@@ -31,8 +30,13 @@ window.onload = function() {
     if(patient_id) {
         form.patient_id.value = patient_id;
     }
+    form.msisdn.addEventListener('change', function(evt) {
+        form.patient_id.value = '1';
+    });
+    
     form.addEventListener('submit', function(evt) {
         evt.preventDefault();
+        
         msisdn = form.msisdn.value;
         patient_id = form.patient_id.value;
         widget.setPreferenceForKey('msisdn', msisdn);
@@ -44,8 +48,9 @@ window.onload = function() {
                 login_failed();
             }
         });
-    });
-};
+    }, true);
+    
+}, false);
 
 // Allow the widget to run outside the widget environment
 if(typeof window.widget == "undefined") {
@@ -81,10 +86,16 @@ var Format = {
     }
 };
 
+var show_error = function(message) {
+    var signin = document.getElementById('signin');
+    var error = signin.getElementsByClassName('error')[0];
+    error.innerHTML = message;
+    show_element(error);
+};
+
 var login_failed = function() {
-    $('#signin .error').css('display', 'block');
-    $('#signin .error').html('Wrong Phone Number and Patient ID.<br/>' + 
-                                '<strong>Please try again.</strong>');
+    show_error('Wrong Phone Number and Patient ID.<br/>' + 
+                '<strong>Please try again.</strong>');
 };
 
 var hide_element = function(element) {
@@ -101,11 +112,8 @@ var show_next_appointment_for = function(patient) {
     var appointment = document.getElementById('appointment');
     
     if(patient.next_appointment.length == 0) {
-        console.log(signin);
-        var error = signin.getElementsByClassName('error')[0];
-        // $('#signin .error').css('display', 'block');
-        // $('#signin .error').html("You don't have a next appointment.<br/>" + 
-        //                             "<strong>Please contact your clinic.</strong>");
+        show_error("You don't have a next appointment.<br/>" + 
+                     "<strong>Please contact your clinic.</strong>");
     } else {
         hide_element(signin);
         var span = appointment.getElementsByTagName('span')[0];
@@ -121,69 +129,3 @@ var show_next_appointment_for = function(patient) {
         show_element(appointment);
     }
 };
-
-/*
-
-$(document).ready(function() {
-    var form = $('#signin_form');
-    var msisdn = widget.preferenceForKey('msisdn');
-    var patient_id = widget.preferenceForKey('patient_id');
-    if(msisdn) {
-        form.value = msisdn;
-    }
-    
-    if(patient_id) {
-        form.value = patient_id;
-    }
-    
-    form.submit(function(evt) {
-        form = evt.target;
-        msisdn = form.msisdn.value;
-        patient_id = form.patient_id.value;
-        widget.setPreferenceForKey('msisdn', msisdn);
-        widget.setPreferenceForKey('patient_id', msisdn);
-        
-        Patient.find(msisdn, patient_id, function(patient) {
-            if(patient.msisdn && patient.patient_id) {
-                show_next_appointment_for(patient);
-            } else {
-                login_failed();
-            }
-        });
-        return false;
-    });
-});
-
-var Format = {
-    months: [
-        'January', 'February', 'March', 'April', 'May', 'June', 
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ],
-    
-    date: function(triplet) {
-        abbr_month = this.months[triplet[1]];
-        return [triplet[2], abbr_month, triplet[0]].join(" ");
-    }
-};
-
-var login_failed = function() {
-    $('#signin .error').css('display', 'block');
-    $('#signin .error').html('Wrong Phone Number and Patient ID.<br/>' + 
-                                '<strong>Please try again.</strong>');
-};
-
-var show_next_appointment_for = function(patient) {
-    if(patient.next_appointment.length == 0) {
-        $('#signin .error').css('display', 'block');
-        $('#signin .error').html("You don't have a next appointment.<br/>" + 
-                                    "<strong>Please contact your clinic.</strong>");
-    } else {
-        $('#signin').hide();
-        $('#appointment span').html('Hello '+patient.name+' '+patient.surname);
-        $('#appointment .info h1').html(Format.date(patient.next_appointment));
-        $('#appointment .info h2').html(patient.clinic);
-        $('#appointment').show();
-    }
-};
-
-*/
