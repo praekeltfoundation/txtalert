@@ -47,7 +47,7 @@ def load_cd4_records(sender, **kwargs):
     
     if created:
         for row in read_cd4_document(instance.original.path):
-            normalized_msisdn = normalize_msisdn(row[MSISDN][1])
+            normalized_msisdn = normalize_msisdn(int(row[MSISDN][1]))
             instance.record_set.create(
                 # string
                 lab_id_number = row[LAB_ID_NUMBER][1],
