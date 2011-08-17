@@ -83,7 +83,7 @@ def find_patient(request):
             Q(surname__icontains=request.GET.get('surname') or 'False'))
         
         if patients.count() == 1:
-            next = request.GEt.get('next')
+            next = request.GET.get('next')
             if next:
                 next = '%s?patient_id=%s' % (next, patients[0].pk)
             else:
