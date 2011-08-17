@@ -180,7 +180,7 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     
     def last_visit(self):
         try:
-            return self.visit_set.past().filter(status='a')[0]
+            return self.visit_set.past().filter(status='a').order_by('-date')[0]
         except IndexError:
             return None
     
