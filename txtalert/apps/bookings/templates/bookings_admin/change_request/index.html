@@ -21,12 +21,12 @@
         </div>
     {% endfor %}
     
-    <div class="widget">
-        <a href="{% url bookings:admin:index %}" class="green">Main Menu</a>
-    </div>
-    
     <div class="clear"></div>
     
     {% include "includes/paginator.html" %}
 
+    <div class="widget">
+        <a href="{% url bookings:admin:index %}" class="green">Main Menu</a>
+    </div>
+    
 {% endblock %}
