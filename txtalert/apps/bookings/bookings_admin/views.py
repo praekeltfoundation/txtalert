@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from txtalert.apps.bookings.bookings_admin import forms
 from txtalert.apps.bookings.views import effective_page_range_for
-from txtalert.core.models import Patient, Visit, ChangeRequest
+from txtalert.core.models import Patient, Visit, ChangeRequest, PleaseCallMe
 from txtalert.core.utils import normalize_msisdn
 import logging
 from datetime import datetime, date, timedelta
@@ -281,4 +281,34 @@ def change_request_details(request, change_request_id):
         'visit': visit,
         'patient': patient,
         'next_visit_dates': next_visit_dates,
+    }, context_instance=RequestContext(request))
+
+@permission_required(LOGIN_PERMISSION, login_url=LOGIN_URL)
+def call_requests(request):
+    call_requests = PleaseCallMe.objects.all().order_by('-pk')
+    paginator = Paginator(call_requests, 5)
+    page = paginator.page(request.GET.get('p', 1))
+    return render_to_response('bookings_admin/call_requests/index.html', {
+        'paginator': paginator,
+        'page': page,
+        'effective_page_range': effective_page_range_for(page, paginator)
+    }, context_instance=RequestContext(request))
+
+@permission_required(LOGIN_PERMISSION, login_url=LOGIN_URL)
+def call_request_details(request, call_request_id):
+    pcm = get_object_or_404(PleaseCallMe, pk=call_request_id)
+    if request.POST:
+        form = forms.PleaseCallMeForm(request.POST, instance=pcm)
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.INFO, 'The call request '
+                'has been updated')
+            return HttpResponseRedirect(reverse('bookings:admin:call_requests'))
+    else:
+        form = forms.PleaseCallMeForm(initial={
+            'user': request.user.pk
+        }, instance=pcm)
+    return render_to_response('bookings_admin/call_requests/request.html', {
+        'form': form,
+        'pcm': pcm
     }, context_instance=RequestContext(request))

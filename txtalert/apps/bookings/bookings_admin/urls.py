@@ -16,6 +16,8 @@ urlpatterns = patterns('',
     (r'^appointments/$', views.appointments, {}, 'appointments'),
     (r'^change-requests/$', views.change_requests, {}, 'change_requests'),
     (r'^change-requests/(?P<change_request_id>\d+)/$', views.change_request_details, {}, 'change_request_details'),
+    (r'^call-requests/$', views.call_requests, {}, 'call_requests'),
+    (r'^call-requests/(?P<call_request_id>\d+)/$', views.call_request_details, {}, 'call_request_details'),
     (r'^sign-in/$', 'django.contrib.auth.views.login', { 
             'template_name': 'bookings_admin/signin.html' 
         }, 'signin'),

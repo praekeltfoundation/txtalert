@@ -1,0 +1,45 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; Call Requests</span>    
+{% endblock %}
+
+{% block content %}
+    {% for call_request in page.object_list %}
+        {% with call_request.msisdn as msisdn %}
+        <div class="widget border">
+            <span class="black">
+                <a href="{% url bookings:admin:call_request_details call_request_id=call_request.pk %}">
+                    {{call_request.timestamp|date:"j F Y \a\t H:i"}}
+                </a>
+            </span><br>
+            <strong>Status:</strong> {{call_request.get_reason_display}}<br>
+            <strong>Phone Number:</strong> {{call_request.msisdn.msisdn}}<br>
+            <strong>Clinic:</strong> {{call_request.clinic.name}}<br>
+            {% if call_request.notes %}
+                <strong>Notes:</strong><br>
+                {{call_request.notes|default:"None"|linebreaksbr}}
+                <br><br>
+            {% endif %}
+            {% if call_request.message %}
+                <strong>Message:</strong><br>
+                {{call_request.message|default:"None"}}
+                <br><br>
+            {% endif %}
+        </div>
+        {% endwith %}
+    {% empty %}
+        <div class="widget border">
+            There are no pending call requests
+        </div>
+    {% endfor %}
+    
+    <div class="widget">
+        <a href="{% url bookings:admin:index %}" class="green">Main Menu</a>
+    </div>
+    
+    <div class="clear"></div>
+    
+    {% include "includes/paginator.html" %}
+
+{% endblock %}

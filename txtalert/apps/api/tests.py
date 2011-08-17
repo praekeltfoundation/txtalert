@@ -7,6 +7,7 @@ from django.utils import simplejson
 from django.db.models.signals import post_save
 from txtalert.apps.gateway.backends.opera.utils import element_to_namedtuple, OPERA_TIMESTAMP_FORMAT
 from txtalert.apps.gateway.models import SendSMS, PleaseCallMe
+from txtalert.core.models import Visit, ChangeRequest, PleaseCallMe as CorePleaseCallMe
 
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
@@ -542,4 +543,64 @@ class PcmAutomationTestCase(TestCase):
         self.assertEquals(response.status_code, 400)
     
 
-        
+class ChangeRequestTestCase(TestCase):
+
+    fixtures = ['contacts.json', 'patients.json', 'visits.json']
+    
+    def setUp(self):
+        self.user = User.objects.create_user(username='user', \
+                                                email='user@domain.com', \
+                                                password='password')
+    
+    def tearDown(self):
+        pass
+    
+    def test_change_request_earlier(self):
+        visit = Visit.objects.all().latest('pk')
+        response = self.client.post(
+            reverse('api-req-change', kwargs={'emitter_format':'json'}), {
+                'visit_id': visit.pk,
+                'when': 'earlier',
+            }, HTTP_AUTHORIZATION=basic_auth_string('user','password')
+        )
+        self.assertEquals(ChangeRequest.objects.count(), 1)
+        cr = ChangeRequest.objects.latest('pk')
+        self.assertEquals(cr.visit, visit)
+        self.assertEquals(cr.request_type, 'earlier_date')
+
+    def test_change_request_later(self):
+        visit = Visit.objects.all().latest('pk')
+        response = self.client.post(
+            reverse('api-req-change', kwargs={'emitter_format':'json'}), {
+                'visit_id': visit.pk,
+                'when': 'later',
+            }, HTTP_AUTHORIZATION=basic_auth_string('user','password')
+        )
+        self.assertEquals(ChangeRequest.objects.count(), 1)
+        cr = ChangeRequest.objects.latest('pk')
+        self.assertEquals(cr.visit, visit)
+        self.assertEquals(cr.request_type, 'later_date')
+
+class CallRequestTestCase(TestCase):
+
+    fixtures = ['contacts.json', 'patients.json', 'visits.json']
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='user', \
+                                                email='user@domain.com', \
+                                                password='password')
+
+    def tearDown(self):
+        pass
+
+    def test_call_request(self):
+        response = self.client.post(
+            reverse('api-req-call', kwargs={'emitter_format':'json'}), {
+                'msisdn': '0761234567',
+            }, HTTP_AUTHORIZATION=basic_auth_string('user','password')
+        )
+        self.assertEquals(CorePleaseCallMe.objects.count(), 1)
+        pcm = CorePleaseCallMe.objects.latest('pk')
+        self.assertEquals(pcm.msisdn.msisdn, '27761234567')
+        self.assertEquals(pcm.user, self.user)
+

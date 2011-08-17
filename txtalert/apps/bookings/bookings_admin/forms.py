@@ -2,7 +2,7 @@ from django import forms
 from django.forms.widgets import RadioSelect
 from django.forms.extras.widgets import SelectDateWidget
 from txtalert.core.utils import normalize_msisdn
-from txtalert.core.models import Patient, MSISDN, Visit, Clinic
+from txtalert.core.models import Patient, MSISDN, Visit, Clinic, PleaseCallMe
 
 class MSISDNForm(forms.Form):
     msisdn = forms.CharField(min_length=10, required=True, 
@@ -78,3 +78,9 @@ class EditVisitForm(forms.ModelForm):
 class SimpleDateForm(forms.Form):
     date = forms.DateField(label='Pick Another Date:', required=True,
         widget=SelectDateWidget())
+    
+
+class PleaseCallMeForm(forms.ModelForm):
+    class Meta:
+        model = PleaseCallMe
+        fields = ('reason', 'notes', 'message')

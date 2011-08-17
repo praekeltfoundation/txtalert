@@ -1,0 +1,34 @@
+{% extends "bookings_admin/base.html" %}
+
+{% block header %}
+    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; Call Request</span>    
+{% endblock %}
+
+{% block content %}
+    <div class="widget request border">
+        <span class="black">{{pcm.timestamp|date:"j F Y \a\t H:i"}}</span><br>
+        <strong>Status:</strong> {{pcm.get_reason_display}}<br>
+        <strong>Phone Number:</strong> {{pcm.msisdn.msisdn}}<br>
+        <strong>Message:</strong> {{pcm.message|default:"None"}}<br>
+    </div>
+
+    <div class="widget border">
+    <span class="black">{{change_request.request}}</span>
+    </div>
+    
+    <div class="widget">
+        <form method="post" action="">    
+            {{form}}
+            <input type="submit" value="Update">
+            {% csrf_token %}
+        </form>
+    </div>
+
+    <div class="widget">
+        <a href="{% url bookings:admin:call_requests %}" class="green">More Call Requests &raquo;</a>
+        <a href="{% url bookings:admin:index %}" class="green">Main Menu</a>
+    </div>
+
+    <div class="clear"></div>
+
+{% endblock %}

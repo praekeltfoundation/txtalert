@@ -118,7 +118,7 @@ def request_call(request):
             msisdn_record, _ = MSISDN.objects.get_or_create(msisdn=msisdn)
             pcm = PleaseCallMe(user=clinic.user, clinic=clinic, 
                 msisdn=msisdn_record, timestamp=datetime.now(), 
-                message='Called request via txtAlert Bookings')
+                message='Please call me!', notes='Call request issued via txtAlert Bookings')
             pcm.save()
             messages.add_message(request, messages.INFO, 
                         'Your call request has been registered. '\

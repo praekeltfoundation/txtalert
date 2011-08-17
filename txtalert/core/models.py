@@ -283,6 +283,7 @@ class PleaseCallMe(models.Model):
         ('er', 'Patient did not try to reach us'),
         ('lt', 'LTFU'),
         ('de', 'Defaulter'),
+        ('nc', 'Not Called'),
         ('na', 'No Answer'),
         ('rm', 'Reschedule missed appointment'),
         ('rf', 'Reschedule future appointment'),

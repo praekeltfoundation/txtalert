@@ -6,8 +6,10 @@ from piston.utils import rc, require_mime, throttle
 
 from txtalert.apps.gateway.models import SendSMS, PleaseCallMe
 from txtalert.apps.gateway import gateway, sms_receipt_handler
-from txtalert.core.models import Patient, Visit
+from txtalert.core.models import Patient, Visit, MSISDN
+from txtalert.core.models import PleaseCallMe as CorePleaseCallMe
 from txtalert.core.utils import normalize_msisdn
+from txtalert.core.forms import RequestCallForm
 
 from datetime import datetime, timedelta
 import logging
@@ -213,3 +215,30 @@ class PatientHandler(BaseHandler):
             except Patient.DoesNotExist:
                 pass
         return {}
+    
+class ChangeRequestHandler(BaseHandler):
+    allowed_methods = ('POST',)
+    
+    def create(self, request):
+        visit_id = request.POST.get('visit_id')
+        visit = get_object_or_404(Visit, pk=visit_id)
+        change_requested = request.POST.get('when')
+        if change_requested == 'later':
+            visit.reschedule_later()
+            return {'request': 'later'}
+        elif change_requested == 'earlier':
+            visit.reschedule_earlier()
+            return {'request': 'earlier'}
+
+class CallRequestHandler(BaseHandler):
+    allowed_methods = ('POST',)
+
+    def create(self, request):
+        msisdn = normalize_msisdn(request.POST.get('msisdn'))
+        msisdn_record, _ = MSISDN.objects.get_or_create(msisdn=msisdn)
+        pcm = CorePleaseCallMe(user=request.user, msisdn=msisdn_record, 
+                timestamp=datetime.now(), message='Please call me!', 
+                notes='Call request issued via txtAlert Bookings USSD')
+        pcm.save()
+        return pcm
+            
