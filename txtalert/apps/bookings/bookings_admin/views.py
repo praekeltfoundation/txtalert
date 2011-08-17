@@ -83,8 +83,13 @@ def find_patient(request):
             Q(surname__icontains=request.GET.get('surname') or 'False'))
         
         if patients.count() == 1:
-            return HttpResponseRedirect(reverse('bookings:admin:edit_patient', 
-                kwargs={'patient_id': patients[0].pk}))
+            next = request.GEt.get('next')
+            if next:
+                next = '%s?patient_id=%s' % (next, patients[0].pk)
+            else:
+                next = reverse('bookings:admin:edit_patient', 
+                    kwargs={'patient_id': patients[0].pk})
+            return HttpResponseRedirect(next)
         else:
             return render_to_response('bookings_admin/patient/results.html', {
                 'patients': patients,
