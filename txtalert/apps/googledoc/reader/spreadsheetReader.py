@@ -56,7 +56,7 @@ class SimpleCRUD:
     self.curr_key = feed.entry[0].id.text.rsplit('/',1)[1]
        
        
-  def getWorksheets(self):
+  def getWorksheetData(self, worksheet_type, start, until):
     """Acess the enrol and current month's worksheets of the current spread sheet."""
     #print 'Inside getWorksheet current key is: %s\n' % self.curr_key
     month_worksheet = {}
@@ -65,55 +65,88 @@ class SimpleCRUD:
     #get current month
     curr_month = datetime.date.today().month  
     curr_month = int(curr_month)
-    # Get the list of worksheets in the spreadsheet
-    feed = self.gd_client.GetWorksheetsFeed(self.curr_key)
+    app_worksheet = months[curr_month-1]
+    
+    #check if the worksheet requested is for making appointments
+    if worksheet_type == 'appointment worksheet':
+         app_worksheet = self.getWorkSheet(app_worksheet)
+         #self.getWorkSheet(app_worksheet)
+         #app_worksheet = self.appointmentQuery(start, until)
+         return app_worksheet
         
-    for i, entry in enumerate(feed.entry):
-        #check for this month's worksheet
-        if entry.title.text == 'enrollment sheet':
-            select = i
-            #select the worksheet to be accessed
-            id_parts = feed.entry[select].id.text.split('/')
-            #stores the unique ID used to access the spreadsheet
-            self.wksht_id = id_parts[len(id_parts) - 1]
-            #get the enrollment data use list
-            enrol_worksheet = self._PromptForListAction('enrol') 
-        #if the date is end of the month get next months spreadsheet   
-        elif datetime.date.today().day >= 28 and (months[curr_month-1] == entry.title.text or months[curr_month] == entry.title.text):
-            select = i
-            id_parts = feed.entry[select].id.text.split('/')
-            self.wksht_id = id_parts[len(id_parts) - 1]
-            month_sheet = self._PromptForListAction('appointment')
-            month_worksheet.update(mont_sheet)
-        #if not end of the month get the current month worksheet    
-        elif datetime.date.today().day < 28 and months[curr_month-1] == entry.title.text:
-            select = i
-            id_parts = feed.entry[select].id.text.split('/')
-            self.wksht_id = id_parts[len(id_parts) - 1]
-            month_worksheet = self._PromptForListAction('appointment')
+    #check if the requested worksheet is the enrollment sheet
+    elif worksheet_type == 'enrollment worksheet':
+        exists = self.getWorkSheet('enrollment sheet')
+        return exists
+                     
+   
+  def getWorkSheet(self, worksheet_name):
+      q = gdata.spreadsheet.service.DocumentQuery()
+      q['title'] = worksheet_name
+      q['title-exact'] = 'true'
+      feed = self.gd_client.GetWorksheetsFeed(self.curr_key, query=q)
+      self.wksht_id = feed.entry[0].id.text.rsplit('/',1)[1] 
+      #check if the retrieved worksheet is not an enrollment worksheet if not process the data 
+      if worksheet_name is not 'enrollment sheet':
+           app_worksheet = self._PromptForListAction()
+           return app_worksheet
+  
+  def appointmentQuery(self, start, until):
+    str_start = str(start)
+    str_start = str_start.replace('-', '/')
+    q = gdata.spreadsheet.service.ListQuery(text_query='1/8/2011')
+    print str_start
+    feed = self.gd_client.GetListFeed(self.curr_key, self.wksht_id, query=q)
+    #patient was found in the enrollment worksheet
+    if feed:
+        enrolled = True
+        print 'patient with this date was found'
+    #patient needs to enrol first
+    if not feed:
+        enrolled = False
+        print 'no patient with this date'
+    date_diff = until - start
+    for d in range(date_diff.days):
+        day_query = start + datetime.timedelta(days=d)
                 
-    return (enrol_worksheet, month_worksheet)  
            
-  def _PromptForListAction(self, worksheet):
+  def enrolQuery(self, file_no):
+      q = gdata.spreadsheet.service.ListQuery(text_query=str(file_no))
+      feed = self.gd_client.GetListFeed(self.curr_key, self.wksht_id, query=q)
+      #patient was found in the enrollment worksheet
+      if feed:
+          enrolled = True
+          return enrolled
+      #patient needs to enrol first
+      if not feed:
+          enrolled = False
+          return enrolled
+          
+      for i, entry in enumerate(feed.entry):
+          if isinstance(feed, gdata.spreadsheet.SpreadsheetsListFeed):
+              for key in entry.custom:  
+                  print '  %s: %s' % (key, entry.custom[key].text)
+      #Record(content=None, row_entry=row_feed.entry[0], spreadsheet_key=self.spreadsheet_key,
+            #worksheet_id=self.worksheet_id, database_client=self.client)
+      #feed = self.gd_client.GetWorksheetsFeed(self.curr_key, query=q)
+            
+  def _PromptForListAction(self):
     """Calls method that gets a list feed from the given worksheet."""
-    sheet = self._ListGetAction(worksheet)
+    sheet = self._ListGetAction()
     return sheet
     
-  def _ListGetAction(self, worksheet):
+  def _ListGetAction(self):
     """Gets the list feed for the worksheet and sends it to be processed"""
-    # Get the list feed
     list_feed = self.gd_client.GetListFeed(self.curr_key, self.wksht_id)
     #get the enrollment worksheet
-    sheet = self.processFile(feed=list_feed, worksheet=worksheet)
+    sheet = self.processFile(feed=list_feed)
     return sheet
+       
     
-    
-  def processFile(self, feed, worksheet):  
+  def processFile(self, feed):  
     """Gets the data from the list feed and process it. Loop through the worksheet and make the data avaliable. """     
     #process enrollment worksheet        
     if isinstance(feed, gdata.spreadsheet.SpreadsheetsListFeed):
-        print 'worksheet inside processFile: %s\n' % worksheet
-        #feed_type = 'list'
         worksheet_data = {}
         proper_worksheet = {}
         temp_dic = {}
@@ -136,13 +169,13 @@ class SimpleCRUD:
             #clear for next worksheet row
             copydic = {}
             rowdic ={}
-        
+        #print worksheet_data
         #for each row get proper type for each one of its contents
         for k in worksheet_data:
             row_no = k + 2
             #print worksheet_data[k]
             #get proper values for each key in row dictionary
-            enrol_p = self.databaseRecord(dic=worksheet_data[k], worksheet=worksheet)
+            enrol_p = self.databaseRecord(dic=worksheet_data[k])
             #creates a dictionary with the row number as the key and row dictionary as the value
             enroltemp = {k:enrol_p} 
             #clear for next row excess
@@ -164,94 +197,64 @@ class SimpleCRUD:
       except TypeError:
           return TypeError
  
-  def databaseRecord(self, dic, worksheet):
+  def databaseRecord(self, dic):
       """Accepts a dictionary from a worksheet and converts the contents into the proper type"""
-      if worksheet == 'enrol':
-          enrol_dic = dic
-          enrolDic = {}          
-          for key in enrol_dic:
-              if key == 'patientid':
-                  try:
-                      temp_dic = {key:int(enrol_dic[key])}
-                      enrolDic.update(temp_dic) 
-                      temp_dic = {}
-                  except TypeError:
-                      temp_dic = {key:TypeError}
-                      enrolDic.update(temp_dic) 
-                      temp_dic = {}                 
-              elif key == 'patientfileno':
-                  try:
-                      temp_dic = {key:int(enrol_dic[key])}
-                      enrolDic.update(temp_dic) 
-                      temp_dic = {}
-                  except TypeError:
-                      temp_dic = {key:TypeError}
-                      enrolDic.update(temp_dic) 
-                      temp_dic = {} 
-              elif key == 'patientphonenumber':
-                  try:
-                      temp_dic = {key:int(enrol_dic[key])}
-                      enrolDic.update(temp_dic) 
-                      temp_dic = {}
-                  except ValueError:
-                      temp_dic = {key:ValueError}
-                      enrolDic.update(temp_dic) 
-                      temp_dic = {} 
-              elif key == 'dateofenrollment':
-                  enrol_date = self.dateObjectCreator(enrol_dic[key])
-                  temp_dic = {key:enrol_date}
-                  enrolDic.update(temp_dic)
+      app_dic = dic
+      appDic = {}
+      for key in app_dic:
+          if key == 'fileno':
+              try:
+                  temp_dic = {key:int(app_dic[key])}
+                  appDic.update(temp_dic)
+                  temp_dic = {} 
+              except TypeError:
+                  temp_dic = {key:TypeError}
+                  appDic.update(key=TypeError)
                   temp_dic = {}
                   
-          return enrolDic       
-      
-      elif worksheet == 'appointment':
-          app_dic = dic
-          appDic = {}
-          for key in app_dic:
-              if key == 'fileno':
-                  try:
-                      temp_dic = {key:int(app_dic[key])}
-                      appDic.update(temp_dic)
-                      temp_dic = {} 
-                  except TypeError:
-                      temp_dic = {key:TypeError}
-                      appDic.update(key=TypeError)
-                      temp_dic = {}
-              elif key == 'phonenumber':
-                  try:
-                      temp_dic = {key:int(app_dic[key])}
-                      appDic.update(temp_dic)
-                      temp_dic = {}
-                  except ValueError:
-                      temp_dic = {key:TypeError}
-                      appDic.update(temp_dic)
-                      temp_dic = {}
-              elif key == 'appointmentdate1':
-                  app_date = self.dateObjectCreator(app_dic[key])
-                  temp_dic = {key:app_date}
+          elif key == 'phonenumber':
+              try:
+                  temp_dic = {key:int(app_dic[key])}
                   appDic.update(temp_dic)
                   temp_dic = {}
-              elif key == 'appointmentstatus1':
-                  try:
-                      temp_dic = {key:app_dic[key]}
-                      appDic.update(temp_dic) 
-                  except TypeError:
-                      temp_dic = {key:TypeError}
-                      appDic.update(temp_dic)
-                      temp_dic = {}
+              except ValueError:
+                  temp_dic = {key:TypeError}
+                  appDic.update(temp_dic)
+                  temp_dic = {}
+            
+          elif key == 'appointmentdate1':
+              app_date = self.dateObjectCreator(app_dic[key])
+              temp_dic = {key:app_date}
+              appDic.update(temp_dic)
+              temp_dic = {}   
+                
+          elif key == 'appointmentstatus1':
+              try:
+                  temp_dic = {key:app_dic[key]}
+                  appDic.update(temp_dic) 
+              except TypeError:
+                  temp_dic = {key:TypeError}
+                  appDic.update(temp_dic)
+                  temp_dic = {}
          
-          return appDic
-    
-    
-                  
-  def Run(self, doc_name='ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert'):
-    """Expects the name of the spreadsheet to be imported as well as the row numnber to start exxporting from."""
-    #get the spread sheet to be worked on
-    self.getSpreadsheet(doc_name)
-    #get the worksheets on the spreadsheet
-    self.getWorksheets()
-   
+      return appDic
+      
+  def RunAppointment(self, doc_name='ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert', worksheet_type='appointment worksheet', start=datetime.date(2011, 8, 1), until=datetime.date(2011, 8, 10)):
+      #get the spread sheet to be worked on
+      self.getSpreadsheet(doc_name)
+      #get the worksheets on the spreadsheet
+      app_worksheet = self.getWorksheetData(worksheet_type, start, until)
+      return app_worksheet
+       
+  def RunEnrollmentCheck(self, doc_name='ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert', worksheet_type='enrollment worksheet', file_no=1663):
+      #get the spread sheet to be worked on
+      self.getSpreadsheet(doc_name)
+      #get the worksheets on the spreadsheet
+      self.getWorksheetData(worksheet_type)
+      #send structured query to check if the patient is enrolled to use service
+      exists = self.enrolQuery(file_no)
+      return exists
+       
 
 def main():
   # parse command line options
@@ -278,7 +281,8 @@ def main():
     sys.exit(2)
         
   sample = SimpleCRUD(user, pw)
-  sample.Run()
+  sample.RunAppointment()
+  #sample.RunEnrollmentCheck()
 
 
 if __name__ == '__main__':
