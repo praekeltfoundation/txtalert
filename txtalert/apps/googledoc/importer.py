@@ -14,24 +14,27 @@ APPOINTMENT_ID_RE = re.compile(r'^[0-9]{2}-[0-9]{9}$')
 DATE_RE = re.compile(r'^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2}$')
 
 class Importer(object):
-    def __init__(self, uri=None, verbose=False):
-        self.client = Client(uri, verbose)
-
+    def __init__(self, email, password, spreadsheet):
+        self.email = email
+        self.password = password
+        self.spreadsheet = spreadsheet
+        self.reader = SimpleCRUD(self.email, self.password, self.spreadsheet)
+        
+        
     def import_spread_sheet(self, doc_name, start, until):
         """Gets the name of the spreadsheet to be imported"""
         self.start = start
         self.until = until
         self.doc_name = doc_name
-        self.reader = SimpleCRUD(self.GOOGLE_USERNAME, self.GOOGLE_PASSWORD)
-        month = self.reader.RunAppointment(self.doc_name, 'appointment worksheet', self.start, self.until)
+        self.month = self.reader.RunAppointment(self.doc_name)
         #check if the month has two worksheets
-        if len(month) == 2:
+        if len(self.month) == 2:
             #update user appointment info for each worksheet 
-            for worksheet in month:
-               self.updatePatients(month_worksheet=month[worksheet])     
+            for worksheet in self.month:
+               self.updatePatients(month_worksheet=self.month[worksheet])     
         else:
             #call function to process the worksheet appointment data
-            self.updatePatients(month_worksheet=month)
+            self.updatePatients(month_worksheet=self.month)
             
             
     def updatePatients(self, month_worksheet):
@@ -40,27 +43,28 @@ class Importer(object):
         for patient in month_worksheet:
             file_no = month_worksheet[patient]['fileno']
             #check if the patient has enrolled
-            if self.reader.RunEnrollmentCheck(self.doc_name, 'enrollment worksheet', file_no) is True:
+            if self.reader.RunEnrollmentCheck(file_no) is True:
                 self.updatePatient(month_worksheet[patient], patient)
-            elif self.reader.RunEnrollmentCheck(self.doc_name, 'enrollment worksheet', file_no) is False:
+            elif self.reader.RunEnrollmentCheck( file_no) is False:
                 logging.debug('Unable to make updates for patient: %s , needs to enrol first' % curr_patient)
              
                     
-    def updatePateints(self, patient_row, row):
+    def updatePatient(self, patient_row, row):
         row_no = row
-        file_no =  mpatient_row['fileno']
+        file_no =  patient_row['fileno']
+    
         
         if row_no < 10:
             row_no = '0' + str(row_no)
-            visit_id = row_no + '-' + str(file_no)
+            visit_id = str(row_no) + '-' + str(file_no)
         else:
             visit_id = str(row_no) + '-' + str(file_no)
                 
-        phone = month_worksheet[patient]['phonenumber']
+        phone = patient_row['phonenumber']
         phone = '27' + str(phone)
         phone = int(phone)
-        app_date = month_worksheet[patient]['appointmentdate1']
-        app_status = month_worksheet[patient]['appointmentstatus1']
+        app_date = patient_row['appointmentdate1']
+        app_status = patient_row['appointmentstatus1']
             
         #try to get the current patient from the database
         try:
@@ -69,6 +73,8 @@ class Importer(object):
         except Patient.DoesNotExist as perror:
             #log error in import log
             logging.exception(str(perror))
+            return
+            
                 
         #try to get current patient visit
         try:
@@ -77,6 +83,7 @@ class Importer(object):
         except Visit.DoesNotExist as verror:
             #log error in import log
             logging.exception(str(verror))
+            return
         
          #check if the user already exist in the system so that data can be updated
         if curr_patient:
@@ -89,20 +96,20 @@ class Importer(object):
             if not created:
                 logging.debug('Phone number is still the same for patient: %s' % curr_patient) 
                         
-        #check if the patient's appointment date has changed
-        if curr_patient_visit.date != app_date:
-            curr_patient_visit.date = app_date
-            try:
-                curr_patient.save()
-                logging.debug('Appointment date update for patient: %s' %  curr_patient)
-            except ValidationError as verror:
-                logging.exception('Failed to update Appointment date for patient: %s error is: %s' % (curr_patient, str(verror))) 
-
-        #call methon to do appointment status update
-        self.updateAppointmentStatus(app_status, visit_id)                      
-                
+            #check if the patient's appointment date has changed
+            if curr_patient_visit.date != app_date:
+                curr_patient_visit.date = app_date
+                try:
+                    curr_patient.save()
+                    logging.debug('Appointment date update for patient: %s' %  curr_patient)
+                except ValidationError as verror:
+                    logging.exception('Failed to update Appointment date for patient: %s error is: %s' % (curr_patient, str(verror))) 
+    
+            #call methon to do appointment status update
+            self.updateAppointmentStatus(app_status, app_date, visit_id)                      
+                    
                    
-    def updateAppointmentStatus(app_status, visit_id):
+    def updateAppointmentStatus(app_status, app_date, visit_id):
         """Updates the existing patient appointment information."""
         try:
             #use patient's unique id and row number on spreadsheet to find the patient database record
@@ -110,40 +117,50 @@ class Importer(object):
         except Visit.DoesNotExist as verror:
             #log error in import log
             logging.exception(str(verror))
-            
-       #check if the user already exist in the system so that data can be updated
-        if curr_patient:
-            #check if the user has attended the scheduled appointment    
-            if app_status == 'Attended':
-                #if the appointment was scheduled or rescheduled transform it to attened
-                if curr_patient.status == 's' or curr_patient.status == 'r':
-                    curr_patient.status = 'a'
-                    try:
-                        curr_patient.save()
-                        logging.debug('Appointment status update for Patient %s' % curr_patient)
-                    except ValidationError as verror:
-                        logging.exception(str(verror))   
+            return
         
-            #if the user has missed a scheduled or rescheduled appointment
-            elif app_status == 'Missed':
-                if curr_patient.status == 's' or curr_patient.status == 's':
-                    curr_patient.status = 'm'
+        #check if the user already exist in the system so that data can be updated
+        if curr_patient:
+            #check if the appointment date is the same as the one stored on the database
+            if curr_patient.date == app_date:
+                #check if the user has attended the scheduled appointment    
+                if app_status == 'Attended':
+                    #if the appointment was scheduled or rescheduled transform it to attended
+                    if curr_patient.status == 's' or curr_patient.status == 'r':
+                        curr_patient.status = 'a'
+                        try:
+                            curr_patient.save()
+                            logging.debug('Appointment status update for Patient %s' % curr_patient)
+                        except ValidationError as verror:
+                            logging.exception(str(verror))  
+                    
+                    
+            #check if the date is in the future and reschedule appointment if so
+            elif curr_patient.date < app_date:
+                #check if the patient has rescheduled 
+                if app_status == 'Rescheduled' and curr_patient.status == 's':
+                    curr_patient.status = 'r' 
                     try:
                         curr_patient.save()
                         logging.debug('Appointment status update for Patient %s' % curr_patient)
                     except ValidationError as verror:
                         logging.exception(str(verror)) 
-            
-            #check if the patient has rescheduled 
-            elif app_status = 'Rescheduled' and curr_patient.status == 's':
-                curr_patient.status = 'r' 
-                try:
-                    curr_patient.save()
-                    logging.debug('Appointment status update for Patient %s' % curr_patient)
-                except ValidationError as verror:
-                    logging.exception(str(verror))                  
                         
                         
+            #check if the patient appointment date has pasted
+            elif curr_patient.date > app_date:
+                #if the user has missed a scheduled or rescheduled appointment
+                if app_status == 'Missed':
+                    if curr_patient.status == 's' or curr_patient.status == 'r':
+                        curr_patient.status = 'm'
+                        try:
+                            curr_patient.save()
+                            logging.debug('Appointment status update for Patient %s' % curr_patient)
+                        except ValidationError as verror:
+                            logging.exception(str(verror))
+                                 
             
+        
+        
          
     

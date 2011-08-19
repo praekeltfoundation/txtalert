@@ -18,13 +18,11 @@ class Command(BaseCommand):
     help = 'Can run as Cron job.'
 
     def handle(self, *args, **kwargs):
-        importer = Importer(e
-            uri='https://docs.google.com' % (
-                Setting.objects.get(name='GOOGLE_USERNAME').value,
-                Setting.objects.get(name='GOOGLE_PASSWORD').value
-            ),
-            verbose=settings.DEBUG
+        importer = Importer(
+            email = Setting.objects.get(name='GOOGLE_EMAIL').value,
+            password = Setting.objects.get(name='GOOGLE_PASSWORD').value
         )
+        
         for spreadsheet in SpreadSheet.objects.all():
              # from midnight
             midnight = datetime.now().replace(

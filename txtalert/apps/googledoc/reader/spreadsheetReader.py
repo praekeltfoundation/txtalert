@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-__author__ = 'api.laurabeth@gmail.com (Laura Beth Lincoln)'
+__author__ = 'olwethu@byteorbit.com'
 
 
 try:
@@ -36,27 +36,28 @@ import re
 
 class SimpleCRUD:
 
-  def __init__(self, email, password):
+  def __init__(self, email, password, spreadsheet_name):
     self.gd_client = gdata.spreadsheet.service.SpreadsheetsService()
     self.gd_client.email = email
     self.gd_client.password = password
+    self.spreadsheet_name = spreadsheet_name
     self.gd_client.source = 'Import Google SpreadSheet to Database'
     self.gd_client.ProgrammaticLogin()
     self.curr_key = ''
     self.curr_wksht_id = ''
     self.list_feed = None
     
-  def getSpreadsheet(self, doc_name):
+  def getSpreadsheet(self):
     """Query the spreadsheet by name, and extract the unique spreadsheet ID."""
-    self.doc_name = doc_name
     q = gdata.spreadsheet.service.DocumentQuery()
-    q['title'] = self.doc_name
+    q['title'] = self.spreadsheet_name
     q['title-exact'] = 'true'
     feed = self.gd_client.GetSpreadsheetsFeed(query=q)
     self.curr_key = feed.entry[0].id.text.rsplit('/',1)[1]
+    return self.curr_key
        
        
-  def getWorksheetData(self, worksheet_type, start, until):
+  def getWorksheetData(self, worksheet_type):
     """Acess the enrol and current month's worksheets of the current spread sheet."""
     #print 'Inside getWorksheet current key is: %s\n' % self.curr_key
     month_worksheet = {}
@@ -65,11 +66,11 @@ class SimpleCRUD:
     #get current month
     curr_month = datetime.date.today().month  
     curr_month = int(curr_month)
-    app_worksheet = months[curr_month-1]
+    worksheet_name = months[curr_month-1]
     
     #check if the worksheet requested is for making appointments
     if worksheet_type == 'appointment worksheet':
-         app_worksheet = self.getWorkSheet(app_worksheet)
+         app_worksheet = self.getWorkSheet(worksheet_name)
          #self.getWorkSheet(app_worksheet)
          #app_worksheet = self.appointmentQuery(start, until)
          return app_worksheet
@@ -122,14 +123,7 @@ class SimpleCRUD:
           enrolled = False
           return enrolled
           
-      for i, entry in enumerate(feed.entry):
-          if isinstance(feed, gdata.spreadsheet.SpreadsheetsListFeed):
-              for key in entry.custom:  
-                  print '  %s: %s' % (key, entry.custom[key].text)
-      #Record(content=None, row_entry=row_feed.entry[0], spreadsheet_key=self.spreadsheet_key,
-            #worksheet_id=self.worksheet_id, database_client=self.client)
-      #feed = self.gd_client.GetWorksheetsFeed(self.curr_key, query=q)
-            
+                  
   def _PromptForListAction(self):
     """Calls method that gets a list feed from the given worksheet."""
     sheet = self._ListGetAction()
@@ -152,8 +146,10 @@ class SimpleCRUD:
         temp_dic = {}
         rowdic = {}
         copydic = {}
+        enrolled = False
         #loop through all the rows in the data
         for i, entry in enumerate(feed.entry):
+            
             row_no = i
             for key in entry.custom:
                 #dictionary to store a single column from row
@@ -162,6 +158,7 @@ class SimpleCRUD:
                 rowdic.update(temp_dic)
                 #clear column dictionary for next usage
                 temp_dic = {}
+                                        
             #creates a dictionary with the row number as the key and row dictionary as the value
             copydic = {row_no:rowdic}
             #dictionary to store the contents of a spreadsheet (stores copydic)
@@ -169,6 +166,7 @@ class SimpleCRUD:
             #clear for next worksheet row
             copydic = {}
             rowdic ={}
+                
         #print worksheet_data
         #for each row get proper type for each one of its contents
         for k in worksheet_data:
@@ -239,21 +237,30 @@ class SimpleCRUD:
          
       return appDic
       
-  def RunAppointment(self, doc_name='ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert', worksheet_type='appointment worksheet', start=datetime.date(2011, 8, 1), until=datetime.date(2011, 8, 10)):
+  def RunAppointment(self):
       #get the spread sheet to be worked on
-      self.getSpreadsheet(doc_name)
+      self.getSpreadsheet()
       #get the worksheets on the spreadsheet
-      app_worksheet = self.getWorksheetData(worksheet_type, start, until)
+      app_worksheet = self.getWorksheetData('appointment worksheet')
       return app_worksheet
-       
-  def RunEnrollmentCheck(self, doc_name='ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert', worksheet_type='enrollment worksheet', file_no=1663):
+  
+  def RunEnrollmentCheck(self, file_no):
       #get the spread sheet to be worked on
-      self.getSpreadsheet(doc_name)
+      self.getSpreadsheet()
       #get the worksheets on the spreadsheet
-      self.getWorksheetData(worksheet_type)
+      self.getWorksheetData('enrollment worksheet')
       #send structured query to check if the patient is enrolled to use service
       exists = self.enrolQuery(file_no)
       return exists
+       
+  '''def RunEnrollmentCheck(self, doc_name, worksheet_type, file_no, start, until):
+      #get the spread sheet to be worked on
+      self.getSpreadsheet(doc_name)
+      #get the worksheets on the spreadsheet
+      self.getWorksheetData(worksheet_type, start, until)
+      #send structured query to check if the patient is enrolled to use service
+      exists = self.enrolQuery(file_no)
+      return exists'''
        
 
 def main():
@@ -273,17 +280,17 @@ def main():
       user = a
     elif o == "--pw":
       pw = a
-   
      
-
+ 
   if user == '' or pw == '':
     print 'python spreadsheetExample.py --user [username] --pw [password]'
     sys.exit(2)
         
-  sample = SimpleCRUD(user, pw)
+  sample = SimpleCRUD(user, pw, 'ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert')
   sample.RunAppointment()
-  #sample.RunEnrollmentCheck()
-
+  sample.RunEnrollmentCheck(1932)
+  
 
 if __name__ == '__main__':
   main()
+
