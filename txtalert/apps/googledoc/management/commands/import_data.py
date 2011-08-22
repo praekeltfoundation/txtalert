@@ -20,7 +20,8 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         importer = Importer(
             email = Setting.objects.get(name='GOOGLE_EMAIL').value,
-            password = Setting.objects.get(name='GOOGLE_PASSWORD').value
+            password = Setting.objects.get(name='GOOGLE_PASSWORD').value,
+            spreadsheet = Setting.objects.get(name='GOOGLE_SPREADSHEET').value
         )
         
         for spreadsheet in SpreadSheet.objects.all():

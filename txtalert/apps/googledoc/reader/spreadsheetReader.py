@@ -36,52 +36,61 @@ import re
 
 class SimpleCRUD:
 
-  def __init__(self, email, password, spreadsheet_name):
+  def __init__(self, email, password):
     self.gd_client = gdata.spreadsheet.service.SpreadsheetsService()
     self.gd_client.email = email
     self.gd_client.password = password
-    self.spreadsheet_name = spreadsheet_name
     self.gd_client.source = 'Import Google SpreadSheet to Database'
     self.gd_client.ProgrammaticLogin()
     self.curr_key = ''
     self.curr_wksht_id = ''
     self.list_feed = None
     
-  def getSpreadsheet(self):
+  def getSpreadsheet(self, doc_name):
     """Query the spreadsheet by name, and extract the unique spreadsheet ID."""
     q = gdata.spreadsheet.service.DocumentQuery()
-    q['title'] = self.spreadsheet_name
+    q['title'] = doc_name
     q['title-exact'] = 'true'
     feed = self.gd_client.GetSpreadsheetsFeed(query=q)
     self.curr_key = feed.entry[0].id.text.rsplit('/',1)[1]
     return self.curr_key
        
        
-  def getWorksheetData(self, worksheet_type):
+  def getWorksheetData(self, worksheet_type, start, until):
     """Acess the enrol and current month's worksheets of the current spread sheet."""
-    #print 'Inside getWorksheet current key is: %s\n' % self.curr_key
     month_worksheet = {}
+    app_worksheets = {}
     #months tuple
     months = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
     #get current month
     curr_month = datetime.date.today().month  
     curr_month = int(curr_month)
     worksheet_name = months[curr_month-1]
-    
+    period = datetime.date.today() + datetime.timedelta(days=14)
+
     #check if the worksheet requested is for making appointments
     if worksheet_type == 'appointment worksheet':
-         app_worksheet = self.getWorkSheet(worksheet_name)
-         #self.getWorkSheet(app_worksheet)
-         #app_worksheet = self.appointmentQuery(start, until)
-         return app_worksheet
+        if period.month == curr_month:
+            app_worksheet = self.getWorkSheet(worksheet_name, start, until)
+            #self.getWorkSheet(app_worksheet)
+            #app_worksheet = self.appointmentQuery(start, until)
+            return app_worksheet
         
+        elif period.month > curr_month:
+            app_worksheet = self.getWorkSheet(worksheet_name, start, until)
+            app_worksheets.update(app_worksheet)
+            app_worksheet = {}
+            app_worksheet = self.getWorkSheet(months[curr_month], start, until)
+            app_worksheets.update(app_worksheet)
+            return app_worksheets
+            
     #check if the requested worksheet is the enrollment sheet
     elif worksheet_type == 'enrollment worksheet':
-        exists = self.getWorkSheet('enrollment sheet')
+        exists = self.getWorkSheet('enrollment sheet', start, until)
         return exists
                      
    
-  def getWorkSheet(self, worksheet_name):
+  def getWorkSheet(self, worksheet_name, start, until):
       q = gdata.spreadsheet.service.DocumentQuery()
       q['title'] = worksheet_name
       q['title-exact'] = 'true'
@@ -89,37 +98,37 @@ class SimpleCRUD:
       self.wksht_id = feed.entry[0].id.text.rsplit('/',1)[1] 
       #check if the retrieved worksheet is not an enrollment worksheet if not process the data 
       if worksheet_name is not 'enrollment sheet':
+           #q = gdata.spreadsheet.service.ListQuery(text_query='1/9/2011')
+           #feed = self.gd_client.GetListFeed(self.curr_key, self.wksht_id, query=q)
+           #self._PrintFeed(feed)
            app_worksheet = self._PromptForListAction()
            return app_worksheet
   
+  
   def appointmentQuery(self, start, until):
-    str_start = str(start)
-    str_start = str_start.replace('-', '/')
-    q = gdata.spreadsheet.service.ListQuery(text_query='1/8/2011')
-    print str_start
-    feed = self.gd_client.GetListFeed(self.curr_key, self.wksht_id, query=q)
-    #patient was found in the enrollment worksheet
-    if feed:
-        enrolled = True
-        print 'patient with this date was found'
-    #patient needs to enrol first
-    if not feed:
-        enrolled = False
-        print 'no patient with this date'
-    date_diff = until - start
-    for d in range(date_diff.days):
-        day_query = start + datetime.timedelta(days=d)
+    curr_date = start + datetime.timedelta(days=day)
+    curr_date = self.dateFormat(curr_date)
+        
+    #q = gdata.spreadsheet.service.ListQuery(text_query=curr_date)
+    #feed = self.gd_client.GetListFeed(self.curr_key, self.wksht_id, query=q)
+    #feeds.append(feed)
                 
+  def dateFormat(self, d):
+      str_date = str(d)
+      (y, m, d) = str_date.split('-')
+      new_date = d+'/'+m+'/'+y
+      return new_date
            
   def enrolQuery(self, file_no):
       q = gdata.spreadsheet.service.ListQuery(text_query=str(file_no))
       feed = self.gd_client.GetListFeed(self.curr_key, self.wksht_id, query=q)
+      #self._PrintFeed(feed)
       #patient was found in the enrollment worksheet
-      if feed:
+      if feed.entry:
           enrolled = True
           return enrolled
       #patient needs to enrol first
-      if not feed:
+      if not feed.entry is None:
           enrolled = False
           return enrolled
           
@@ -187,13 +196,14 @@ class SimpleCRUD:
            
   def dateObjectCreator(self, datestring):
       """Used to convert a string type date into a datetime object."""
+      #print datestring
       dateformat = '%d/%m/%Y'
       try:
           real_date = datetime.datetime.strptime(datestring, dateformat)
           real_date = real_date.date()
           return real_date
-      except TypeError:
-          return TypeError
+      except:
+          return Exception
  
   def databaseRecord(self, dic):
       """Accepts a dictionary from a worksheet and converts the contents into the proper type"""
@@ -237,31 +247,36 @@ class SimpleCRUD:
          
       return appDic
       
-  def RunAppointment(self):
+  def RunAppointment(self, doc_name, start, until):
       #get the spread sheet to be worked on
-      self.getSpreadsheet()
+      self.getSpreadsheet(doc_name)
       #get the worksheets on the spreadsheet
-      app_worksheet = self.getWorksheetData('appointment worksheet')
+      app_worksheet = self.getWorksheetData('appointment worksheet', start, until)
       return app_worksheet
   
-  def RunEnrollmentCheck(self, file_no):
+  def RunEnrollmentCheck(self, doc_name, file_no, start, until):
       #get the spread sheet to be worked on
-      self.getSpreadsheet()
+      self.getSpreadsheet(doc_name)
       #get the worksheets on the spreadsheet
-      self.getWorksheetData('enrollment worksheet')
+      self.getWorksheetData('enrollment worksheet', start, until)
       #send structured query to check if the patient is enrolled to use service
       exists = self.enrolQuery(file_no)
       return exists
        
-  '''def RunEnrollmentCheck(self, doc_name, worksheet_type, file_no, start, until):
-      #get the spread sheet to be worked on
-      self.getSpreadsheet(doc_name)
-      #get the worksheets on the spreadsheet
-      self.getWorksheetData(worksheet_type, start, until)
-      #send structured query to check if the patient is enrolled to use service
-      exists = self.enrolQuery(file_no)
-      return exists'''
-       
+'''
+  def _PrintFeed(self, feed):
+    for i, entry in enumerate(feed.entry):
+     if isinstance(feed, gdata.spreadsheet.SpreadsheetsListFeed):
+        print '%s %s %s' % (i, entry.title.text, entry.content.text)
+        # Print this row's value for each column (the custom dictionary is
+        # built using the gsx: elements in the entry.)
+        print 'Contents:'
+        for key in entry.custom:  
+          print '  %s: %s' % (key, entry.custom[key].text) 
+        print '\n',
+      
+
+#Use this function to test from command line
 
 def main():
   # parse command line options
@@ -280,17 +295,22 @@ def main():
       user = a
     elif o == "--pw":
       pw = a
-     
+   
+  start = datetime.date.today() - datetime.timedelta(days=14) 
+  until = datetime.date.today()   
  
   if user == '' or pw == '':
     print 'python spreadsheetExample.py --user [username] --pw [password]'
     sys.exit(2)
         
-  sample = SimpleCRUD(user, pw, 'ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert')
-  sample.RunAppointment()
-  sample.RunEnrollmentCheck(1932)
+  sample = SimpleCRUD(user, pw)
+  sample.RunAppointment('ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert', start, until)
+  rowList = [1932, 12020, 1014, 2121212, 1663]
+  for l in rowList:
+      sample.RunEnrollmentCheck('ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert', l, start, until)
   
 
 if __name__ == '__main__':
   main()
 
+'''

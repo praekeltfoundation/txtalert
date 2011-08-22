@@ -14,11 +14,10 @@ APPOINTMENT_ID_RE = re.compile(r'^[0-9]{2}-[0-9]{9}$')
 DATE_RE = re.compile(r'^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2}$')
 
 class Importer(object):
-    def __init__(self, email, password, spreadsheet):
+    def __init__(self, email, password):
         self.email = email
         self.password = password
-        self.spreadsheet = spreadsheet
-        self.reader = SimpleCRUD(self.email, self.password, self.spreadsheet)
+        self.reader = SimpleCRUD(self.email, self.password)
         
         
     def import_spread_sheet(self, doc_name, start, until):
@@ -26,36 +25,42 @@ class Importer(object):
         self.start = start
         self.until = until
         self.doc_name = doc_name
-        self.month = self.reader.RunAppointment(self.doc_name)
+        self.month = self.reader.RunAppointment(self.doc_name, start, until)
         #check if the month has two worksheets
         if len(self.month) == 2:
             #update user appointment info for each worksheet 
             for worksheet in self.month:
-               self.updatePatients(month_worksheet=self.month[worksheet])     
+               self.updatePatients(self.month[worksheet], self.doc_name, start, until)     
         else:
             #call function to process the worksheet appointment data
-            self.updatePatients(month_worksheet=self.month)
+            self.updatePatients(self.month, self.doc_name, start, until)
             
             
-    def updatePatients(self, month_worksheet):
+    def updatePatients(self, month_worksheet, doc_name, start, until):
         """Updates patients data if the patient exists."""
         #loop through the worksheet and check which patient details need to be updated
         for patient in month_worksheet:
             file_no = month_worksheet[patient]['fileno']
             #check if the patient has enrolled
-            if self.reader.RunEnrollmentCheck(file_no) is True:
+            if self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is True:
                 self.updatePatient(month_worksheet[patient], patient)
-            elif self.reader.RunEnrollmentCheck( file_no) is False:
-                logging.debug('Unable to make updates for patient: %s , needs to enrol first' % curr_patient)
-             
+                #found = True
+                #return found
+            elif self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is False:
+                logging.debug('Unable to make updates for patients')
+                #found = False
+                #return found
                     
     def updatePatient(self, patient_row, row):
         row_no = row
         file_no =  patient_row['fileno']
-    
+        #print 'the file no is: %d\n' % file_no
         
+    
+        return (row_no, file_no)
         if row_no < 10:
             row_no = '0' + str(row_no)
+            print 'the row no is: %s\n' % row_no
             visit_id = str(row_no) + '-' + str(file_no)
         else:
             visit_id = str(row_no) + '-' + str(file_no)

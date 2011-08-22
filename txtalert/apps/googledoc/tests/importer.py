@@ -9,7 +9,8 @@ import random
 import logging
 import iso8601
 
-class spreadsheet_tester(TestCase):
+
+class Importer_tester(TestCase):
     """Testing the google spreadsheet import loop"""
     
     fixtures = ['patients', 'clinics']
@@ -18,13 +19,15 @@ class spreadsheet_tester(TestCase):
         self.email = 'olwethu@byteorbit.com'
         self.password = 'password'
         self.spreadsheet = 'ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert'
-        self.importer = Importer(self.email, self.password, self.spreadsheet)
-        self.reader = SimpleCRUD(self.email, self.password, self.spreadsheet)
+        self.importer = Importer(self.email, self.password)
+        self.reader = SimpleCRUD(self.email, self.password)
+        self.start = date.today() - timedelta(days=14) 
+        self.until = date.today()
         # make sure we're actually testing some data
         self.assertTrue(Patient.objects.count() > 0) 
-        self.spreadsheet, self.created = SpreadSheet.objects.get_or_create(spreadsheet='ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert')
+        self.sheet, self.created = SpreadSheet.objects.get_or_create(spreadsheet='ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert')
         #check if the spreadsheet was found in the database
-        self.assertTrue(self.spreadsheet)
+        self.assertTrue(self.sheet)
         #check if the spreadsheet is created if not in the database
         self.assertTrue(self.created)
         self.month_worksheet = { 
@@ -37,13 +40,12 @@ class spreadsheet_tester(TestCase):
                                      6: {'appointmentdate1': date(2011, 8, 19), 'fileno': 196, 'appointmentstatus1': 'Scheduled', 'phonenumber': 730772079} 
                         }
 
-    
     def tearDown(self):
         pass
     
     def test_import_spread_sheet(self):
-        self.month = self.reader.RunAppointment()
-        self.enrol = self.reader.RunEnrollmentCheck(1932)
+        self.month = self.reader.RunAppointment(self.spreadsheet, self.start, self.until)
+        self.enrol = self.reader.RunEnrollmentCheck(self.spreadsheet, 1663, self.start, self.until)
         self.assertTrue(self.month)
         self.assertTrue(self.enrol)
         #self.importer.updatePateints(self, patient_row, row):
@@ -51,18 +53,23 @@ class spreadsheet_tester(TestCase):
             
     
     def test_updatePatients(self):
-        self.assertTrue(self.importer.updatePatients(self.month_worksheet))
-       
-       
-
+        self.tester = { 1: {'appointmentdate1': date(2011, 8, 23), 'fileno': 1663, 'appointmentstatus1': 'Scheduled', 'phonenumber': 794950510}}
+        self.assertTrue(self.importer.updatePatients(self.month_worksheet, self.spreadsheet, self.start, self.until))
+        #(self.r , self.f) = self.importer.updatePatients(self.month_worksheet, self.spreadsheet, self.start, self.until)
+        #self.assertEquals(self.r, 1)
+        #self.assertEquals(self.f, 1663)
+ 
+      
 class SpreadSheetReaderTestCase(TestCase):
     
     def setUp(self):
         self.email = 'olwethu@byteorbit.com'
         self.password = 'password'
         self.spreadsheet = 'ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert'
-        self.reader = SimpleCRUD(self.email, self.password, self.spreadsheet)
+        self.reader = SimpleCRUD(self.email, self.password)
         self.assertTrue(self.reader) 
+        self.start = date.today() - timedelta(days=14) 
+        self.until = date.today()
         self.spreadsheet = 'ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert'
         self.mydict = {         
                        1: {'appointmentdate1': '10/8/2011', 'fileno': '1663', 'appointmentstatus1': 'Scheduled', 'phonenumber': '794950510', 'appoinmentattenddate1': None},
@@ -84,11 +91,11 @@ class SpreadSheetReaderTestCase(TestCase):
             self.assertTrue(self.proper_dict)
         
     def test_RunAppointment(self):
-        self.month = self.reader.RunAppointment()
-        self.assertEquals(len(self.month), 20)   
+        self.month = self.reader.RunAppointment(self.spreadsheet, self.start, self.until)
+        self.assertEquals(len(self.month), 50)   
        
     def test_RunEnrollmentCheck(self):
-        self.enrol = self.reader.RunEnrollmentCheck(1932)
+        self.enrol = self.reader.RunEnrollmentCheck(self.spreadsheet, 1663, self.start, self.until)
         self.assertTrue(self.enrol)
         
                 
