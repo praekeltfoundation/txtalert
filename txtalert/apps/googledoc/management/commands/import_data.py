@@ -14,7 +14,7 @@ class Command(BaseCommand):
     """
     """
 
-    help = 'Can run as Cron job.'
+    help = 'Can run as Cron job or directly to send import google spreadsheet data.'
 
     def handle(self, *args, **kwargs):
         importer = Importer(

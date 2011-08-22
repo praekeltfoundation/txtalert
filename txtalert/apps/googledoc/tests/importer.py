@@ -13,7 +13,7 @@ import iso8601
 class Importer_tester(TestCase):
     """Testing the google spreadsheet import loop"""
     
-    fixtures = ['patients', 'clinics']
+    fixtures = ['patient', 'visit']
     
     def setUp(self):
         self.email = 'olwethu@byteorbit.com'
@@ -31,17 +31,35 @@ class Importer_tester(TestCase):
         #check if the spreadsheet is created if not in the database
         self.assertTrue(self.created)
         self.month_worksheet = { 
-                                     0: {'appointmentdate1': date(2011, 8, 1), 'fileno': 1932, 'appointmentstatus1': 'Missed', 'phonenumber': 722155931}, 
-                                     1: {'appointmentdate1': date(2011, 8, 23), 'fileno': 1663, 'appointmentstatus1': 'Scheduled', 'phonenumber': 794950510},
-                                     2: {'appointmentdate1': date(2011, 8, 10), 'fileno': 1014, 'appointmentstatus1': 'Scheduled', 'phonenumber': 711520322}, 
-                                     3: {'appointmentdate1': date(2011, 8, 30), 'fileno': 2825, 'appointmentstatus1': 'Scheduled', 'phonenumber': 787048923},
-                                     4: {'appointmentdate1': date(2011, 8, 20), 'fileno': 1135, 'appointmentstatus1': 'Scheduled', 'phonenumber': 730032293},
-                                     5: {'appointmentdate1': date(2011, 8, 19), 'fileno': 2920, 'appointmentstatus1': 'Scheduled', 'phonenumber': 849616892},
-                                     6: {'appointmentdate1': date(2011, 8, 19), 'fileno': 196, 'appointmentstatus1': 'Scheduled', 'phonenumber': 730772079} 
+                                     1: {'appointmentdate1': date(2011, 8, 1), 'fileno': 1932, 'appointmentstatus1': 'Missed', 'phonenumber': 722155931}, 
+                                     2: {'appointmentdate1': date(2011, 8, 10), 'fileno': 1663, 'appointmentstatus1': 'Scheduled', 'phonenumber': 794950510}, 
                         }
 
     def tearDown(self):
         pass
+    
+    
+    def test_updatePatient(self):
+        
+    
+    def test_getall(self):
+        self.patient = Patient.objects.all()
+        self.plist = self.importer.printP(self.patient)
+        self.assertIs(self.plist, 'jsdfj')
+        self.assertTrue(self.patient)
+    
+    def test_updateMSISDN(self):
+        self.msisdn = 795491230
+        self.curr_patient = Patient.objects.get(te_id='02-1663')
+        self.assertTrue(self.curr_patient)
+        self.created = self.importer.updateMSISDN(self.msisdn, self.curr_patient)
+        print self.created
+        self.assertIs(self.created, True)
+       
+    def test_updateAppointmentStatus(self):
+        (self.app_status, self.app_date, self.visit_id) = ('Missed', date(2011, 8, 10), '02-1663')
+        self.saved = self.importer.updateAppointmentStatus(self.app_status, self.app_date, self.visit_id)
+        self.assertIs(self.saved, True)
     
     def test_import_spread_sheet(self):
         self.month = self.reader.RunAppointment(self.spreadsheet, self.start, self.until)
@@ -54,7 +72,7 @@ class Importer_tester(TestCase):
     
     def test_updatePatients(self):
         self.tester = { 1: {'appointmentdate1': date(2011, 8, 23), 'fileno': 1663, 'appointmentstatus1': 'Scheduled', 'phonenumber': 794950510}}
-        self.assertTrue(self.importer.updatePatients(self.month_worksheet, self.spreadsheet, self.start, self.until))
+        self.assertTrue(self.importer.updatePatients(self.tester, self.spreadsheet, self.start, self.until))
         #(self.r , self.f) = self.importer.updatePatients(self.month_worksheet, self.spreadsheet, self.start, self.until)
         #self.assertEquals(self.r, 1)
         #self.assertEquals(self.f, 1663)

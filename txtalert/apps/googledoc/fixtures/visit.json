@@ -1,0 +1,27 @@
+[
+    {
+        "pk":"1",
+        "model": "core.visit",
+        "fields":{
+            "clinic":"1",
+            "patient":"1",
+            "te_visit_id":"01-1932",
+            "date":"2011-08-01",
+            "status":"s",
+            "visit_type":"arv"
+        }
+    },
+    
+    {
+        "pk":"2",
+        "model": "core.visit",
+        "fields":{
+            "clinic":"1",
+            "patient":"2",
+            "te_visit_id":"02-1663",
+            "date":"2011-08-10",
+            "status":"s",
+            "visit_type":"arv"
+        }
+    }
+]
