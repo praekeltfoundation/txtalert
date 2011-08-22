@@ -14,7 +14,6 @@ class Command(BaseCommand):
     """
     """
 
-    args = '[google spradsheet filename ...]'
     help = 'Can run as Cron job.'
 
     def handle(self, *args, **kwargs):
