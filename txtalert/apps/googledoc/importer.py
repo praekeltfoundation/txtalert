@@ -26,14 +26,8 @@ class Importer(object):
         self.until = until
         self.doc_name = doc_name
         self.month = self.reader.RunAppointment(self.doc_name, start, until)
-        #check if the month has two worksheets
-        if len(self.month) == 2:
-            #update user appointment info for each worksheet 
-            for worksheet in self.month:
-               self.updatePatients(self.month[worksheet], self.doc_name, start, until)     
-        else:
-            #call function to process the worksheet appointment data
-            self.updatePatients(self.month, self.doc_name, start, until)
+        #call function to process the worksheet appointment data
+        self.updatePatients(self.month, self.doc_name, start, until)
             
             
     def updatePatients(self, month_worksheet, doc_name, start, until):
@@ -55,9 +49,8 @@ class Importer(object):
                     
     def updatePatient(self, patient_row, row):
         row_no = row
-        file_no =  patient_row['fileno']
+        file_no =  patient_row['fileno']     
     
-        
         if row_no < 10:
             row_no = '0' + str(row_no)
             visit_id = str(row_no) + '-' + str(file_no)
@@ -87,22 +80,15 @@ class Importer(object):
             logging.exception(str(verror))
             return
         
-         #check if the user already exist in the system so that data can be updated
+        #check if the user already exist in the system so that data can be updated
         if curr_patient:
             #call methon to do appointment status update
             self.updateAppointmentStatus(app_status, app_date, visit_id) 
             #call method to update phone number
             self.updateMSISDN(phone, curr_patient)
-                        
-            #check if the patient's appointment date has changed
-            if curr_patient_visit.date != app_date:
-                curr_patient_visit.date = app_date
-                try:
-                    curr_patient.save()
-                    logging.debug('Appointment date update for patient: %s' %  curr_patient)
-                except ValidationError as verror:
-                    logging.exception('Failed to update Appointment date for patient: %s error is: %s' % (curr_patient, str(verror)))                      
-                    
+            return           
+    
+    
     
     def printP(self, p):
         mylist = []
@@ -112,6 +98,8 @@ class Importer(object):
             mylist.append(i.te_id)
             
         return mylist
+     
+     
      
     def updateMSISDN(self, msisdn, curr_patient):
         #convert msisdn to string
@@ -128,7 +116,8 @@ class Importer(object):
             
             #check if the phone number is not on the list of MSISDN add it
             if msisdn not in curr_patient.msisdns.all():
-                curr_patient.msisdns.add(msisdn) 
+                curr_patient.msisdns.add(msisdn)
+                return 
                   
         else:
             logging.exception('Phone number is incorrect format for patient: %s' % curr_patient)
@@ -140,6 +129,8 @@ class Importer(object):
         elif not created:
             logging.debug('Phone number is still the same for patient: %s' % curr_patient) 
             return False
+       
+       
                    
     def updateAppointmentStatus(self, app_status, app_date, visit_id):
         """Updates the existing patient appointment information."""
@@ -203,6 +194,8 @@ class Importer(object):
                     print ''
                     curr_patient.status = 'r' 
                     try:
+                        #change date to be the new rescheduled appointment date
+                        curr_patient.date = app_date
                         curr_patient.save()
                         logging.debug('Appointment status update for Patient %s' % curr_patient)
                         return

@@ -40,7 +40,9 @@ class Importer_tester(TestCase):
     
     
     def test_updatePatient(self):
-        
+        self.patient_row = {'appointmentdate1': date(2011, 8, 1), 'fileno': 1932, 'appointmentstatus1': 'Missed', 'phonenumber': 722155931}
+        self.row = 01
+        self.assertTrue(self.importer.updatePatient(self.patient_row, self.row))
     
     def test_getall(self):
         self.patient = Patient.objects.all()
@@ -71,7 +73,7 @@ class Importer_tester(TestCase):
             
     
     def test_updatePatients(self):
-        self.tester = { 1: {'appointmentdate1': date(2011, 8, 23), 'fileno': 1663, 'appointmentstatus1': 'Scheduled', 'phonenumber': 794950510}}
+        self.tester = {2: {'appointmentdate1': date(2011, 8, 23), 'fileno': 1663, 'appointmentstatus1': 'Scheduled', 'phonenumber': 794950510}}
         self.assertTrue(self.importer.updatePatients(self.tester, self.spreadsheet, self.start, self.until))
         #(self.r , self.f) = self.importer.updatePatients(self.month_worksheet, self.spreadsheet, self.start, self.until)
         #self.assertEquals(self.r, 1)
