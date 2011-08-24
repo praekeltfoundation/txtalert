@@ -1,17 +1,21 @@
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from django.core.management.base import BaseCommand
-from django.conf import settings
 from txtalert.apps.googledoc.importer import Importer
 from txtalert.apps.googledoc.models import SpreadSheet, GoogleAccount
 import logging
-import sys, traceback
-import os.path
-import optparse
+import traceback
 
 logger = logging.getLogger("import_data")
 
 class Command(BaseCommand):
-    help = 'Can run as Cron job  or directly to send import google spreadsheet data.'
+    """
+    The program access the accounts in the GoogleAccount Table
+    for each account a spreadsheet associated with it is imported.
+    The account details are sent to import module; these are used
+    to login to the user's google account to access the spreadsheet
+    with appointment information.
+    """
+    help = 'Can run as Cron job  or directly to import google spreadsheet data.'
     def handle(self, *args, **kwargs):
         try:
             for account in GoogleAccount.objects.all():
@@ -22,9 +26,9 @@ class Command(BaseCommand):
                try:
                    #get the spreadsheet for this acount holder
                    spreadsheet = SpreadSheet.objects.get(account=account)
-                except SpreadSheet DoesNotExist:
-                    logger.exception("Spreadsheet for account: %s not avalaible\n" % account)
-                    return
+               except SpreadSheet.DoesNotExist:
+                   logger.exception("Spreadsheet for account: %s not avalaible\n" % account)
+                   return
                # from midnight
                midnight = datetime.now().replace(
                     hour=0,
@@ -36,11 +40,11 @@ class Command(BaseCommand):
                # until 14 days later
                until = midnight + timedelta(days=14)
                try:
-                   importer.import_spread_sheet(spreadsheet, start, until)
+                   importer.import_spread_sheet(spreadsheet.spreadsheet, start, until)
                except:
-                   print "Spreadsheet name exception ", spreadsheet
+                   print "Spreadsheet name exception ", spreadsheet.spreadsheet
                    traceback.print_exc()
-        except GoogleAccount.DoesNotExist as gerror:
+        except GoogleAccount.DoesNotExist:
             logger.exception("Google Account does not exists")
             traceback.print_exc()
             return
