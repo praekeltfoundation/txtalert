@@ -1,19 +1,13 @@
-#from django.db import IntegrityError
 from txtalert.apps.googledoc.reader.spreadsheetReader import SimpleCRUD
 from txtalert.core.models import Patient, MSISDN, Visit
 
-
-#import iso8601
 import re
 import logging
-#from datetime import datetime, date
 
-PATIENT_ID_RE = re.compile(r'^[0-9]{2}-[0-9]{5}$')
 MSISDNS_RE = re.compile(r'^([+]?(0|27)[0-9]{9}/?)+$')
 PHONE_RE = re.compile(r'[0-9]{9}')
 MSISDN_RE = re.compile(r'^([+?0][0-9]{9}/?)+$')
 APPOINTMENT_ID_RE = re.compile(r'^[0-9]{2}-[0-9]{9}$')
-DATE_RE = re.compile(r'^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2}$')
 
 class Importer(object):
     def __init__(self, email, password):
@@ -66,10 +60,7 @@ class Importer(object):
             if len(self.month[worksheet]) != 0:
                 #call function to process the worksheet appointment data
                 self.updatePatients(self.month, self.doc_name, start, until)
-                return
-        #call function to process the worksheet appointment data
-        #self.updatePatients(self.month, self.doc_name, start, until)
-            
+                return          
             
     def updatePatients(self, month_worksheet, doc_name, start, until):
         """
@@ -85,8 +76,7 @@ class Importer(object):
         If patient was found in the enrollment worksheet then perfom updates
         else log error that the patient needs to be enrolled.
         """
-#        print 'len of month_worksheet: %s\n' % len(month_worksheet)
-        #print 'Inside updatePatients month_worksheet:    %s\n' % month_worksheet 
+ 
         #loop through the worksheet and check which patient details need to be updated
         for patient in month_worksheet:
             print 'patient_row: %s\n' % month_worksheet[patient]
@@ -155,20 +145,7 @@ class Importer(object):
                 return  (patient_update)
             else:
                 patient_update = False            
-                return  (patient_update)        
-    
-    
-    
-    def printP(self, p):
-        mylist = []
-        print p
-        for i in p:
-            print i.te_id
-            mylist.append(i.te_id)
-            
-        return mylist
-     
-     
+                return  (patient_update)            
      
     def updateMSISDN(self, msisdn, curr_patient):
         '''
@@ -228,8 +205,6 @@ class Importer(object):
         elif not created:
             logging.debug('Phone number is still the same for patient: %s' % curr_patient) 
             return created
-       
-       
                    
     def updateAppointmentStatus(self, app_status, app_date, visit_id):
         """
@@ -249,11 +224,7 @@ class Importer(object):
         
         @returns:
         updated: Flag that indicates whether the appointment status was updated.        
-        """
-        #print 'app_status at updateAppointmentStatus: %s\n' % app_status
-        #print 'app_date at updateAppointmentStatus: %s\n' % app_date
-        #print 'visit_id at updateAppointmentStatus: %s\n' % visit_id
-           
+        """          
         try:
             #use patient's unique id and row number on spreadsheet to find the patient database record
             curr_patient = Visit.objects.get(te_visit_id=visit_id)
@@ -287,8 +258,7 @@ class Importer(object):
                             logging.exception("Appointment failed to update")  
                             updated = False
                             return updated
-                    
-                        
+                         
             #check if the patient appointment date has pasted
             elif curr_patient.date <= app_date:
                 #print 'curr_patient.date > app_date: %s\n' % curr_patient.date           
@@ -325,6 +295,3 @@ class Importer(object):
                             logging.exception("Appointment failed to update")
                             updated = False
                             return updated                     
-        
-         
-    

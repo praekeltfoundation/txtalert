@@ -1,14 +1,9 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
 from txtalert.apps.googledoc.models import SpreadSheet
 from txtalert.apps.googledoc.importer import Importer
 from txtalert.apps.googledoc.reader.spreadsheetReader import SimpleCRUD
 from txtalert.core.models import Patient, MSISDN, Visit, Clinic
 from datetime import datetime, timedelta, date
-import random
-import logging
-import iso8601
-
 
 class Importer_tester(TestCase):
     """Testing the google spreadsheet import loop"""
