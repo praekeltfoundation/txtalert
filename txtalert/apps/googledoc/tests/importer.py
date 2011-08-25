@@ -35,13 +35,7 @@ class Importer_tester(TestCase):
         self.patient_row = {'appointmentdate1': date(2011, 8, 1), 'fileno': 1932, 'appointmentstatus1': 'Missed', 'phonenumber': 722155931}
         self.row = 01
         self.assertTrue(self.importer.updatePatient(self.patient_row, self.row))
-    
-    '''def test_getall(self):
-        self.patient = Patient.objects.all()
-        self.plist = self.importer.printP(self.patient)
-        self.assertIs(self.plist, 'jsdfj')
-        self.assertTrue(self.patient)'''
-    
+        
     def test_updateMSISDN(self):
         self.msisdn = 27712491201
         self.curr_patient = Patient.objects.get(te_id='02-1663')
