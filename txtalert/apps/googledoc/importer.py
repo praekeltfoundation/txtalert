@@ -106,17 +106,26 @@ class Importer(object):
         @returns:
         patient_update: indicates if all the updates made to a patient where successful.
         '''
-        row_no = row
-        file_no =  patient_row['fileno']  
+        #check that the arguments are proper types
+        if type(row) is int and type(patient_row) is dict:
+            row_no = row
+            #check that the file number is an integer value
+            if type(patient_row['fileno']) is int:
+                file_no =  patient_row['fileno'] 
+            else:
+                logging.exception("File number must be a integer")
+                return patient_row['fileno']
+        else:
+            logging.exception("Row no must be integer and patient row must hashable")
+            return (patient_row, row) 
            
-    
         if row_no < 10:
             row_no = '0' + str(row_no)
             visit_id = str(row_no) + '-' + str(file_no)
         else:
             visit_id = str(row_no) + '-' + str(file_no)
             
-        print 'inside updatePatient visit_id: %s\n' % visit_id
+        #print 'inside updatePatient visit_id: %s\n' % visit_id
                 
         phone = patient_row['phonenumber']
         app_date = patient_row['appointmentdate1']
@@ -129,8 +138,10 @@ class Importer(object):
         except Patient.DoesNotExist:
             #log error in import log
             logging.exception("The patient was not found in the database")
-            return 
-        
+            #flag to day the patient does not exist
+            patient_exists = False
+            return patient_exists
+                    
         #check if the user already exist in the system so that data can be updated
         if curr_patient:
             #call methon to do appointment status update
@@ -161,49 +172,96 @@ class Importer(object):
         @returns:
         created: Indicate whether an phone number update occurred
         '''
+        test_phone = msisdn
+        print 'test_phone: %s\n' % test_phone
         #ensure that the msisdn is a string and in the correct format
-        msisdn = str(msisdn)
-        msisdn = msisdn.lstrip('0')
-        msisdn = msisdn.lstrip('+')
-        
-        if len(msisdn) == 9:
-            #check if the user phone number is in the correct format
-            match = PHONE_RE.match(msisdn)
+        self.msisdn = str(msisdn)
+        self.msisdn = self.msisdn.lstrip('0')
+        self.msisdn = self.msisdn.lstrip('+')
+        match = ''
+        if len(self.msisdn) == 9:
+            try:
+                #check if the user phone number is in the correct format
+                match = PHONE_RE.match(self.msisdn)
+            except TypeError:
+                logging.exception("The phone number must be in string format")
+                phone_update = False
+                return (test_phone, phone_update)
+        elif len(self.msisdn) == 10:
+            try:
+                #check if the user phone number is in the correct format
+                match = MSISDN_RE.match(self.msisdn)
+            except TypeError:
+                logging.exception("The phone number must be in string format")
+                phone_update = False
+                return (test_phone, phone_update)
             
-        elif len(msisdn) == 10:
-            #check if the user phone number is in the correct format
-            match = MSISDN_RE.match(msisdn)
+        elif len(self.msisdn) == 11:
+            try:
+                #check if the user phone number is in the correct format
+                match = MSISDNS_RE.match(self.msisdn)
+            except TypeError:
+                logging.exception("The phone number must be in string format")
+                phone_update = False
+                return (test_phone, phone_update)
+        else:
+            logging.exception("The phone number must be 9 to 11 digits")
+            phone_update = False
+            return (test_phone, phone_update)            
             
-        elif len(msisdn) == 11:
-            #check if the user phone number is in the correct format
-            match = MSISDNS_RE.match(msisdn)
-            
-        print 'match: %s\n match.groups(): %s\n' % (match, match.group())
         if match:
-            #get the phone number
-            phone_number = match.group()
+            try:
+                #get the phone number
+                phone_number = match.group()
+            except AttributeError:
+                logging.exception("MSISDN did not match any of the allowed formats.")
+                updated = False
+                return (phone_number, updated)
             #check if the MSISDN format is international if not make it
             if len(phone_number) == 9:
                 phone_number = '27' + phone_number                
-            print 'phone_number: %s\n' % phone_number
+            #print 'phone_number: %s\n' % phone_number
             #update the patient phone number
-            msisdn, created = MSISDN.objects.get_or_create(msisdn=phone_number)
+            phone, created = MSISDN.objects.get_or_create(msisdn=phone_number)
             
             #check if the phone number is not on the list of MSISDN add it
-            if msisdn not in curr_patient.msisdns.all():
-                curr_patient.msisdns.add(msisdn)         
+            if phone not in curr_patient.msisdns.all():
+                curr_patient.msisdns.add(phone)         
         # if the msisdn does not have correct phone number format log error        
         else:
             logging.exception('Phone number is incorrect format for patient: %s' % curr_patient)
-            return
+            phone_update = False
+            return (self.msisdn, phone_update)
             
         if created:
             logging.debug('Phone number update for patient: %s' %  curr_patient)
-            return created
+            return (phone.msisdn, created) 
         elif not created:
             logging.debug('Phone number is still the same for patient: %s' % curr_patient) 
-            return created
-                   
+            return (phone.msisdn, created)
+
+    def update_needed(self, status):
+        """
+        @rguments:
+        status: appointment status.
+        
+        Converts the appointment status
+        variable to the length of the
+        one stored on the database.
+        
+        @returns:
+        database_status: appointment status a letter.
+        """
+        
+        if status is 'Missed':
+            return 'm'
+        elif status is 'Rescheduled':
+            return 'r'
+        elif status is 'Attended':
+            return 'a'
+        elif status is 'Scheduled':
+              return 's'
+          
     def updateAppointmentStatus(self, app_status, app_date, visit_id):
         """
         @rgument:
@@ -230,12 +288,19 @@ class Importer(object):
         except Visit.DoesNotExist:
             #log error in import log
             logging.exception("Cannot make visit appointment")
-            return
+            #flag to day the visit does not exist
+            visit_exists = False
+            return visit_exists
+
+        #stores variable used to check if appointment updates are needed
+        progress = self.update_needed(app_status)
         #check if the patient appointment status has not changed if true dont update
-        if app_status == curr_patient.status:
+        if progress == curr_patient.status:
             updated = True
             logging.debug("The appointment status does not require an update")
             return updated
+        
+        print 'progress: %s     curr_patient.status: %s\n' % (progress, curr_patient.status)
         
         #check if the user already exist in the system so that data can be updated
         if curr_patient:
@@ -250,12 +315,10 @@ class Importer(object):
                             curr_patient.status = 'a'
                             curr_patient.save()
                             logging.debug('Appointment status update for Patient %s' % curr_patient)
-                            updated = True
-                            return updated
+                            return curr_patient.status
                         except:
                             logging.exception("Appointment failed to update")  
-                            updated = False
-                            return updated
+                            return curr_patient.status
                 
                 #if the user has missed a scheduled or rescheduled appointment
                 if app_status == 'Missed':
@@ -268,12 +331,10 @@ class Importer(object):
                             curr_patient.save()
                             print 'curr_patient.status: %s\n' % curr_patient.status
                             logging.debug('Appointment status update for Patient %s' % curr_patient)
-                            updated = True
-                            return updated
+                            return curr_patient.status
                         except:
                             logging.exception("Appointment failed to update")
-                            updated = False
-                            return updated        
+                            return curr_patient.status        
                                               
             #check if the patient appointment date has passed
             elif curr_patient.date < app_date:
@@ -287,10 +348,8 @@ class Importer(object):
                         curr_patient.date = app_date
                         curr_patient.save()
                         logging.debug('Appointment status update for Patient %s' % curr_patient)
-                        updated = True
-                        return updated
+                        return curr_patient.status
                     except:
                         logging.exception("Appointment failed to update")
-                        updated = False
-                        return updated
+                        return curr_patient.status
                     
