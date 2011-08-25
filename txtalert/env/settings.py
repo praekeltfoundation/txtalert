@@ -30,7 +30,7 @@ TEMPLATE_DEBUG = DEBUG
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'txtalert_dev',
         'USER': '',
         'PASSWORD': '',
@@ -113,6 +113,7 @@ INSTALLED_APPS = (
     'txtalert.apps.gateway',
     'txtalert.apps.api',
     'txtalert.apps.cd4',
+    'txtalert.apps.googledoc',
     'piston',
     'dirtyfields',
     'history',
