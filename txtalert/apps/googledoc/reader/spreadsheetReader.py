@@ -417,22 +417,16 @@ def main():
     elif o == "--pw":
       pw = a
    
-  start = datetime.date(2011, 8, 22) 
-  until = datetime.date(2011, 9, 5)   
+  start = datetime.date.today() 
+  until = start + datetime.timedelta(days=14)  
  
   if user == '' or pw == '':
     print 'python spreadsheetExample.py --user [username] --pw [password]'
     sys.exit(2)
         
   sample = SimpleCRUD(user, pw)
-  sample.RunAppointment('ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert', start, until)
-  
-  rowList = [1932, 12020, 1014, 2121212, 1663]
-  for l in rowList:
-      sample.RunEnrollmentCheck('ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert', l, start, until)
-      
+  sample.RunAppointment('ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert', start, until)    
   
 
 if __name__ == '__main__':
-  main()
-'''
+  main()'''

@@ -86,11 +86,9 @@ class Importer(object):
             if self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is True:
                 self.updatePatient(month_worksheet[patient],patient)
                 print 'file no was found now doing updates\n'
-                #found = True
-                #return found
+
             elif self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is False:
                 logging.debug('Unable to make updates for patients')
-                print 'file no was not found ERROR\n'
                     
     def updatePatient(self, patient_row, row):
         '''
@@ -228,7 +226,7 @@ class Importer(object):
         try:
             #use patient's unique id and row number on spreadsheet to find the patient database record
             curr_patient = Visit.objects.get(te_visit_id=visit_id)
-            #print 'Visit curr_patient try block: %s\n' % curr_patient
+            print 'Visit curr_patient try block: %s\n' % curr_patient
         except Visit.DoesNotExist:
             #log error in import log
             logging.exception("Cannot make visit appointment")
@@ -236,14 +234,14 @@ class Importer(object):
         #check if the patient appointment status has not changed if true dont update
         if app_status == curr_patient.status:
             updated = True
-            #print 'app_status == curr_patient.status is True thus no updates\n'
+            logging.debug("The appointment status does not require an update")
             return updated
         
         #check if the user already exist in the system so that data can be updated
         if curr_patient:
             #check if the appointment date is the same as the one stored on the database
             if curr_patient.date >= app_date:
-                #print 'curr_patient.date == app_date: %s\n' % curr_patient.date
+                print 'curr_patient.date == app_date: %s\n' % curr_patient.date
                 #check if the user has attended the scheduled appointment    
                 if app_status == 'Attended':
                     #if the appointment was scheduled or rescheduled transform it to attended
@@ -258,10 +256,28 @@ class Importer(object):
                             logging.exception("Appointment failed to update")  
                             updated = False
                             return updated
-                         
-            #check if the patient appointment date has pasted
-            elif curr_patient.date <= app_date:
-                #print 'curr_patient.date > app_date: %s\n' % curr_patient.date           
+                
+                #if the user has missed a scheduled or rescheduled appointment
+                if app_status == 'Missed':
+                    #print 'app_status == Missed \n'
+                    if curr_patient.status == 's' or curr_patient.status == 'r':
+                        print 'curr_patient.status == s or curr_patient.status == r: %s\n' % curr_patient.status
+                        #print 'curr_patient.status: %s\n' % curr_patient.status
+                        try:
+                            curr_patient.status = 'm'
+                            curr_patient.save()
+                            print 'curr_patient.status: %s\n' % curr_patient.status
+                            logging.debug('Appointment status update for Patient %s' % curr_patient)
+                            updated = True
+                            return updated
+                        except:
+                            logging.exception("Appointment failed to update")
+                            updated = False
+                            return updated        
+                                              
+            #check if the patient appointment date has passed
+            elif curr_patient.date < app_date:
+                print 'curr_patient.date > app_date: %s\n' % curr_patient.date           
                 #check if the patient has rescheduled 
                 if app_status == 'Rescheduled' and curr_patient.status == 's':
                     print ''
@@ -278,20 +294,3 @@ class Importer(object):
                         updated = False
                         return updated
                     
-                #if the user has missed a scheduled or rescheduled appointment
-                if app_status == 'Missed':
-                    #print 'app_status == Missed \n'
-                    if curr_patient.status == 's' or curr_patient.status == 'r':
-                        #print 'curr_patient.status == s or curr_patient.status == r: %s\n' % curr_patient.status
-                        #print 'curr_patient.status: %s\n' % curr_patient.status
-                        try:
-                            curr_patient.status = 'm'
-                            curr_patient.save()
-                            #print 'curr_patient.status: %s\n' % curr_patient.status
-                            logging.debug('Appointment status update for Patient %s' % curr_patient)
-                            updated = True
-                            return updated
-                        except:
-                            logging.exception("Appointment failed to update")
-                            updated = False
-                            return updated                     
