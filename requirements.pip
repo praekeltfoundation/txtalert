@@ -1,6 +1,7 @@
 Django==1.3
 django-nose
 psycopg2==2.2.2
+gdata==2.0.14
 coverage
 xlrd
 django-dirtyfields
