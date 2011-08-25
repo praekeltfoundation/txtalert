@@ -42,7 +42,7 @@ class SimpleCRUD:
         self.gd_client.source = 'Import Google SpreadSheet to Database'
         try:
             self.gd_client.ProgrammaticLogin()
-        except gdata.service.BadAuthentication, e:
+        except gdata.service.BadAuthentication:
             logging.exception("Error Logging in")
             return
         self.curr_key = ''
