@@ -19,6 +19,7 @@ __author__ = 'olwethu@byteorbit.com'
 
 
 import gdata.spreadsheet.service
+from gdata.service import BadAuthentication, CaptchaRequired
 import gdata.service
 import gdata.spreadsheet
 import datetime
@@ -42,9 +43,9 @@ class SimpleCRUD:
         self.gd_client.source = 'Import Google SpreadSheet to Database'
         try:
             self.gd_client.ProgrammaticLogin()
-        except gdata.service.BadAuthentication:
-            logging.exception("Error Logging in")
-            return
+        except BadAuthentication, CaptchaRequired:
+            logging.exception("Error Logging in invalid loggin values or captcha error.")
+            raise
         self.curr_key = ''
         self.wksht_id = ''
         self.list_feed = None
@@ -63,7 +64,14 @@ class SimpleCRUD:
         q['title'] = doc_name
         q['title-exact'] = 'true'
         feed = self.gd_client.GetSpreadsheetsFeed(query=q)
-        self.curr_key = feed.entry[0].id.text.rsplit('/', 1)[1]
+        try:
+            self.curr_key = feed.entry[0].id.text.rsplit('/', 1)[1]
+            found = True
+            return found
+        except IndexError:
+            logging.exception("Spreadsheet name is invalid")
+            found = False
+            return found
        
     def get_worksheet_data(self, worksheet_type, start, until):
         """
@@ -99,6 +107,9 @@ class SimpleCRUD:
             if until.month == curr_month:
                 #get all the rows in the worksheet and process them
                 app_worksheet = self.get_worksheet(worksheet_name, start, until)
+                #check if the worksheet was found
+                if app_worksheet is False:
+                    return False
                 #get the rows that fall with the start and until date(s)
                 app_worksheet = self.appointmentRows(app_worksheet, start, until)
                 #send to program that updates the apppointments
@@ -108,6 +119,9 @@ class SimpleCRUD:
             elif until.month > curr_month:
                 #process the first worksheet
                 app_worksheet = self.get_worksheet(worksheet_name, start, until)
+                #check if the worksheet was found
+                if app_worksheet is False:
+                    return False
                 #get the rows that fall with the start and until date(s)
                 app_worksheet = self.appointmentRows(app_worksheet, start, until)
                 #worksheet name is the key and value is worksheet
@@ -119,6 +133,9 @@ class SimpleCRUD:
                 holder = {}
                 #process the second worksheet
                 app_worksheet = self.get_worksheet(months[curr_month], start, until)
+                #check if the worksheet was found
+                if app_worksheet is False:
+                    return False
                 app_worksheet = self.appointmentRows(app_worksheet, start, until)
                 holder = {months[curr_month]: app_worksheet}
                 app_worksheet = {}
@@ -152,11 +169,17 @@ class SimpleCRUD:
         q['title'] = worksheet_name
         q['title-exact'] = 'true'
         feed = self.gd_client.GetWorksheetsFeed(self.curr_key, query=q)
-        self.wksht_id = feed.entry[0].id.text.rsplit('/', 1)[1] 
-        #check if the retrieved worksheet is not an enrollment worksheet if not process the data 
-        if worksheet_name != 'enrollment sheet':
-            app_worksheet = self.prompt_for_list_action()
-            return app_worksheet      
+        try:
+            self.wksht_id = feed.entry[0].id.text.rsplit('/', 1)[1]
+            #check if the retrieved worksheet is not an enrollment worksheet if not process the data 
+            if worksheet_name != 'enrollment sheet':
+                app_worksheet = self.prompt_for_list_action()
+                return app_worksheet      
+            
+        except IndexError:
+            worksheet_found = False
+            return worksheet_found
+       
      
     def appointmentRows(self, worksheet, start, until):
         """
@@ -273,11 +296,9 @@ class SimpleCRUD:
                 #clear for next worksheet row
                 copydic = {}
                 rowdic = {}   
-            #print worksheet_data
             #for each row get proper type for each one of its contents
             for k in worksheet_data:
                 row_no = k + 2
-                #print worksheet_data[k]
                 #get proper values for each key in row dictionary
                 enrol_p = self.databaseRecord(dic=worksheet_data[k])
                 #creates a dictionary with the row number as the key and row dictionary as the value
@@ -288,7 +309,6 @@ class SimpleCRUD:
                 proper_worksheet.update(enroltemp)
                 enroltemp = {}
                 row_no = 0
-            #print proper_worksheet
             return proper_worksheet
            
     def dateObjectCreator(self, datestring):
@@ -311,8 +331,8 @@ class SimpleCRUD:
             real_date = datetime.datetime.strptime(datestring, dateformat)
             real_date = real_date.date()
             return real_date
-        except:
-            return Exception
+        except ValueError, exceptions:
+            return ValueError
  
     def databaseRecord(self, dic):
         """
@@ -362,6 +382,12 @@ class SimpleCRUD:
                     appDic.update(temp_dic)
                     temp_dic = {}
         return appDic
+    
+    def dateFormat(self, d):
+      str_date = str(d)
+      (y, m, d) = str_date.split('-')
+      new_date = d+'/'+m+'/'+y
+      return new_date
       
     def RunAppointment(self, doc_name, start, until):
         """
@@ -376,10 +402,18 @@ class SimpleCRUD:
         app_worksheet: Contains worksheet(s) with appointment data.
         """
         #get the spread sheet to be worked on
-        self.get_spreadsheet(doc_name)
-        #get the worksheets on the spreadsheet
-        app_worksheet = self.get_worksheet_data('appointment worksheet', start, until)
-        return app_worksheet
+        found = self.get_spreadsheet(doc_name)
+        #check if a spreadsheet to work on was found if not return
+        if found:
+            #get the worksheets on the spreadsheet
+            app_worksheet = self.get_worksheet_data('appointment worksheet', start, until)
+            #check if the worksheet was found
+            if app_worksheet is False:
+                    return False
+                
+            return app_worksheet
+        else:
+            return False
   
     def RunEnrollmentCheck(self, doc_name, file_no, start, until):
         """

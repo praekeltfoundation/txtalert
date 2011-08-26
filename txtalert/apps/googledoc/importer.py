@@ -23,8 +23,7 @@ class Importer(object):
         '''
         self.email = email
         self.password = password
-        self.reader = SimpleCRUD(self.email, self.password)
-        
+        self.reader = SimpleCRUD(self.email, self.password)      
         
     def import_spread_sheet(self, doc_name, start, until):
         """
@@ -45,24 +44,29 @@ class Importer(object):
         self.until = until
         self.doc_name = doc_name
         self.month = self.reader.RunAppointment(self.doc_name, start, until)
+        #check if a worksheet was returned
+        if self.month is False:
+            logging.exception("The spreadsheet name stored on the database is incorrect or worksheet error")
+            return
+        
         #check if the month has two worksheets
         if len(self.month) == 2:
             #update user appointment info for each worksheet 
             for worksheet in self.month:
                 #check that the spreadsheet has data to update
                 if len(self.month[worksheet]) != 0:
-                    self.updatePatients(self.month[worksheet], self.doc_name, start, until)
+                    self.update_patients(self.month[worksheet], self.doc_name, start, until)
                 else:
                     logging.exception("The are no patient's to update") 
                     return   
         else:
             #check that the spreadsheet has data to update
-            if len(self.month[worksheet]) != 0:
+            if len(self.month) != 0:
                 #call function to process the worksheet appointment data
-                self.updatePatients(self.month, self.doc_name, start, until)
+                self.update_patients(self.month, self.doc_name, start, until)
                 return          
             
-    def updatePatients(self, month_worksheet, doc_name, start, until):
+    def update_patients(self, month_worksheet, doc_name, start, until):
         """
         @arguments:
         month_worksheet: store the current month's worksheet from spreadsheet.
@@ -76,21 +80,26 @@ class Importer(object):
         If patient was found in the enrollment worksheet then perfom updates
         else log error that the patient needs to be enrolled.
         """
- 
+        #counter  for checking how many on the enrolled patients where updated correctly
+        correct_updates = 0
+        #counter for number of patients found on the enrollement worksheet
+        enrolled_counter = 0
         #loop through the worksheet and check which patient details need to be updated
         for patient in month_worksheet:
-            print 'patient_row: %s\n' % month_worksheet[patient]
             file_no = month_worksheet[patient]['fileno']
-            print 'file no insde updatePatients: %s\n' % file_no
             #check if the patient has enrolled
             if self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is True:
-                self.updatePatient(month_worksheet[patient],patient)
-                print 'file no was found now doing updates\n'
+                update_flag = self.update_patient(month_worksheet[patient],patient)
+                enrolled_counter = enrolled_counter + 1
+                if update_flag is True:
+                    correct_updates = correct_updates + 1                
 
             elif self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is False:
                 logging.debug('Unable to make updates for patients')
+                
+        return (enrolled_counter, correct_updates)
                     
-    def updatePatient(self, patient_row, row):
+    def update_patient(self, patient_row, row):
         '''
         @rguments:
         patient_row: A row that contains a patients appointment info.
@@ -124,9 +133,7 @@ class Importer(object):
             visit_id = str(row_no) + '-' + str(file_no)
         else:
             visit_id = str(row_no) + '-' + str(file_no)
-            
-        #print 'inside updatePatient visit_id: %s\n' % visit_id
-                
+                           
         phone = patient_row['phonenumber']
         app_date = patient_row['appointmentdate1']
         app_status = patient_row['appointmentstatus1']
@@ -173,7 +180,6 @@ class Importer(object):
         created: Indicate whether an phone number update occurred
         '''
         test_phone = msisdn
-        print 'test_phone: %s\n' % test_phone
         #ensure that the msisdn is a string and in the correct format
         self.msisdn = str(msisdn)
         self.msisdn = self.msisdn.lstrip('0')
@@ -220,10 +226,9 @@ class Importer(object):
             #check if the MSISDN format is international if not make it
             if len(phone_number) == 9:
                 phone_number = '27' + phone_number                
-            #print 'phone_number: %s\n' % phone_number
+
             #update the patient phone number
             phone, created = MSISDN.objects.get_or_create(msisdn=phone_number)
-            
             #check if the phone number is not on the list of MSISDN add it
             if phone not in curr_patient.msisdns.all():
                 curr_patient.msisdns.add(phone)         
@@ -284,7 +289,6 @@ class Importer(object):
         try:
             #use patient's unique id and row number on spreadsheet to find the patient database record
             curr_patient = Visit.objects.get(te_visit_id=visit_id)
-            print 'Visit curr_patient try block: %s\n' % curr_patient
         except Visit.DoesNotExist:
             #log error in import log
             logging.exception("Cannot make visit appointment")
@@ -300,13 +304,10 @@ class Importer(object):
             logging.debug("The appointment status does not require an update")
             return updated
         
-        print 'progress: %s     curr_patient.status: %s\n' % (progress, curr_patient.status)
-        
         #check if the user already exist in the system so that data can be updated
         if curr_patient:
             #check if the appointment date is the same as the one stored on the database
             if curr_patient.date >= app_date:
-                print 'curr_patient.date == app_date: %s\n' % curr_patient.date
                 #check if the user has attended the scheduled appointment    
                 if app_status == 'Attended':
                     #if the appointment was scheduled or rescheduled transform it to attended
@@ -322,14 +323,10 @@ class Importer(object):
                 
                 #if the user has missed a scheduled or rescheduled appointment
                 if app_status == 'Missed':
-                    #print 'app_status == Missed \n'
                     if curr_patient.status == 's' or curr_patient.status == 'r':
-                        print 'curr_patient.status == s or curr_patient.status == r: %s\n' % curr_patient.status
-                        #print 'curr_patient.status: %s\n' % curr_patient.status
                         try:
                             curr_patient.status = 'm'
                             curr_patient.save()
-                            print 'curr_patient.status: %s\n' % curr_patient.status
                             logging.debug('Appointment status update for Patient %s' % curr_patient)
                             return curr_patient.status
                         except:
@@ -337,11 +334,9 @@ class Importer(object):
                             return curr_patient.status        
                                               
             #check if the patient appointment date has passed
-            elif curr_patient.date < app_date:
-                print 'curr_patient.date > app_date: %s\n' % curr_patient.date           
+            elif curr_patient.date < app_date:         
                 #check if the patient has rescheduled 
                 if app_status == 'Rescheduled' and curr_patient.status == 's':
-                    print ''
                     curr_patient.status = 'r' 
                     try:
                         #change date to be the new rescheduled appointment date
