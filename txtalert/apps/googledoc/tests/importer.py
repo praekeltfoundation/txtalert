@@ -15,8 +15,8 @@ class Importer_tester(TestCase):
     
     def setUp(self):
         #dummy google login details
-        self.email = 'olwethu.a@gmail.com'
-        self.password = 'tester'
+        self.email = 'txtalert@byteorbit.com'
+        self.password = 'testtest'
         self.importer = Importer(self.email, self.password)
         # make sure we're actually testing some data
         self.assertTrue(Patient.objects.count() > 0)
@@ -106,4 +106,3 @@ class Importer_tester(TestCase):
         (self.app_status, self.app_date, self.visit_id) = ('Missed', date(2011, 8, 1), '02-9999999')
         self.status_updated = self.importer.updateAppointmentStatus(self.app_status, self.app_date, self.visit_id)
         self.assertEquals(self.status_updated, 'm')     
-        
