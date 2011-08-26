@@ -396,37 +396,3 @@ class SimpleCRUD:
         #send structured query to check if the patient is enrolled to use service
         exists = self.enrolQuery(file_no)
         return exists
-
-'''
-#Use this function to test from command line
-def main():
-  # parse command line options
-  try:
-    opts, args = getopt.getopt(sys.argv[1:], "", ["user=", "pw="])
-  except getopt.error, msg:
-    print 'python spreadsheetReader.py --user [username] --pw [password] '
-    sys.exit(2)
-  
-  user = ''
-  pw = ''
-  key = ''
-  # Process options
-  for o, a in opts:
-    if o == "--user":
-      user = a
-    elif o == "--pw":
-      pw = a
-   
-  start = datetime.date.today() 
-  until = start + datetime.timedelta(days=14)  
- 
-  if user == '' or pw == '':
-    print 'python spreadsheetExample.py --user [username] --pw [password]'
-    sys.exit(2)
-        
-  sample = SimpleCRUD(user, pw)
-  sample.RunAppointment('ByteOrbit copy of WrHI spreadsheet for Praekelt TxtAlert', start, until)    
-  
-
-if __name__ == '__main__':
-  main()'''
