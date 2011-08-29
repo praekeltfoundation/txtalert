@@ -1,6 +1,7 @@
 from txtalert.apps.googledoc.reader.spreadsheetReader import SimpleCRUD
 from txtalert.core.models import Patient, MSISDN, Visit
-
+from django.contrib.auth.models import User
+from django.core.cache import cache
 import re
 import logging
 
@@ -8,6 +9,7 @@ MSISDNS_RE = re.compile(r'^([+]?(0|27)[0-9]{9}/?)+$')
 PHONE_RE = re.compile(r'[0-9]{9}')
 MSISDN_RE = re.compile(r'^([+?0][0-9]{9}/?)+$')
 APPOINTMENT_ID_RE = re.compile(r'^[0-9]{2}-[0-9]{9}$')
+FILE_NO = re.compile(r'^[a-zA-Z0-9]+$')
 
 class Importer(object):
     def __init__(self, email, password):
@@ -49,8 +51,8 @@ class Importer(object):
             logging.exception("The spreadsheet name stored on the database is incorrect or worksheet error")
             return
         
-        #check if the month has two worksheets
-        if len(self.month) == 2:
+        #check if the month has more than one worksheets
+        if len(self.month) > 1:
             #update user appointment info for each worksheet 
             for worksheet in self.month:
                 #check that the spreadsheet has data to update
@@ -90,11 +92,15 @@ class Importer(object):
             #check if the patient has enrolled
             if self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is True:
                 update_flag = self.update_patient(month_worksheet[patient],patient)
+                #cache the enrollment check
+                cache.set(file_no, update_flag, 30)
                 enrolled_counter = enrolled_counter + 1
                 if update_flag is True:
                     correct_updates = correct_updates + 1                
 
             elif self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is False:
+                #cache the enrollment check
+                cache.set(file_no, False, 30)
                 logging.debug('Unable to make updates for patients')
                 
         return (enrolled_counter, correct_updates)
@@ -118,21 +124,29 @@ class Importer(object):
         #check that the arguments are proper types
         if type(row) is int and type(patient_row) is dict:
             row_no = row
-            #check that the file number is an integer value
-            if type(patient_row['fileno']) is int:
-                file_no =  patient_row['fileno'] 
-            else:
-                logging.exception("File number must be a integer")
+            try:
+                #check file number format
+                match = FILE_NO.match(str(patient_row['fileno']))
+                try:
+                    #get string that matched pattern
+                    file_no = match.group()
+                except AttributeError:
+                    logging.exception("File number can be combination of numbers and characters") 
+                    return patient_row['fileno']                   
+            except TypeError:
+                logging.exception("File number can be combination of numbers and characters")
                 return patient_row['fileno']
+           
+               
         else:
             logging.exception("Row no must be integer and patient row must hashable")
             return (patient_row, row) 
            
         if row_no < 10:
             row_no = '0' + str(row_no)
-            visit_id = str(row_no) + '-' + str(file_no)
+            visit_id = str(row_no) + '-' + file_no
         else:
-            visit_id = str(row_no) + '-' + str(file_no)
+            visit_id = str(row_no) + '-' + file_no
                            
         phone = patient_row['phonenumber']
         app_date = patient_row['appointmentdate1']
@@ -141,17 +155,19 @@ class Importer(object):
         #try to get the current patient from the database
         try:
             #use patient's unique id and row number on spreadsheet to find the patient database record
-            curr_patient = Patient.objects.get(te_id=visit_id)
+            curr_patient = Patient.objects.get(te_id=file_no)
         except Patient.DoesNotExist:
             #log error in import log
             logging.exception("The patient was not found in the database")
+            #create a new patient
+            self.create_patient(patient_row, row)
             #flag to day the patient does not exist
             patient_exists = False
             return patient_exists
                     
         #check if the user already exist in the system so that data can be updated
         if curr_patient:
-            #call methon to do appointment status update
+            #call method to do appointment status update
             app_update = self.updateAppointmentStatus(app_status, app_date, visit_id) 
             #call method to update phone number
             phone_update = self.updateMSISDN(phone, curr_patient)
@@ -162,6 +178,31 @@ class Importer(object):
             else:
                 patient_update = False            
                 return  (patient_update)            
+    
+    def create_patient(self, patient_row, row_no):
+        
+        #get the contents of the row
+        file_no = patient_row['fileno']
+        phone = patient_row['phonenumber']
+        app_date = patient_row['appointmentdate1']
+        app_status = patient_row['appointmentstatus1']
+
+        #visit id
+        if row_no < 10:
+            row_no = '0' + str(row_no)
+            visit_id = str(row_no) + '-' + file_no
+        else:
+            visit_id = str(row_no) + '-' + file_no
+
+        #get the user or create one
+        owner, owner_reated = User.objects.get_or_create(username='googledoc')
+        #create a msisdn
+        msisdn, msisdn_created = MSISDN.objects.get_or_create(msisdn=phone)
+        #create a new patient
+        new_patient = Patient(te_id=file_no, active_msisdn=msisdn, owner=owner)
+        new_patient.save()
+        #create a the visit
+        new_visit = Visit(te_visit_id=visit_id, patient=new_patient, date=app_date, status=app_status)
      
     def updateMSISDN(self, msisdn, curr_patient):
         '''
@@ -285,10 +326,12 @@ class Importer(object):
         
         @returns:
         updated: Flag that indicates whether the appointment status was updated.        
-        """          
+        """   
+        print visit_id       
         try:
             #use patient's unique id and row number on spreadsheet to find the patient database record
-            curr_patient = Visit.objects.get(te_visit_id=visit_id)
+            curr_visit = Visit.objects.get(te_visit_id=visit_id)
+            print curr_visit
         except Visit.DoesNotExist:
             #log error in import log
             logging.exception("Cannot make visit appointment")
@@ -299,52 +342,52 @@ class Importer(object):
         #stores variable used to check if appointment updates are needed
         progress = self.update_needed(app_status)
         #check if the patient appointment status has not changed if true dont update
-        if progress == curr_patient.status:
+        if progress == curr_visit.status:
             updated = True
             logging.debug("The appointment status does not require an update")
             return updated
         
         #check if the user already exist in the system so that data can be updated
-        if curr_patient:
+        if curr_visit:
             #check if the appointment date is the same as the one stored on the database
-            if curr_patient.date >= app_date:
+            if curr_visit.date >= app_date:
                 #check if the user has attended the scheduled appointment    
                 if app_status == 'Attended':
                     #if the appointment was scheduled or rescheduled transform it to attended
-                    if curr_patient.status == 's' or curr_patient.status == 'r':
+                    if curr_visit.status == 's' or curr_visit.status == 'r':
                         try:
-                            curr_patient.status = 'a'
-                            curr_patient.save()
+                            curr_visit.status = 'a'
+                            curr_visit.save()
                             logging.debug('Appointment status update for Patient %s' % curr_patient)
-                            return curr_patient.status
+                            return curr_visit.status
                         except:
                             logging.exception("Appointment failed to update")  
-                            return curr_patient.status
+                            return curr_visit.status
                 
                 #if the user has missed a scheduled or rescheduled appointment
                 if app_status == 'Missed':
-                    if curr_patient.status == 's' or curr_patient.status == 'r':
+                    if curr_visit.status == 's' or curr_visit.status == 'r':
                         try:
-                            curr_patient.status = 'm'
-                            curr_patient.save()
+                            curr_visit.status = 'm'
+                            curr_visit.save()
                             logging.debug('Appointment status update for Patient %s' % curr_patient)
-                            return curr_patient.status
+                            return curr_visit.status
                         except:
                             logging.exception("Appointment failed to update")
-                            return curr_patient.status        
+                            return curr_visit.status        
                                               
             #check if the patient appointment date has passed
-            elif curr_patient.date < app_date:         
+            elif curr_visit.date < app_date:         
                 #check if the patient has rescheduled 
-                if app_status == 'Rescheduled' and curr_patient.status == 's':
-                    curr_patient.status = 'r' 
+                if app_status == 'Rescheduled' and curr_visit.status == 's':
+                    curr_visit.status = 'r' 
                     try:
                         #change date to be the new rescheduled appointment date
-                        curr_patient.date = app_date
-                        curr_patient.save()
+                        curr_visit.date = app_date
+                        curr_visit.save()
                         logging.debug('Appointment status update for Patient %s' % curr_patient)
-                        return curr_patient.status
+                        return curr_visit.status
                     except:
                         logging.exception("Appointment failed to update")
-                        return curr_patient.status
+                        return curr_visit.status
                     

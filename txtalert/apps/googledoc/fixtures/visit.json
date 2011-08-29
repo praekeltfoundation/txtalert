@@ -7,8 +7,7 @@
             "patient":"1",
             "te_visit_id":"01-1111111",
             "date":"2011-08-01",
-            "status":"s",
-            "visit_type":"unknown"
+            "status":"s"
         }
     },
     
@@ -20,8 +19,7 @@
             "patient":"2",
             "te_visit_id":"02-9999999",
             "date":"2011-08-10",
-            "status":"s",
-            "visit_type":"unknown"
+            "status":"s"
         }
     }
 ]

@@ -26,7 +26,7 @@ class Command(BaseCommand):
                try:
                    #get the spreadsheet for this acount holder
                    spreadsheet = SpreadSheet.objects.get(account=account)
-               except SpreadSheet.DoesNotExist:
+               except SpreadSheet.DoesNotExist, MultipleObjectsReturned:
                    logger.exception("Spreadsheet for account: %s not avalaible\n" % account)
                    return
                # from midnight

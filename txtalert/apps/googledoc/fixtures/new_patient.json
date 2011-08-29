@@ -1,6 +1,6 @@
 [
     {
-        "pk": 1, 
+        "pk": 3, 
         "model": "auth.group", 
         "fields": {
             "name": "Praekelt", 
@@ -8,45 +8,43 @@
         }
     },
     {
-        "pk": 1,
+        "pk": 4,
         "model": "auth.user",
         "fields": {
-            "username": "googledoc"
+            "username": "Praekelt"
         }
     },
     {
-        "pk":"1",
+        "pk":"3",
         "model": "core.msisdn",
         "fields":{
-            "msisdn":"27123456789"
+            "msisdn":"271111100000"
         }
     },
     {
-        "pk":"1",
+        "pk":"3",
         "model": "core.patient",
         "fields":{
-            "msisdns":["1"],
+            "msisdns":["3"],
             "id":"1",
-            "te_id":"1111111",
-            "owner":1
+            "te_id":"1212121"
         }
     },
 
     {
-        "pk":"2",
+        "pk":"4",
         "model": "core.msisdn",
         "fields":{
-            "msisdn":"27987654321"
+            "msisdn":"27999900000"
         }
     },
     {
-        "pk":"2",
+        "pk":"4",
         "model": "core.patient",
         "fields":{
-            "msisdns":["2"],
+            "msisdns":["4"],
             "id":"2",
-            "te_id":"9999999",
-            "owner":1          
+            "te_id":"9191919"
         }
     }
 

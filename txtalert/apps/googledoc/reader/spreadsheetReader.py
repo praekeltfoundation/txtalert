@@ -17,7 +17,8 @@
 
 __author__ = 'olwethu@byteorbit.com'
 
-
+import getopt
+import sys
 import gdata.spreadsheet.service
 from gdata.service import BadAuthentication, CaptchaRequired
 import gdata.service
@@ -89,40 +90,52 @@ class SimpleCRUD:
         @returns:
         app_worksheets: Used to store two worksheets.
         app_worksheet: Used to store a worksheet.
+        """        
+        #check if the worksheet requested is for making appointments
+        if worksheet_type == 'appointment worksheet':
+            app_worksheets = self.get_worksheet_name(start, until)
+            return app_worksheets
+        #check if the requested worksheet is the enrollment sheet
+        elif worksheet_type == 'enrollment worksheet':
+            #get the name of the worksheet used for patient enrollment in spreadsheet
+            self.get_worksheet('enrollment sheet', start, until)
+    
+    def get_worksheet_name(self, start, until):
+        """
+        @rguments:
+        start: indicates the date to start import data from.
+        until: indicates the date import data function must stop at.
+
+        Gets the name of the worksheet that must
+        be accessed. Get the current months worksheet
+        and get all the contents that fall within
+        the start and end date, do this for all
+        the month's worksheets that fall within the
+        specified time line "current month till
+        until month".
+		
+		@returns:
+        worksheet_name: The name of the worksheet to work on.
         """
         #store the worksheet which have appointment data to be imported
         app_worksheets = {}
         #months tuple
-        months = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
+        months = (
+                  'January', 'February', 'March',
+                  'April', 'May', 'June', 'July',
+                  'August', 'September', 'October',
+                  'November', 'December')
+        
         #get current month, returns an integer value
         curr_month = datetime.date.today().month 
-        #get the name of the month 
-        curr_month = int(curr_month)
-        #use the month's name as worksheet name
-        worksheet_name = months[curr_month - 1]
-
-        #check if the worksheet requested is for making appointments
-        if worksheet_type == 'appointment worksheet':
-            #check if all the appointment data is from the same worksheet
-            if until.month == curr_month:
-                #get all the rows in the worksheet and process them
-                app_worksheet = self.get_worksheet(worksheet_name, start, until)
-                #check if the worksheet was found
-                if app_worksheet is False:
-                    return False
-                #get the rows that fall with the start and until date(s)
-                app_worksheet = self.appointmentRows(app_worksheet, start, until)
-                #send to program that updates the apppointments
-                return app_worksheet
-            
-            #if the appointment are on two worksheets process each 
-            elif until.month > curr_month:
-                #process the first worksheet
-                app_worksheet = self.get_worksheet(worksheet_name, start, until)
-                #check if the worksheet was found
-                if app_worksheet is False:
-                    return False
-                #get the rows that fall with the start and until date(s)
+		#get all theworksheet names between the start and end date
+        for name in range(curr_month-1, until.month):
+            worksheet_name = months[name]
+			#process the current worksheet
+            app_worksheet = self.get_worksheet(worksheet_name, start, until)
+            #check if the worksheet was found and has contents
+            if app_worksheet is  not False and len(app_worksheet) > 0:
+				#get the rows that fall with the start and until date(s)
                 app_worksheet = self.appointmentRows(app_worksheet, start, until)
                 #worksheet name is the key and value is worksheet
                 holder = {worksheet_name: app_worksheet}
@@ -131,24 +144,8 @@ class SimpleCRUD:
                 #clear for next use
                 app_worksheet = {}
                 holder = {}
-                #process the second worksheet
-                app_worksheet = self.get_worksheet(months[curr_month], start, until)
-                #check if the worksheet was found
-                if app_worksheet is False:
-                    return False
-                app_worksheet = self.appointmentRows(app_worksheet, start, until)
-                holder = {months[curr_month]: app_worksheet}
-                app_worksheet = {}
-                app_worksheets.update(holder)
-                holder = {}
-                #return both worksheets in a single dictionary
-                return app_worksheets
-                
-        #check if the requested worksheet is the enrollment sheet
-        elif worksheet_type == 'enrollment worksheet':
-            #get the name of the worksheet used for patient enrollment in spreadsheet
-            self.get_worksheet('enrollment sheet', start, until)
-                            
+        return app_worksheets 
+
     def get_worksheet(self, worksheet_name, start, until):
         """
         @arguments:
@@ -352,7 +349,7 @@ class SimpleCRUD:
         for key in app_dic:
             if key == 'fileno':
                 try:
-                    temp_dic = {key: int(app_dic[key])}
+                    temp_dic = {key: str(app_dic[key])}
                     appDic.update(temp_dic)
                     temp_dic = {} 
                 except TypeError:
@@ -430,3 +427,38 @@ class SimpleCRUD:
         #send structured query to check if the patient is enrolled to use service
         exists = self.enrolQuery(file_no)
         return exists
+'''
+def main():
+  # parse command line options
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], "", ["user=", "pw="])
+  except getopt.error, msg:
+    print 'python spreadsheetReader.py --user [username] --pw [password] '
+    sys.exit(2)
+  
+  user = ''
+  pw = ''
+  key = ''
+  # Process options
+  for o, a in opts:
+    if o == "--user":
+      user = a
+    elif o == "--pw":
+      pw = a
+   
+  doc = 'Praekelt'
+  start = datetime.date(2011, 8, 15)
+  until = datetime.date(2011, 11, 21)   
+
+  if user == '' or pw == '':
+    print 'python spreadsheetExample.py --user [username] --pw [password]'
+    sys.exit(2)
+        
+  sample = SimpleCRUD(user, pw)
+  sample.RunAppointment(doc, start, until)
+  #sample.RunEnrollmentCheck()
+
+
+if __name__ == '__main__':
+  main()
+'''

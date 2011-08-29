@@ -12,7 +12,7 @@ import random
 class Importer_tester(TestCase):
     """Testing the google spreadsheet import loop"""
     
-    fixtures = ['patient', 'visit']
+    fixtures = ['patient', 'visit', 'clinic']
     
     def setUp(self):
         #dummy google login details
@@ -25,6 +25,7 @@ class Importer_tester(TestCase):
         # make sure we're actually testing some data
         self.assertTrue(Patient.objects.count() > 0)
         self.assertTrue(Visit.objects.count() > 0)
+        self.assertTrue(Clinic.objects.count() > 0)
         self.enrolled_patients = { 
                                      1: {'appointmentdate1': date(2011, 8, 1), 'fileno': 1111111, 'appointmentstatus1': 'Missed', 'phonenumber': 999999999}, 
                                      2: {'appointmentdate1': date(2011, 8, 10), 'fileno': 9999999, 'appointmentstatus1': 'Attended', 'phonenumber': 111111111}, 
@@ -41,7 +42,11 @@ class Importer_tester(TestCase):
         
     def test_invalid_file_no_(self):
         """Test if the file no is invalid."""
-        self.patient_row = {'appointmentdate1': date(2011, 8, 10), 'fileno': 'gggggg', 'appointmentstatus1': 'Missed', 'phonenumber': 987654321}
+        #invalid phone number formats
+        self.files = ['+1234', '#ab789', 'abc8901@@', 'ab#12345']
+        #random selection of invalid file numbers 
+        self.file_test = random.choice(self.files)
+        self.patient_row = {'appointmentdate1': date(2011, 8, 10), 'fileno': self.file_test, 'appointmentstatus1': 'Missed', 'phonenumber': 987654321}
         self.row_no = 2
         self.file_no = self.importer.update_patient(self.patient_row, self.row_no)
         self.assertIs(self.file_no, self.patient_row['fileno'])
@@ -66,7 +71,7 @@ class Importer_tester(TestCase):
         self.phones = [1234567, 123456789012, '+1234567', '012456789', '-12345678901', '###12345']
         #random selection of invalid phone numbers 
         self.phone_test = random.choice(self.phones)
-        self.curr_patient = Patient.objects.get(te_id='02-9999999')
+        self.curr_patient = Patient.objects.get(te_id='9999999')
         #phone number and format correct flag
         self.phone, self.format = self.importer.updateMSISDN(self.phone_test, self.curr_patient)
         self.assertIs(self.format, False)
@@ -76,7 +81,7 @@ class Importer_tester(TestCase):
         """Test that the phone number was updated."""
         self.msisdn = random.choice(range(111111111, 999999999, 123456))
         self.msisdn = '27' + str(self.msisdn)
-        self.curr_patient = Patient.objects.get(te_id='02-9999999')
+        self.curr_patient = Patient.objects.get(te_id='9999999')
         self.assertTrue(self.curr_patient)
         self.phone, self.created = self.importer.updateMSISDN(self.msisdn, self.curr_patient)
         self.assertIs(self.created, True)
@@ -85,7 +90,7 @@ class Importer_tester(TestCase):
     def test_msisdn_not_updated(self):
         """Test if incorrect phone number are not updated """
         self.msisdn = random.choice(range(1111111, 9999999, 12345))
-        self.curr_patient = Patient.objects.get(te_id='02-9999999')
+        self.curr_patient = Patient.objects.get(te_id='9999999')
         self.assertTrue(self.curr_patient)
         self.phone, self.created = self.importer.updateMSISDN(self.msisdn, self.curr_patient)
         self.phone = int(self.phone)
@@ -205,7 +210,7 @@ class SpreadSheetReaderTestCase(TestCase):
         #test if the fields where converted correctly
         self.assertEquals(self.app_date, date(2011, 9, 2))
         self.assertEquals(self.app_status, self.test_row['appointmentstatus1'])
-        self.assertEquals(self.file_no, 63601)
+        self.assertEquals(self.file_no, '63601')
         self.assertEquals(self.phone, 969577542)
         
         
