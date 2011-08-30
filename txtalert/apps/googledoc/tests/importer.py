@@ -19,6 +19,7 @@ class Importer_tester(TestCase):
         self.email = 'txtalert@byteorbit.com'
         self.password = 'testtest'
         self.spreadsheet = 'Praekelt'
+        self.empty_spreadsheet = 'Empty Spreadsheet'
         self.start = date.today() - timedelta(days=14) 
         self.until = date.today()
         self.importer = Importer(self.email, self.password)
@@ -33,6 +34,36 @@ class Importer_tester(TestCase):
 
     def tearDown(self):
         pass
+
+    def test_incorrect_spreadsheet_name(self):
+        """Test for import with no existing spreadsheet names."""
+        #invalid spreadsheet names
+        self.doc_names = ['##hgh', 'copy of appointment', '123456', 123456, '#Praekelt']
+        #rondomly select an invalid spreadsheet name
+        self.invalid_doc_name = random.choice(self.doc_names)
+        self.test_doc_name, self.correct = self.importer.import_spread_sheet(self.invalid_doc_name, self.start, self.until)
+        self.assertIs(self.test_doc_name, self.invalid_doc_name)
+        self.assertIs(self.correct, False)
+
+    def test_empty_worksheets(self):
+        """Test for a spreadsheet with no data to update."""
+        self.doc_name, self.data = self.importer.import_spread_sheet(self.empty_spreadsheet, self.start, self.until)
+        self.assertEquals(self.doc_name, self.empty_spreadsheet)
+        self.assertIs(self.data, False)
+     
+    def test_import_worksheets(self):
+        """Test for importing worksheets from a spreadsheet."""
+        self.from_date = date(2011, 7, 18)
+        self.to_date = date(2011, 9, 22)
+        self.enrolled_counter, self.correct_updates = self.importer.import_spread_sheet(self.spreadsheet, self.from_date, self.to_date)
+        self.assertEquals( self.enrolled_counter, self.correct_updates)
+
+    def test_import_worksheet(self):
+        """Test for importing a single worksheet from a spreadsheet."""
+        self.from_date = date(2011, 9, 01)
+        self.to_date = date(2011, 9, 22)
+        self.enrolled_counter, self.correct_updates = self.importer.import_spread_sheet(self.spreadsheet, self.from_date, self.to_date)
+        self.assertEquals( self.enrolled_counter, self.correct_updates)
 
     def test_check_file_no_format_fail(self):
         """Test invalid file number format."""

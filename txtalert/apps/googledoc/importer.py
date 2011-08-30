@@ -44,30 +44,47 @@ class Importer(object):
         """
         self.start = start
         self.until = until
-        self.doc_name = doc_name
+        self.doc_name = str(doc_name)
         self.month = self.reader.RunAppointment(self.doc_name, start, until)
+        print self.month
         #check if a worksheet was returned
         if self.month is False:
             logging.exception("The spreadsheet name stored on the database is incorrect or worksheet error")
-            return
-        
-        #check if the month has more than one worksheets
-        if len(self.month) > 1:
+            valid_name = False
+            return (self.doc_name, valid_name)
+        #check if the month has more than one worksheet
+        elif len(self.month) > 1:
             #update user appointment info for each worksheet 
             for worksheet in self.month:
                 #check that the spreadsheet has data to update
                 if len(self.month[worksheet]) != 0:
-                    self.update_patients(self.month[worksheet], self.doc_name, start, until)
+                    enrolled_counter, correct_updates = self.update_patients(self.month[worksheet], self.doc_name, start, until)
+                    return enrolled_counter, correct_updates
                 else:
-                    logging.exception("The are no patient's to update") 
-                    return   
-        else:
+                    logging.exception("The are no patient's to update")
+                    #flag for checking if the spreadsheet has data
+                    data = False
+                    return (self.doc_name, data)
+        #check that the spreadsheet has data to update
+        elif len(self.month) == 1:
             #check that the spreadsheet has data to update
             if len(self.month) != 0:
                 #call function to process the worksheet appointment data
-                self.update_patients(self.month, self.doc_name, start, until)
-                return          
-            
+                enrolled_counter, correct_updates = self.update_patients(self.month, self.doc_name, start, until)
+                return enrolled_counter, correct_updates
+            else:
+                logging.exception("The are no patient's to update")
+                #flag for checking if the spreadsheet has data
+                data = False
+                return (self.doc_name, data)
+
+        #check if the spreadsheet has no rows
+        elif len(self.month) == 0:
+            logging.exception("The spreadsheet is empty.")
+            #flag for checking if the spreadsheet has data
+            data = False
+            return (self.doc_name, data)
+
     def update_patients(self, month_worksheet, doc_name, start, until):
         """
         @arguments:
@@ -104,6 +121,7 @@ class Importer(object):
                 #check if patient needs to enroll
                 elif enrolled is False:
                     logging.exception('Patient cached enrollment state does not allow for an update')
+            #if the is no cache get the patient's enrollment status
             else:
                 #check if the patient has enrolled
                 if self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is True:
