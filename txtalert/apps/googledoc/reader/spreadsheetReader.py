@@ -127,7 +127,7 @@ class SimpleCRUD:
                   'November', 'December')
         
         #get current month, returns an integer value
-        curr_month = datetime.date.today().month 
+        curr_month = start.month
 		#get all theworksheet names between the start and end date
         for name in range(curr_month-1, until.month):
             worksheet_name = months[name]
@@ -406,9 +406,11 @@ class SimpleCRUD:
             app_worksheet = self.get_worksheet_data('appointment worksheet', start, until)
             #check if the worksheet was found
             if app_worksheet is False:
-                    return False
-                
+                #worksheet was not found return error flag
+                return False
+            #return the found worksheet(s)
             return app_worksheet
+        #spreadsheet was not found return error flag
         else:
             return False
   

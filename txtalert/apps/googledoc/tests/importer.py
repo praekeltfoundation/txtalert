@@ -42,7 +42,8 @@ class Importer_tester(TestCase):
         #rondomly select an invalid spreadsheet name
         self.invalid_doc_name = random.choice(self.doc_names)
         self.test_doc_name, self.correct = self.importer.import_spread_sheet(self.invalid_doc_name, self.start, self.until)
-        self.assertIs(self.test_doc_name, self.invalid_doc_name)
+        self.str_invalid_doc_name = str(self.invalid_doc_name)
+        self.assertIs(self.test_doc_name, self.str_invalid_doc_name)
         self.assertIs(self.correct, False)
 
     def test_empty_worksheets(self):
@@ -54,13 +55,6 @@ class Importer_tester(TestCase):
     def test_import_worksheets(self):
         """Test for importing worksheets from a spreadsheet."""
         self.from_date = date(2011, 7, 18)
-        self.to_date = date(2011, 9, 22)
-        self.enrolled_counter, self.correct_updates = self.importer.import_spread_sheet(self.spreadsheet, self.from_date, self.to_date)
-        self.assertEquals( self.enrolled_counter, self.correct_updates)
-
-    def test_import_worksheet(self):
-        """Test for importing a single worksheet from a spreadsheet."""
-        self.from_date = date(2011, 9, 01)
         self.to_date = date(2011, 9, 22)
         self.enrolled_counter, self.correct_updates = self.importer.import_spread_sheet(self.spreadsheet, self.from_date, self.to_date)
         self.assertEquals( self.enrolled_counter, self.correct_updates)
@@ -89,7 +83,7 @@ class Importer_tester(TestCase):
     def test_check_msisdn_format_fail(self):
         """Test for an invalid msisdn format."""
         #invalid phone number formats
-        self.phones = [1234567, 123456789012, '+1234567', '012456789', '-12345678901', '###12345']
+        self.phones = [1234567, 123456789012, '+1234567', '012456789', '-12345678901', '###12345', 'abcdefghi', '12345abcd']
         #random selection of invalid phone numbers
         self.phone_test = random.choice(self.phones)
         #phone number and format correct flag
@@ -117,16 +111,31 @@ class Importer_tester(TestCase):
     def test_create_patient_fail(self):    
         """Test if the patient was not created. """
         self.new_patient = {'appointmentdate1': date(2011, 10, 1), 'fileno': '###s01011', 'appointmentstatus1': 'Scheduled', 'phonenumber': 190909090}
-        self.row = 3
+        self.row = 12
         self.created = self.importer.create_patient(self.new_patient, self.row, self.spreadsheet)
         self.assertIs(self.created, False)
         
-    def test_cache_enrollment_status_set(self):
-        """Test if enrollement status was cached."""
-    
-    def test_cache_enrollment_status_found(self):
+    def test_set_cache_enrollment_status_fail(self):
+        """Test caching of patient that have not enrolled."""
+        self.uncached_filenos = [111100, 323232, 666666, 'abc113', '123zxy']
+        self.cache_fileno = random.choice(self.uncached_filenos)
+        self.cached_enrolled = self.importer.set_cache_enrollement_status(self.spreadsheet, self.cache_fileno, self.start, self.until)
+        self.assertIs(self.cached_enrolled, False)
+
+    def test_set_cache_enrollment_status_pass(self):
+        """Test caching of patient that have enrolled."""
+        self.uncached_filenos = [721003, 61201, 9999999, 118801]
+        self.cache_fileno = random.choice(self.uncached_filenos)
+        self.cached_enrolled = self.importer.set_cache_enrollement_status(self.spreadsheet, self.cache_fileno, self.start, self.until)
+        self.assertIs(self.cached_enrolled, True)
+
+    def test_get_cache_enrollment_status(self):
         """Test if cached enrollement status was found."""
-        
+        self.uncached_filenos = [721003, 61201, 9999999, 118801]
+        self.cache_fileno = random.choice(self.uncached_filenos)
+        self.importer.set_cache_enrollement_status(self.spreadsheet, self.cache_fileno, self.start, self.until)
+        self.cached = self.importer.get_cache_enrollement_status(self.cache_fileno)
+        self.assertIs(self.cached, True)
     
     def test_update_patients(self):
         """Test if a worksheet of patients is updated successfully."""

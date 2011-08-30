@@ -2,6 +2,7 @@ from txtalert.apps.googledoc.reader.spreadsheetReader import SimpleCRUD
 from txtalert.core.models import Patient, MSISDN, Visit, Clinic
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.db import IntegrityError
 import re
 import logging
 
@@ -10,6 +11,9 @@ PHONE_RE = re.compile(r'[0-9]{9}')
 MSISDN_RE = re.compile(r'^([+?0][0-9]{9}/?)+$')
 DATE_RE = re.compile(r'^[0-9]{1,2}[/?-][0-9]{1,2}[/?-][0-9]{4}$')
 FILE_NO = re.compile(r'^[a-zA-Z0-9]+$')
+
+#the amount of time to cache a enrollment status
+CACHE_TIMEOUT = 30
 
 class Importer(object):
     def __init__(self, email, password):
@@ -46,7 +50,6 @@ class Importer(object):
         self.until = until
         self.doc_name = str(doc_name)
         self.month = self.reader.RunAppointment(self.doc_name, start, until)
-        print self.month
         #check if a worksheet was returned
         if self.month is False:
             logging.exception("The spreadsheet name stored on the database is incorrect or worksheet error")
@@ -105,10 +108,11 @@ class Importer(object):
         enrolled_counter = 0
         #loop through the worksheet and check which patient details need to be updated
         for patient in month_worksheet:
+            print 'patient: %s' % patient
             file_no = month_worksheet[patient]['fileno']
-            #check if the enrollment check was cached
-            enrolled = cache.get(file_no)
-            #check if the cache has the patient's enrollment status            
+            #call method to get the cached enrollemnt status for the patient
+            enrolled = self.get_cache_enrollement_status(file_no)
+            #check if the cache has the patient's enrollment status
             if enrolled:
                 #check if the patient was enrolled
                 if enrolled is True:
@@ -117,29 +121,51 @@ class Importer(object):
                     enrolled_counter = enrolled_counter + 1
                     if update_flag is True:
                         correct_updates = correct_updates + 1
-                    logging.debug("Cached enrollment status allows for patient update")
+                        logging.debug("Cached enrollment status allows for patient: %s update" % file_no)
                 #check if patient needs to enroll
-                elif enrolled is False:
-                    logging.exception('Patient cached enrollment state does not allow for an update')
-            #if the is no cache get the patient's enrollment status
+                else:
+                    logging.exception('Patient: %s cached enrollment state does not allow for an update' % file_no)
+            #if the is no cache get the patient's enrollment status and cache it
             else:
-                #check if the patient has enrolled
-                if self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is True:
+                #call method to set cache
+                cache_status = self.set_cache_enrollement_status(doc_name, file_no, start, until)
+                #check if the patient is enrolled
+                if cache_status is True:
+                    #add to the enrolled patient counter
+                    enrolled_counter = enrolled_counter + 1
                     #update enrolled patient
                     update_flag = self.update_patient(month_worksheet[patient], patient, doc_name)
-                    #cache the enrollment check
-                    cache.set(file_no, update_flag, 30)
-                    enrolled_counter = enrolled_counter + 1
                     if update_flag is True:
-                        correct_updates = correct_updates + 1                
-                    logging.debug("Updating the patient and cachings enrollment status")
-                elif self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is False:
-                    #cache the enrollment check
-                    cache.set(file_no, False, 30)
-                    logging.exception('Patient needs to enroll')
-                
+                        correct_updates = correct_updates + 1
+                        logging.debug("Updating the patient: %s" % file_no)
+                #else, patient not enrolled
+                else:
+                    logging.exception('Patient: %s enrollment state does not allow for an update' % file_no)
+
         return (enrolled_counter, correct_updates)
-                    
+
+    def set_cache_enrollement_status(self, doc_name, file_no, start, until):
+         #check if the patient has enrolled
+        if self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is True:
+            #cache the enrollment check
+            cache.set(file_no, True, CACHE_TIMEOUT)
+            logging.debug("Caching enrollment status for patient: %s" % file_no)
+            #the patient is enrolled, cache true for enrollement status
+            enrolled_cache = True
+            return enrolled_cache
+        elif self.reader.RunEnrollmentCheck(doc_name, file_no, start, until) is False:
+            #cache the enrollment check
+            cache.set(file_no, False, CACHE_TIMEOUT)
+            logging.exception("Caching enrollment status for patient: %s" % file_no)
+            #the patient is not enrolled, cache False for enrollement status
+            enrolled_cache = False
+            return enrolled_cache
+
+    def get_cache_enrollement_status(self, file_no):
+        #check if the enrollment check was cached
+        enrolled = cache.get(file_no)
+        return enrolled
+    
     def update_patient(self, patient_row, row, doc_name):
         '''
         @rguments:
@@ -285,17 +311,37 @@ class Importer(object):
             msisdn, msisdn_created = self.get_or_create_msisdn(phone)
             #check if the patient field are valid formats
             if owner and msisdn and file_no:
-                #create a new patient
-                new_patient = Patient(te_id=file_no, active_msisdn=msisdn, owner=owner)
-                new_patient.save()
+                #try to create a patient with the contents of the worksheet row
+                try:
+                    #create a new patient
+                    new_patient = Patient(te_id=file_no, active_msisdn=msisdn, owner=owner)
+                    #save to database
+                    new_patient.save()
+                #catch relational integrity error
+                except IntegrityError:
+                    logging.exception("Patient cannot be created the contents are invalid.")
+                    created = False
+                    return created
                 #get or create a clinic
                 clinic = self.get_or_create_clinic(doc_name)
-                #create a the visit
-                new_visit = Visit(te_visit_id=visit_id, patient=new_patient, date=app_date, status=app_status, clinic=clinic)
-                new_visit.save()
+                #check if the enrollment check was cached
+                enrolled = cache.get(file_no)
+                #check if the user is enrolled and create an appointment if the are
+                if enrolled:
+                    #try to visit a patient with the contents of the worksheet row
+                    try:
+                        #create a the visit
+                        new_visit = Visit(te_visit_id=visit_id, patient=new_patient, date=app_date, status=app_status, clinic=clinic)
+                        new_visit.save()
+                    except IntegrityError:
+                        logging.exception("Patient cannot be created the contents are invalid.")
+                        created = False
+                        return created
+                
                 created = True
         #if any of the patient data was incorrect dont create patient
         else:
+            #indicate that the patient could not be created becuase of the error
             created = False
         return created
 
