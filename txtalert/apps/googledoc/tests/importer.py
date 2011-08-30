@@ -33,7 +33,70 @@ class Importer_tester(TestCase):
 
     def tearDown(self):
         pass
-             
+
+    def test_check_file_no_format_fail(self):
+        """Test invalid file number format."""
+        #invalid file number formats
+        self.file_numbers = ['+1234', '#ab789', 'abc8901@@', 'ab#12345']
+        #random selection of invalid file numbers
+        self.file_no_test = random.choice(self.file_numbers)
+        self.file_number, self.file_format = self.importer.check_file_no_format(self.file_no_test)
+        self.assertEqual(self.file_number, self.file_no_test)
+        self.assertEqual(self.file_format, False)
+
+    def test_check_file_no_pass(self):
+        """Test file number format can only be alphanumeric."""
+        #invalid file number formats
+        self.file_numbers = [1234, 'ab789', 'abc8901', 'ab12345']
+        #random selection of invalid file numbers
+        self.file_no_test = random.choice(self.file_numbers)
+        self.file_number, self.file_format = self.importer.check_file_no_format(self.file_no_test)
+        self.test_file_no = str(self.file_no_test)
+        self.assertEqual(self.file_number,  self.test_file_no)
+        self.assertEqual(self.file_format, True)
+
+    def test_check_msisdn_format_fail(self):
+        """Test for an invalid msisdn format."""
+        #invalid phone number formats
+        self.phones = [1234567, 123456789012, '+1234567', '012456789', '-12345678901', '###12345']
+        #random selection of invalid phone numbers
+        self.phone_test = random.choice(self.phones)
+        #phone number and format correct flag
+        self.phone, self.phone_format = self.importer.check_msisdn_format(self.phone_test)
+        self.assertIs(self.phone_format, False)
+        self.assertEquals(self.phone_test, self.phone)
+        
+    def test_check_msisdn_format_pass(self):
+        """Test for valid msisdn formats. """
+        #valid phone numbers
+        self.valid_phones = [123456789, '0123456789', 27123456789, '+27123456789']
+        #random selection of valid msisdn
+        self.valid_phone = random.choice(self.valid_phones)
+        #phone number and format correct flag
+        self.phone, self.phone_format = self.importer.check_msisdn_format(self.valid_phone)
+        self.assertIs(self.phone_format, True)
+       
+    def test_create_patient_pass(self):
+        """Test if the patient was created."""
+        self.new_patient = {'appointmentdate1': date(2011, 10, 1), 'fileno': '10101011', 'appointmentstatus1': 'Scheduled', 'phonenumber': 190909090}
+        self.row = 3
+        self.created = self.importer.create_patient(self.new_patient, self.row, self.spreadsheet)
+        self.assertIs(self.created, True)
+    
+    def test_create_patient_fail(self):    
+        """Test if the patient was not created. """
+        self.new_patient = {'appointmentdate1': date(2011, 10, 1), 'fileno': '###s01011', 'appointmentstatus1': 'Scheduled', 'phonenumber': 190909090}
+        self.row = 3
+        self.created = self.importer.create_patient(self.new_patient, self.row, self.spreadsheet)
+        self.assertIs(self.created, False)
+        
+    def test_cache_enrollment_status_set(self):
+        """Test if enrollement status was cached."""
+    
+    def test_cache_enrollment_status_found(self):
+        """Test if cached enrollement status was found."""
+        
+    
     def test_update_patients(self):
         """Test if a worksheet of patients is updated successfully."""
         (self.enrolled_counter, self.correct_updates) = self.importer.update_patients(self.enrolled_patients, self.spreadsheet, self.start, self.until)
@@ -48,35 +111,23 @@ class Importer_tester(TestCase):
         self.file_test = random.choice(self.files)
         self.patient_row = {'appointmentdate1': date(2011, 8, 10), 'fileno': self.file_test, 'appointmentstatus1': 'Missed', 'phonenumber': 987654321}
         self.row_no = 2
-        self.file_no = self.importer.update_patient(self.patient_row, self.row_no)
-        self.assertIs(self.file_no, self.patient_row['fileno'])
+        self.valid = self.importer.update_patient(self.patient_row, self.row_no, self.spreadsheet)
+        self.assertIs(self.valid, False)
     
     def test_invalid_patient_id(self):
-        """Patient not on the database."""
+        """Patient not on the database test if its created."""
         self.patient_row = {'appointmentdate1': date(2011, 8, 10), 'fileno': 555555, 'appointmentstatus1': 'Missed', 'phonenumber': 987654321}
         self.row_no = 2
-        self.exists = self.importer.update_patient(self.patient_row, self.row_no)
-        self.assertEqual(self.exists, False)
+        self.exists = self.importer.update_patient(self.patient_row, self.row_no, self.spreadsheet)
+        self.assertEqual(self.exists, True)
     
     def test_successful_patient_update(self):
         """Test that a patient was successfully updated."""
         self.patient_row = {'appointmentdate1': date(2011, 8, 9), 'fileno': 9999999, 'appointmentstatus1': 'Attended', 'phonenumber': 987654321}
         self.row_no = 2
-        self.patient_updated = self.importer.update_patient(self.patient_row, self.row_no)
+        self.patient_updated = self.importer.update_patient(self.patient_row, self.row_no, self.spreadsheet)
         self.assertEqual(self.patient_updated, True)
-     
-    def test_msisdn_format(self):
-        """Test the format of the phone number."""
-        #invalid phone number formats
-        self.phones = [1234567, 123456789012, '+1234567', '012456789', '-12345678901', '###12345']
-        #random selection of invalid phone numbers 
-        self.phone_test = random.choice(self.phones)
-        self.curr_patient = Patient.objects.get(te_id='9999999')
-        #phone number and format correct flag
-        self.phone, self.format = self.importer.updateMSISDN(self.phone_test, self.curr_patient)
-        self.assertIs(self.format, False)
-        self.assertEquals(self.phone_test, self.phone)
-        
+    
     def test_updated_msisdn(self):
         """Test that the phone number was updated."""
         self.msisdn = random.choice(range(111111111, 999999999, 123456))
@@ -190,7 +241,7 @@ class SpreadSheetReaderTestCase(TestCase):
       
     def test_date_object_creator(self):
         """Convert date string to datetime object. """
-        self.valid_dates = ['21/08/2011', '31/8/2011',]
+        self.valid_dates = ['21/08/2011', '31/8/2011']
         self.curr_date = self.reader.dateObjectCreator('1/8/2011')
         self.assertTrue(self.curr_date)
                            
