@@ -279,11 +279,11 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
 
 class PleaseCallMe(models.Model):
     REASON_CHOICES = (
-        ('ne', 'Khumbu did not phone back the patient'),
+        # ('ne', 'Khumbu did not phone back the patient'),
         ('er', 'Patient did not try to reach us'),
-        ('lt', 'LTFU'),
-        ('de', 'Defaulter'),
-        ('nc', 'Not Called'),
+        # ('lt', 'LTFU'),
+        # ('de', 'Defaulter'),
+        # ('nc', 'Not Called'),
         ('na', 'No Answer'),
         ('rm', 'Reschedule missed appointment'),
         ('rf', 'Reschedule future appointment'),
@@ -295,7 +295,7 @@ class PleaseCallMe(models.Model):
     user = models.ForeignKey(User)
     msisdn = models.ForeignKey(MSISDN, related_name='pcms', verbose_name='Mobile Number')
     timestamp = models.DateTimeField('Date & Time', auto_now_add=False)
-    reason = models.CharField('Reason', max_length=2, choices=REASON_CHOICES, default='nc')
+    reason = models.CharField('Reason', max_length=2, choices=REASON_CHOICES, default='ot')
     notes = models.TextField('Notes', blank=True)
     message = models.TextField('Received SMS Message', blank=True)
     clinic = models.ForeignKey(Clinic, related_name='pcms', blank=True, null=True)
