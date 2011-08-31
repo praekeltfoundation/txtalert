@@ -329,8 +329,9 @@ class Importer(object):
         file_no, file_format = self.check_file_no_format(patient_row['fileno'])
         phone = patient_row['phonenumber']
         app_date = patient_row['appointmentdate1']
-        app_status = patient_row['appointmentstatus1']
-
+        app_status = self.update_needed(patient_row['appointmentstatus1'])
+        print 'app_status', app_status, "'%s'" % patient_row['appointmentstatus1']
+        
         #check if the file number is correct format
         if file_format:
             #visit id
@@ -455,14 +456,14 @@ class Importer(object):
         @returns:
         database_status: appointment status a letter.
         """
-
-        if status is 'Missed':
+        
+        if status == 'Missed':
             return 'm'
-        elif status is 'Rescheduled':
+        elif status == 'Rescheduled':
             return 'r'
-        elif status is 'Attended':
+        elif status == 'Attended':
             return 'a'
-        elif status is 'Scheduled':
+        elif status == 'Scheduled':
             return 's'
 
     def update_appointment_status(self, app_status, app_date, visit_id):

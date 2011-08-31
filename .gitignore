@@ -16,3 +16,6 @@ webroot/media/upload/*
 widget.wgt
 docs/_build/*
 cover/
+nosetests.xml
+pep8.txt
+coverage.xml
