@@ -52,7 +52,7 @@ class Importer(object):
         self.doc_name = str(doc_name)
         self.month = self.reader.run_appointment(self.doc_name, start, until)
         #check if a worksheet was returned
-        if self.month is False:
+        if self.month == False:
             logging.exception("Incorrect spreadsheet or worksheet name")
             #indicates if the spreadsheet name was found in the database
             valid_name = False
@@ -127,13 +127,13 @@ class Importer(object):
             if enrolled:
                 logging.debug("Patient's enrollment status cached")
                 #check if the patient was enrolled
-                if enrolled is True:
+                if enrolled == True:
                     logging.debug("Patient: %s status is True" % file_no)
                     #update the patient
                     update_flag = self.update_patient(month_worksheet[patient],
                                                       patient, doc_name)
                     enrolled_counter = enrolled_counter + 1
-                    if update_flag is True:
+                    if update_flag == True:
                         correct_updates = correct_updates + 1
                         logging.debug(
                             "Cached enrollment status for patient: %s" %
@@ -153,14 +153,14 @@ class Importer(object):
                                            doc_name, file_no, start, until
                 )
                 #check if the patient is enrolled
-                if cache_status is True:
+                if cache_status == True:
                     #add to the enrolled patient counter
                     enrolled_counter = enrolled_counter + 1
                     #update enrolled patient
                     update_flag = self.update_patient(
                                    month_worksheet[patient], patient, doc_name
                     )
-                    if update_flag is True:
+                    if update_flag == True:
                         correct_updates = correct_updates + 1
                         logging.debug("Updating the patient: %s" % file_no)
                 #else, patient not enrolled
@@ -218,7 +218,7 @@ class Importer(object):
         patient_update: successful updates flag.
         '''
         #check that the arguments are proper types
-        if type(row) is int and type(patient_row) is dict:
+        if type(row) == int and type(patient_row) == dict:
             row_no = row
             #get the contents of the row
             file_no, file_format = self.check_file_no_format(
@@ -290,6 +290,7 @@ class Importer(object):
 
     def check_msisdn_format(self, phone):
         msisdn = str(phone)
+        print 'msisdn type: %s\n' % type(msisdn)
         msisdn = msisdn.lstrip('0')
         msisdn = msisdn.lstrip('+')
         #check if the phone is the correct format
@@ -337,10 +338,11 @@ class Importer(object):
     def create_patient(self, patient_row, row_no, doc_name):
         #get the contents of the row
         file_no, file_format = self.check_file_no_format(patient_row['fileno'])
+        #phone = self.check_msisdn_format(patient_row['phonenumber'])
         phone = patient_row['phonenumber']
         app_date = patient_row['appointmentdate1']
         app_status = patient_row['appointmentstatus1']
-
+        print 'phone: %s\n' % type(phone)
         #check if the file number is correct format
         if file_format:
             #visit id
@@ -374,11 +376,14 @@ class Importer(object):
                 clinic = self.get_or_create_clinic(doc_name)
                 #check if the enrollment check was cached
                 enrolled = cache.get(file_no)
+                print'enrolled: %s\n' % enrolled
+                #converts a string enroment to a choice key used in database
+                status = self.update_needed(app_status)
+                print 'status: %s\n' % status
                 #if patient is enrolled create a visit instance
                 if enrolled:
                     #use spreadsheet data to create visit
                     try:
-                        status = self.update_needed(app_status)
                         #create a the visit
                         new_visit = Visit(
                                            te_visit_id=visit_id,
@@ -389,7 +394,7 @@ class Importer(object):
                         )
                         new_visit.save()
                     except IntegrityError:
-                        logging.exception("Failed to create patient.")
+                        logging.exception("Failed to create patient visit.")
                         created = False
                         return created
 
@@ -467,13 +472,13 @@ class Importer(object):
         database_status: appointment status a letter.
         """
 
-        if status is 'Missed':
+        if status == 'Missed':
             return 'm'
-        elif status is 'Rescheduled':
+        elif status == 'Rescheduled':
             return 'r'
-        elif status is 'Attended':
+        elif status == 'Attended':
             return 'a'
-        elif status is 'Scheduled':
+        elif status == 'Scheduled':
             return 's'
 
     def update_appointment_status(self, app_status, app_date, visit_id):
