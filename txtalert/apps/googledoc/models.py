@@ -13,6 +13,7 @@ class GoogleAccount(models.Model):
     def __unicode__(self):
         return u'%s %s' % (self.username, self.password)
 
+
 class SpreadSheet(models.Model):
     spreadsheet = models.CharField('SpreadSheet', max_length=200)
     account = models.ForeignKey(GoogleAccount)
@@ -24,4 +25,3 @@ class SpreadSheet(models.Model):
 
     def __unicode__(self):
         return u'%s %s' % (self.spreadsheet, self.account)
-    

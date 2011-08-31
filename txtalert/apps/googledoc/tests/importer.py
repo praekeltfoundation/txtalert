@@ -72,9 +72,9 @@ class ImporterTestCase(TestCase):
         self.from_date = date(2011, 7, 18)
         self.to_date = date(2011, 9, 22)
         self.enrolled_counter, self.correct_updates = self.importer.import_spread_sheet(
-                                self.spreadsheet, self.from_date, self.to_date
+                             self.spreadsheet, self.from_date, self.to_date
         )
-        self.assertEquals( self.enrolled_counter, self.correct_updates)
+        self.assertEquals(self.enrolled_counter, self.correct_updates)
 
     def test_check_file_no_format_fail(self):
         """Test invalid file number format."""
