@@ -5,8 +5,6 @@ from txtalert.apps.googledoc.models import SpreadSheet, GoogleAccount
 import logging
 import traceback
 
-logger = logging.getLogger("import_data")
-
 
 class Command(BaseCommand):
     """ The program access the accounts in the GoogleAccount Table
@@ -26,10 +24,12 @@ class Command(BaseCommand):
                 try:
                     #get the spreadsheet for this acount holder
                     spreadsheet = SpreadSheet.objects.get(account=account)
-                    logger.debug("Spreadsheet for: %s" % account.username)
-                except SpreadSheet.DoesNotExist, MultipleObjectsReturned:
-                    logger.exception("No Spreadsheet for account: %s\n" %
+                    logging.debug("Spreadsheet for: %s" % account.username)
+                except SpreadSheet.DoesNotExist:
+                    logging.exception("No Spreadsheet for account: %s\n" %
                                       account)
+                except MultipleObjectsReturned:
+                    logging.exception("Account can only have one spreadsheet.")
                     return
                 # from midnight
                 midnight = date.today()
@@ -39,12 +39,12 @@ class Command(BaseCommand):
                 try:
                     importer.import_spread_sheet(spreadsheet.spreadsheet,
                                                  start, until)
-                    logger.debug("Import spreadsheet data using period.")
+                    logging.debug("Import spreadsheet data using period.")
                 except:
-                    print "Spreadsheet name invalid ", spreadsheet.spreadsheet
+                    print "Update error for", spreadsheet.spreadsheet
                     traceback.print_exc()
-                    logger.exception("Invalid spreadsheet name")
+                    logging.exception("Error while updating patient")
         except GoogleAccount.DoesNotExist:
-            logger.exception("Google Account does not exists")
+            logging.exception("Google Account does not exists")
             traceback.print_exc()
             return
