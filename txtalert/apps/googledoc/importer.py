@@ -290,7 +290,6 @@ class Importer(object):
 
     def check_msisdn_format(self, phone):
         msisdn = str(phone)
-        print 'msisdn type: %s\n' % type(msisdn)
         msisdn = msisdn.lstrip('0')
         msisdn = msisdn.lstrip('+')
         #check if the phone is the correct format
@@ -338,11 +337,9 @@ class Importer(object):
     def create_patient(self, patient_row, row_no, doc_name):
         #get the contents of the row
         file_no, file_format = self.check_file_no_format(patient_row['fileno'])
-        #phone = self.check_msisdn_format(patient_row['phonenumber'])
-        phone = patient_row['phonenumber']
+        phone = self.check_msisdn_format(patient_row['phonenumber'])
         app_date = patient_row['appointmentdate1']
         app_status = patient_row['appointmentstatus1']
-        print 'phone: %s\n' % type(phone)
         #check if the file number is correct format
         if file_format:
             #visit id
@@ -376,10 +373,8 @@ class Importer(object):
                 clinic = self.get_or_create_clinic(doc_name)
                 #check if the enrollment check was cached
                 enrolled = cache.get(file_no)
-                print'enrolled: %s\n' % enrolled
                 #converts a string enroment to a choice key used in database
                 status = self.update_needed(app_status)
-                print 'status: %s\n' % status
                 #if patient is enrolled create a visit instance
                 if enrolled:
                     #use spreadsheet data to create visit
