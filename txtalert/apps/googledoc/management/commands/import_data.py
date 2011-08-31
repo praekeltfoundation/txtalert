@@ -15,6 +15,7 @@ class Command(BaseCommand):
         to login to the user's google account to access the spreadsheet
         with appointment information."""
     help = 'Can run as Cron job or directly to import google spreadsheet data.'
+    
     def handle(self, *args, **kwargs):
         try:
             for account in GoogleAccount.objects.all():
