@@ -1,0 +1,51 @@
+[
+    {
+        "pk": 3, 
+        "model": "auth.group", 
+        "fields": {
+            "name": "Praekelt", 
+            "permissions": []
+        }
+    },
+    {
+        "pk": 4,
+        "model": "auth.user",
+        "fields": {
+            "username": "Praekelt"
+        }
+    },
+    {
+        "pk":"3",
+        "model": "core.msisdn",
+        "fields":{
+            "msisdn":"271111100000"
+        }
+    },
+    {
+        "pk":"3",
+        "model": "core.patient",
+        "fields":{
+            "msisdns":["3"],
+            "id":"1",
+            "te_id":"1212121"
+        }
+    },
+
+    {
+        "pk":"4",
+        "model": "core.msisdn",
+        "fields":{
+            "msisdn":"27999900000"
+        }
+    },
+    {
+        "pk":"4",
+        "model": "core.patient",
+        "fields":{
+            "msisdns":["4"],
+            "id":"2",
+            "te_id":"9191919"
+        }
+    }
+
+]

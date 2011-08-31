@@ -1,0 +1,1 @@
+from txtalert.apps.googledoc.tests.importer import *

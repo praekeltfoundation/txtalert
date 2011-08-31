@@ -113,6 +113,7 @@ INSTALLED_APPS = (
     'txtalert.apps.gateway',
     'txtalert.apps.api',
     'txtalert.apps.cd4',
+    'txtalert.apps.googledoc',
     'piston',
     'dirtyfields',
     'history',
