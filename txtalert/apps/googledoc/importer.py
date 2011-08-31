@@ -113,7 +113,6 @@ class Importer(object):
         enrolled_counter = 0
         #loop for checking which patient details need to be updated
         for patient in month_worksheet:
-            print 'patient: %s' % patient
             file_no = month_worksheet[patient]['fileno']
             #call method to get the cached enrollemnt status for the patient
             enrolled = self.get_cache_enrollement_status(file_no)

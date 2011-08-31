@@ -8,7 +8,7 @@ class GoogleAccount(models.Model):
     class Meta:
         verbose_name = 'Google Account'
         verbose_name_plural = 'Google Accounts'
-        ordering=[' - id']
+        ordering=['-id']
 
     def __unicode__(self):
         return u'%s %s' % (self.username, self.password)
@@ -21,7 +21,7 @@ class SpreadSheet(models.Model):
     class Meta:
         verbose_name = 'Google SpreadSheet'
         verbose_name_plural = 'Google SpreadSheets'
-        ordering=[' - id']
+        ordering=['-id']
 
     def __unicode__(self):
         return u'%s %s' % (self.spreadsheet, self.account)

@@ -71,10 +71,10 @@ class ImporterTestCase(TestCase):
         """Test for importing worksheets from a spreadsheet."""
         self.from_date = date(2011, 7, 18)
         self.to_date = date(2011, 9, 22)
-        self.enrolled, self.correct = self.importer.import_spread_sheet(
+        self.enrolled, self.updates = self.importer.import_spread_sheet(
                              self.spreadsheet, self.from_date, self.to_date
         )
-        self.assertEquals(self.enrolled_counter, self.correct_updates)
+        self.assertEquals(self.enrolled, self.updates)
 
     def test_check_file_no_format_fail(self):
         """Test invalid file number format."""
@@ -198,7 +198,7 @@ class ImporterTestCase(TestCase):
                                     self.start, self.until
         )
         self.assertEqual(self.enrolled, 2)
-        self.assertEqual(self.correct, 2)
+        self.assertEqual(self.updates, 2)
 
     def test_invalid_file_no_(self):
         """Test if the file no is invalid."""
