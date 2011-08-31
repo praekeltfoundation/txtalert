@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.core.management.base import BaseCommand
 from txtalert.apps.googledoc.importer import Importer
 from txtalert.apps.googledoc.models import SpreadSheet, GoogleAccount
@@ -26,26 +26,24 @@ class Command(BaseCommand):
                 try:
                     #get the spreadsheet for this acount holder
                     spreadsheet = SpreadSheet.objects.get(account=account)
+                    logger.debug("Spreadsheet for: %s" % account.username)
                 except SpreadSheet.DoesNotExist, MultipleObjectsReturned:
                     logger.exception("No Spreadsheet for account: %s\n" %
                                       account)
                     return
                 # from midnight
-                midnight = datetime.now().replace(
-                    hour=0,
-                    minute=0,
-                    second=0,
-                    microsecond=0
-                )
+                midnight = date.today()
                 start = midnight - timedelta(days=1)
                 # until 14 days later
                 until = midnight + timedelta(days=14)
                 try:
                     importer.import_spread_sheet(spreadsheet.spreadsheet,
                                                  start, until)
+                    logger.debug("Import spreadsheet data using period.")
                 except:
                     print "Spreadsheet name invalid ", spreadsheet.spreadsheet
                     traceback.print_exc()
+                    logger.exception("Invalid spreadsheet name")
         except GoogleAccount.DoesNotExist:
             logger.exception("Google Account does not exists")
             traceback.print_exc()

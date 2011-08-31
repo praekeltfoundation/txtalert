@@ -54,22 +54,28 @@ class Importer(object):
         #check if a worksheet was returned
         if self.month is False:
             logging.exception("Incorrect spreadsheet or worksheet name")
+            #indicates if the spreadsheet name was found in the database
             valid_name = False
+            #return the name of invalid spreadsheet and the flag
             return (self.doc_name, valid_name)
-        #check if the month has more than one worksheet
+        #if spreadsheet was found check if it has more than one worksheet
         elif len(self.month) > 1:
-            #update user appointment info for each worksheet
+            #loop through the worksheets in the spreadsheet
             for worksheet in self.month:
                 #check that the spreadsheet has data to update
                 if len(self.month[worksheet]) != 0:
+                    #if true do update each enrolled patient
                     enrolled_counter, correct_updates = self.update_patients(
                         self.month[worksheet], self.doc_name, start, until
                     )
+                    #return enrolled and updated counters
                     return enrolled_counter, correct_updates
+                #if the worksheet does not have data dont do updates
                 else:
                     logging.exception("The are no patient's to update")
                     #flag for checking if the spreadsheet has data
                     data = False
+                    #return empty spreadsheet name and flag
                     return (self.doc_name, data)
         #check that the spreadsheet has data to update
         elif len(self.month) == 1:
@@ -84,6 +90,7 @@ class Importer(object):
                 logging.exception("The are no patient's to update")
                 #flag for checking if the spreadsheet has data
                 data = False
+                #return empty spreadsheet name and flag
                 return (self.doc_name, data)
 
         #check if the spreadsheet has no rows
@@ -118,8 +125,10 @@ class Importer(object):
             enrolled = self.get_cache_enrollement_status(file_no)
             #check if the cache has the patient's enrollment status
             if enrolled:
+                logging.debug("Patient's enrollment status cached")
                 #check if the patient was enrolled
                 if enrolled is True:
+                    logging.debug("Patient: %s status is True" % file_no)
                     #update the patient
                     update_flag = self.update_patient(month_worksheet[patient],
                                                       patient, doc_name)
@@ -130,12 +139,13 @@ class Importer(object):
                             "Cached enrollment status for patient: %s" %
                             file_no
                         )
+                '''
                 #check if patient needs to enroll
-                else:
+                elif enrolled is False:
                     logging.exception(
                     'Patient: %s cannot update with cached enrollment status' %
                     file_no
-                    )
+                    )'''
             #cache patient's appointment status if it was not cached.
             else:
                 #call method to set cache
@@ -156,7 +166,7 @@ class Importer(object):
                 #else, patient not enrolled
                 else:
                     logging.exception(
-                    'Patient: %s cannot update with cached enrollment status' %
+                    'Patient: %s cannot update with False enrollment status' %
                     file_no
                     )
 
@@ -168,7 +178,7 @@ class Importer(object):
                                             start, until) is True:
             #cache the enrollment check
             cache.set(file_no, True, CACHE_TIMEOUT)
-            logging.debug("Caching enrollment status for patient: %s" %
+            logging.debug("Caching True status for patient: %s" %
                            file_no
             )
             #the patient is enrolled, cache true for enrollement status
@@ -179,7 +189,7 @@ class Importer(object):
             #cache the enrollment check
             cache.set(file_no, False, CACHE_TIMEOUT)
             logging.exception(
-                               "Caching enrollment status for patient: %s" %
+                               "Caching False status for patient: %s" %
                                file_no
             )
             #the patient is not enrolled, cache False for enrollement status
@@ -232,7 +242,7 @@ class Importer(object):
             curr_patient = Patient.objects.get(te_id=file_no)
         except Patient.DoesNotExist:
             #log error in import log
-            logging.exception("The patient was not found in the database")
+            logging.exception("Patient: %s not found in database" % file_no)
             #create a new patient
             created = self.create_patient(patient_row, row_no, doc_name)
             return created
@@ -368,12 +378,13 @@ class Importer(object):
                 if enrolled:
                     #use spreadsheet data to create visit
                     try:
+                        status = self.update_needed(app_status)
                         #create a the visit
                         new_visit = Visit(
                                            te_visit_id=visit_id,
                                            patient=new_patient,
                                            date=app_date,
-                                           status=app_status,
+                                           status=status,
                                            clinic=clinic
                         )
                         new_visit.save()
@@ -399,9 +410,9 @@ class Importer(object):
         owner, owner_created = User.objects.get_or_create(username=name)
         return owner
 
-    def get_or_create_msisdn(self, msisdn):
+    def get_or_create_msisdn(self, phone):
         #create a msisdn
-        msisdn, msisdn_created = MSISDN.objects.get_or_create(msisdn=msisdn)
+        msisdn, msisdn_created = MSISDN.objects.get_or_create(msisdn=phone)
         return (msisdn, msisdn_created)
 
     def update_msisdn(self, msisdn, curr_patient):
