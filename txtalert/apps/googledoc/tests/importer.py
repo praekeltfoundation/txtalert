@@ -6,6 +6,7 @@ from txtalert.core.models import Patient, MSISDN, Visit, Clinic
 from datetime import datetime, timedelta, date
 import random
 
+
 class ImporterTestCase(TestCase):
     """Testing the google spreadsheet import loop"""
 
@@ -25,18 +26,18 @@ class ImporterTestCase(TestCase):
         self.assertTrue(Visit.objects.count() > 0)
         self.assertTrue(Clinic.objects.count() > 0)
         self.enrolled_patients = {
-                                     1: {
-                                          'appointmentdate1': date(2011, 8, 1),
-                                          'fileno': 1111111,
-                                          'appointmentstatus1': 'Missed',
-                                          'phonenumber': 999999999
-                                         },
-                                     2: {
-                                          'appointmentdate1': date(2011, 8, 10),
-                                          'fileno': 9999999,
-                                          'appointmentstatus1': 'Attended',
-                                          'phonenumber': 111111111
-                                         }
+                                    1: {
+                                         'appointmentdate1': date(2011, 8, 1),
+                                         'fileno': 1111111,
+                                         'appointmentstatus1': 'Missed',
+                                         'phonenumber': 999999999
+                                        },
+                                    2: {
+                                         'appointmentdate1': date(2011, 8, 10),
+                                         'fileno': 9999999,
+                                         'appointmentstatus1': 'Attended',
+                                         'phonenumber': 111111111
+                                        }
         }
 
     def tearDown(self):
@@ -269,7 +270,6 @@ class ImporterTestCase(TestCase):
         self.assertIs(self.created, False)
         self.assertEqual(self.msisdn, self.phone)
 
-
     def test_invalid_visit_id(self):
         """Visit not on the database."""
         (self.app_status, self.app_date, self.visit_id) = (
@@ -312,8 +312,6 @@ class ImporterTestCase(TestCase):
 
 
 class SpreadSheetReaderTestCase(TestCase):
-
-
     def setUp(self):
         self.email = 'txtalert@byteorbit.com'
         self.password = 'testtest'
@@ -398,13 +396,11 @@ class SpreadSheetReaderTestCase(TestCase):
         self.file_no = self.modified_row['fileno']
         self.phone = self.modified_row['phonenumber']
 
-
         #test if the fields where converted correctly
         self.assertEquals(self.app_date, date(2011, 9, 2))
         self.assertEquals(self.app_status, self.test_row['appointmentstatus1'])
         self.assertEquals(self.file_no, '63601')
         self.assertEquals(self.phone, 969577542)
-
 
         #test if the received fields are equal to those sent
         self.app_date = str(self.app_date)
@@ -437,4 +433,3 @@ class SpreadSheetReaderTestCase(TestCase):
                                        self.spreadsheet, self.start, self.until
         )
         self.assertTrue(self.month)
-

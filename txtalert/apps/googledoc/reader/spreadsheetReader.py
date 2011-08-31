@@ -26,9 +26,8 @@ import gdata.spreadsheet
 import datetime
 import logging
 
+
 class SimpleCRUD:
-
-
     def __init__(self, email, password):
         """
         @rguments:

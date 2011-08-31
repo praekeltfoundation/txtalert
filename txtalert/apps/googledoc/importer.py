@@ -15,9 +15,8 @@ FILE_NO = re.compile(r'^[a-zA-Z0-9]+$')
 #the amount of time to cache a enrollment status
 CACHE_TIMEOUT = 30
 
+
 class Importer(object):
-
-
     def __init__(self, email, password):
         '''
         @arguments:
@@ -129,7 +128,8 @@ class Importer(object):
                     if update_flag is True:
                         correct_updates = correct_updates + 1
                         logging.debug(
-                            "Cached enrollment status for patient: %s" % file_no
+                            "Cached enrollment status for patient: %s" %
+                            file_no
                         )
                 #check if patient needs to enroll
                 else:
@@ -137,7 +137,7 @@ class Importer(object):
                     'Patient: %s cannot update with cached enrollment status' %
                     file_no
                     )
-            #if the is no cache get the patient's enrollment status and cache it
+            #cache patient's appointment status if it was not cached.
             else:
                 #call method to set cache
                 cache_status = self.set_cache_enrollement_status(
@@ -165,14 +165,18 @@ class Importer(object):
 
     def set_cache_enrollement_status(self, doc_name, file_no, start, until):
          #check if the patient has enrolled
-        if self.reader.run_enrollment_check(doc_name, file_no, start, until) is True:
+        if self.reader.run_enrollment_check(doc_name, file_no,
+                                            start, until) is True:
             #cache the enrollment check
             cache.set(file_no, True, CACHE_TIMEOUT)
-            logging.debug("Caching enrollment status for patient: %s" % file_no)
+            logging.debug("Caching enrollment status for patient: %s" %
+                           file_no
+            )
             #the patient is enrolled, cache true for enrollement status
             enrolled_cache = True
             return enrolled_cache
-        elif self.reader.run_enrollment_check(doc_name, file_no, start, until) is False:
+        elif self.reader.run_enrollment_check(doc_name, file_no,
+                                              start, until) is False:
             #cache the enrollment check
             cache.set(file_no, False, CACHE_TIMEOUT)
             logging.exception(
@@ -354,7 +358,7 @@ class Importer(object):
                     new_patient.save()
                 #catch relational integrity error
                 except IntegrityError:
-                    logging.exception("Failed to create patient invalid field.")
+                    logging.exception("Cannot create patient invalid field.")
                     created = False
                     return created
                 #get or create a clinic
@@ -382,7 +386,7 @@ class Importer(object):
                 created = True
         #if any of the patient data was incorrect dont create patient
         else:
-            #indicate that the patient could not be created becuase of the error
+            #patient could not be created becuase of the error
             created = False
         return created
 
@@ -430,12 +434,12 @@ class Importer(object):
                 )
                 return (phone.msisdn, created)
             elif not created:
-                logging.debug('Phone number is still the same for patient: %s' %
+                logging.debug('Phone number has not changed for patient: %s' %
                                curr_patient)
                 return (phone.msisdn, created)
         # if the msisdn does not have correct phone number format log error
         else:
-            logging.exception('Phone number is invalid format for patient: %s' %
+            logging.exception('invalid phone number format for patient: %s' %
                               curr_patient)
             phone_update = False
             return (msisdn, phone_update)
@@ -460,7 +464,7 @@ class Importer(object):
         elif status is 'Attended':
             return 'a'
         elif status is 'Scheduled':
-              return 's'
+            return 's'
 
     def update_appointment_status(self, app_status, app_date, visit_id):
         """
@@ -479,7 +483,7 @@ class Importer(object):
         Use logging for error reports and debugging.
 
         @returns:
-        updated: Flag that indicates whether the appointment status was updated.
+        updated: indicates whether the appointment status was updated.
         """
         try:
             #get patient's visit instance

@@ -7,9 +7,8 @@ import traceback
 
 logger = logging.getLogger("import_data")
 
-class Command(BaseCommand):
 
-    
+class Command(BaseCommand):
     """ The program access the accounts in the GoogleAccount Table
         for each account a spreadsheet associated with it is imported.
         The account details are sent to import module; these are used
