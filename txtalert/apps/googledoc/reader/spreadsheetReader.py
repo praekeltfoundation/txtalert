@@ -28,16 +28,16 @@ import logging
 
 class SimpleCRUD:
 
+
     def __init__(self, email, password):
         """
         @rguments:
         email: google email account username.
         password: google email account password.
-        
+
         Authenticates the user and sets the
         Gdata Auth token.
         """
-        
         self.gd_client = gdata.spreadsheet.service.SpreadsheetsService()
         self.gd_client.email = email
         self.gd_client.password = password
@@ -45,21 +45,20 @@ class SimpleCRUD:
         try:
             self.gd_client.ProgrammaticLogin()
         except BadAuthentication, CaptchaRequired:
-            logging.exception("Error Logging in invalid loggin values or captcha error.")
+            logging.exception("Invalid loggin values or captcha error.")
             raise
         self.curr_key = ''
         self.wksht_id = ''
         self.list_feed = None
-    
+
     def get_spreadsheet(self, doc_name):
         """
         @arguments:
         doc_name: The spreadsheet's name.
-        
+
         Use Auth token to get the spreadsheet
         specified by doc_name. Gets a key which
-        is used as a unique idenfier for the
-        spreadsheet.        
+        is used as a unique idenfier for the spreadsheet.
         """
         q = gdata.spreadsheet.service.DocumentQuery()
         q['title'] = doc_name
@@ -73,33 +72,33 @@ class SimpleCRUD:
             logging.exception("Spreadsheet name is invalid")
             found = False
             return found
-       
+
     def get_worksheet_data(self, worksheet_type, start, until):
         """
         @rguments:
         worksheet_type: The name of a worksheet in the spreadsheet.
         start: indicates the date to start import data from.
         until: indicates the date import data function must stop at.
-        
+
         Appointment worksheet are processed to accessed the
         patient updates that fall with the start and until date.
         Uses until date to determine the appointment worksheets
         that must be accessed. For enrollemnt get the worksheet
         name in the spreadsheet.
-        
+
         @returns:
         app_worksheets: Used to store two worksheets.
         app_worksheet: Used to store a worksheet.
-        """        
+        """
         #check if the worksheet requested is for making appointments
         if worksheet_type == 'appointment worksheet':
             app_worksheets = self.get_worksheet_name(start, until)
             return app_worksheets
         #check if the requested worksheet is the enrollment sheet
         elif worksheet_type == 'enrollment worksheet':
-            #get the name of the worksheet used for patient enrollment in spreadsheet
-            self.get_worksheet('enrollment sheet', start, until)
-    
+            #get worksheet name used for patient enrollment in spreadsheet
+            self.get_worksheet('enrollment sheet')
+
     def get_worksheet_name(self, start, until):
         """
         @rguments:
@@ -113,8 +112,8 @@ class SimpleCRUD:
         the month's worksheets that fall within the
         specified time line "current month till
         until month".
-		
-		@returns:
+
+        @returns:
         worksheet_name: The name of the worksheet to work on.
         """
         #store the worksheet which have appointment data to be imported
@@ -125,18 +124,19 @@ class SimpleCRUD:
                   'April', 'May', 'June', 'July',
                   'August', 'September', 'October',
                   'November', 'December')
-        
+
         #get current month, returns an integer value
         curr_month = start.month
-		#get all theworksheet names between the start and end date
-        for name in range(curr_month-1, until.month):
+        #get all the worksheet names between the start and end date
+        for name in range(curr_month - 1, until.month):
             worksheet_name = months[name]
-			#process the current worksheet
-            app_worksheet = self.get_worksheet(worksheet_name, start, until)
+            #process the current worksheet
+            app_worksheet = self.get_worksheet(worksheet_name)
             #check if the worksheet was found and has contents
             if app_worksheet is  not False and len(app_worksheet) > 0:
-				#get the rows that fall with the start and until date(s)
-                app_worksheet = self.appointmentRows(app_worksheet, start, until)
+                #get the rows that fall with the start and until date(s)
+                app_worksheet = self.appointment_rows(app_worksheet,
+                                                      start, until)
                 #worksheet name is the key and value is worksheet
                 holder = {worksheet_name: app_worksheet}
                 #store it in the dictionary to be returned
@@ -144,54 +144,54 @@ class SimpleCRUD:
                 #clear for next use
                 app_worksheet = {}
                 holder = {}
-        return app_worksheets 
+        return app_worksheets
 
-    def get_worksheet(self, worksheet_name, start, until):
+    def get_worksheet(self, worksheet_name):
         """
         @arguments:
         worksheet_name: The name of the worksheet on the spreadsheet.
         start: indicates the date to start import data from.
         until: indicates the date import data function must stop at.
-        
+
         Send a query using worksheet_name to get a worksheet feed.
-        Get wksht_id which is the permanent unique ID for the 
-        worksheet within the spreadsheet. If the worksheet 
+        Get wksht_id which is the permanent unique ID for the
+        worksheet within the spreadsheet. If the worksheet
         contains appointment data call method to access this data.
-        
+
         @returns:
         app_worksheet: Stores the worksheet contents.
         """
-        
+
         q = gdata.spreadsheet.service.DocumentQuery()
         q['title'] = worksheet_name
         q['title-exact'] = 'true'
         feed = self.gd_client.GetWorksheetsFeed(self.curr_key, query=q)
         try:
             self.wksht_id = feed.entry[0].id.text.rsplit('/', 1)[1]
-            #check if the retrieved worksheet is not an enrollment worksheet if not process the data 
+            #if worksheet is not enrollement sheet get data
             if worksheet_name != 'enrollment sheet':
                 app_worksheet = self.prompt_for_list_action()
-                return app_worksheet      
-            
+                return app_worksheet
+
         except IndexError:
             worksheet_found = False
             return worksheet_found
-       
-     
-    def appointmentRows(self, worksheet, start, until):
+
+    def appointment_rows(self, worksheet, start, until):
         """
-        @arguments: 
+        @arguments:
         worksheet: the worksheet contents to get data from.
         start: indicates the date to start import data from.
         until: indicates the date import data function must stop at.
-        
-        Looks at data from the provideed worksheet that falls 
-        within the start and until date. Creates a loop of dates from 
+
+        Looks at data from the provideed worksheet that falls
+        within the start and until date. Creates a loop of dates from
         start to until, for each day search the worksheet to see if
         the is a patient record with the same date if true get it.
-        
+
         @returns:
-        patients_worksheet: store the patient rows that are within start and until.
+        patients_worksheet: store the patient rows that are
+                            within start and until.
         """
         #stores the rows in the worksheet that are with the period date
         patients_worksheet = {}
@@ -211,25 +211,26 @@ class SimpleCRUD:
                     patients_worksheet.update(patient_row)
                     #clear temp locations
                     patient_row = {}
-        return patients_worksheet             
-           
-    def enrolQuery(self, file_no):
+        return patients_worksheet
+
+    def enrol_query(self, file_no):
         """
         @arguments:
         file_no: A patient file number.
-        
+
         Sends a query to a enrollment worksheet to
-        check if the patient has enrolled to use 
+        check if the patient has enrolled to use
         appointment service. Check if the query returned
-        a patient row and if True then patient has 
+        a patient row and if True then patient has
         enrolled if False the patient needs to enrol.
-        
+
         @returns:
-        enrolled: Flag to indicate if the patient was 
+        enrolled: Flag to indicate if the patient was
                   found int the enrollment worksheet.
         """
         q = gdata.spreadsheet.service.ListQuery(text_query=str(file_no))
-        feed = self.gd_client.GetListFeed(self.curr_key, self.wksht_id, query=q)
+        feed = self.gd_client.GetListFeed(self.curr_key,
+                                          self.wksht_id, query=q)
         #patient was found in the enrollment worksheet
         if feed.entry:
             enrolled = True
@@ -238,38 +239,38 @@ class SimpleCRUD:
         if not feed.entry is None:
             enrolled = False
             return enrolled
-          
+
     def prompt_for_list_action(self):
         """Calls method that gets a list feed from the given worksheet."""
         sheet = self.list_get_action()
         return sheet
-    
+
     def list_get_action(self):
         """Gets the list feed for the worksheet and sends it to be processed"""
         list_feed = self.gd_client.GetListFeed(self.curr_key, self.wksht_id)
         #get the enrollment worksheet
-        sheet = self.processFile(feed=list_feed)
+        sheet = self.process_file(feed=list_feed)
         return sheet
-       
-    def processFile(self, feed):
+
+    def process_file(self, feed):
         """
         @rguments:
         feed: the feed that contains the row(s) from a worksheet.
-        
+
         Checks if the incoming feed is a list feed.
-        if True access the contents of a row and 
-        construct a dictionary to store it in. 
+        if True access the contents of a row and
+        construct a dictionary to store it in.
         Use the row number of the row in the
         worksheet as the key. Send the row to a
         method that ensures the contents of the
         row a proper for database storage.
         Use rows to construct a dictionary
         to store the entire worksheet.
-        
+
         @returns:
         proper_worksheet: contains entire worksheet in a proper format.
-        """      
-        #process enrollment worksheet        
+        """
+        #process enrollment worksheet
         if isinstance(feed, gdata.spreadsheet.SpreadsheetsListFeed):
             worksheet_data = {}
             proper_worksheet = {}
@@ -282,41 +283,42 @@ class SimpleCRUD:
                 for key in entry.custom:
                     #dictionary to store a single column from row
                     temp_dic = {key: entry.custom[key].text}
-                    #create a dictionary to store a row in worksheet and store to temp dictionary
+                    #dictionary to store a single row
                     rowdic.update(temp_dic)
                     #clear column dictionary for next usage
-                    temp_dic = {}                     
-                #creates a dictionary with the row number as the key and row dictionary as the value
+                    temp_dic = {}
+                #store row as value an row number as the key
                 copydic = {row_no: rowdic}
-                #dictionary to store the contents of a spreadsheet (stores copydic)
+                #stores the entire worksheet
                 worksheet_data.update(copydic)
                 #clear for next worksheet row
                 copydic = {}
-                rowdic = {}   
+                rowdic = {}
             #for each row get proper type for each one of its contents
             for k in worksheet_data:
+                #make row number coresponds to worksheet row number
                 row_no = k + 2
                 #get proper values for each key in row dictionary
-                enrol_p = self.databaseRecord(dic=worksheet_data[k])
-                #creates a dictionary with the row number as the key and row dictionary as the value
-                enroltemp = {row_no: enrol_p} 
+                enrol_p = self.database_record(dic=worksheet_data[k])
+                #store row as value an row number as the key
+                enroltemp = {row_no: enrol_p}
                 #clear for next row excess
                 enrol_p = {}
-                #dictionary that stores a row number as a key to the row data  
+                #dictionary that stores a row number as a key to the row data
                 proper_worksheet.update(enroltemp)
                 enroltemp = {}
                 row_no = 0
             return proper_worksheet
-           
-    def dateObjectCreator(self, datestring):
+
+    def date_object_creator(self, datestring):
         """
         @arguments:
         datestring: the date abtained from the worksheet.
-        
-        convert the date that was obtained in the worksheet 
+
+        convert the date that was obtained in the worksheet
         to a real date object. The date string must use the
         format specified by the variable 'dateformat'.
-        
+
         @returns:
         real_date: contains the date object.
         Exception: if an error occured during convertion
@@ -330,19 +332,19 @@ class SimpleCRUD:
             return real_date
         except ValueError, exceptions:
             return ValueError
- 
-    def databaseRecord(self, dic):
+
+    def database_record(self, dic):
         """
         @arguments:
         dic: The row from worksheet that must be processed.
-        
+
         Get a row from a worksheet and convert its contents
         into their proper type (ie., string date -->  real date).
         If any of the contents raised an error during their
         convertion store it.
-        
+
         @returns:
-        appDic: The row with proper contents.        
+        appDic: The row with proper contents.
         """
         app_dic = dic
         appDic = {}
@@ -351,7 +353,7 @@ class SimpleCRUD:
                 try:
                     temp_dic = {key: str(app_dic[key])}
                     appDic.update(temp_dic)
-                    temp_dic = {} 
+                    temp_dic = {}
                 except TypeError:
                     temp_dic = {key: TypeError}
                     appDic.update(key=TypeError)
@@ -366,35 +368,35 @@ class SimpleCRUD:
                     appDic.update(temp_dic)
                     temp_dic = {}
             elif key == 'appointmentdate1':
-                app_date = self.dateObjectCreator(app_dic[key])
+                app_date = self.date_object_creator(app_dic[key])
                 temp_dic = {key: app_date}
                 appDic.update(temp_dic)
-                temp_dic = {}   
+                temp_dic = {}
             elif key == 'appointmentstatus1':
                 try:
                     temp_dic = {key: app_dic[key]}
-                    appDic.update(temp_dic) 
+                    appDic.update(temp_dic)
                 except TypeError:
                     temp_dic = {key: TypeError}
                     appDic.update(temp_dic)
                     temp_dic = {}
         return appDic
-    
-    def dateFormat(self, d):
-      str_date = str(d)
-      (y, m, d) = str_date.split('-')
-      new_date = d+'/'+m+'/'+y
-      return new_date
-      
-    def RunAppointment(self, doc_name, start, until):
+
+    def date_format(self, d):
+        str_date = str(d)
+        (y, m, d) = str_date.split('-')
+        new_date = d + '/' + m + '/' + y
+        return new_date
+
+    def run_appointment(self, doc_name, start, until):
         """
         @arguments:
         doc_name: the name of spreadsheet to import data from.
         start: indicates the date to start import data from.
         until: indicates the date import data function must stop at.
-        
+
         Calls all the methods that access a users spreadssheet.
-        
+
         @returns:
         app_worksheet: Contains worksheet(s) with appointment data.
         """
@@ -403,7 +405,8 @@ class SimpleCRUD:
         #check if a spreadsheet to work on was found if not return
         if found:
             #get the worksheets on the spreadsheet
-            app_worksheet = self.get_worksheet_data('appointment worksheet', start, until)
+            app_worksheet = self.get_worksheet_data('appointment worksheet',
+                                                    start, until)
             #check if the worksheet was found
             if app_worksheet is False:
                 #worksheet was not found return error flag
@@ -413,12 +416,12 @@ class SimpleCRUD:
         #spreadsheet was not found return error flag
         else:
             return False
-  
-    def RunEnrollmentCheck(self, doc_name, file_no, start, until):
+
+    def run_enrollment_check(self, doc_name, file_no, start, until):
         """
         @arguments:
         doc_name: the name of spreadsheet to import data from.
-        file_no: patient file number. 
+        file_no: patient file number.
         start: indicates the date to start import data from.
         until: indicates the date import data function must stop at.
         """
@@ -426,8 +429,8 @@ class SimpleCRUD:
         self.get_spreadsheet(doc_name)
         #get the worksheets on the spreadsheet
         self.get_worksheet_data('enrollment worksheet', start, until)
-        #send structured query to check if the patient is enrolled to use service
-        exists = self.enrolQuery(file_no)
+        #query the patient enrollment status
+        exists = self.enrol_query(file_no)
         return exists
 '''
 def main():
@@ -437,7 +440,7 @@ def main():
   except getopt.error, msg:
     print 'python spreadsheetReader.py --user [username] --pw [password] '
     sys.exit(2)
-  
+
   user = ''
   pw = ''
   key = ''
@@ -447,18 +450,18 @@ def main():
       user = a
     elif o == "--pw":
       pw = a
-   
+
   doc = 'Praekelt'
   start = datetime.date(2011, 8, 15)
-  until = datetime.date(2011, 11, 21)   
+  until = datetime.date(2011, 11, 21)
 
   if user == '' or pw == '':
     print 'python spreadsheetExample.py --user [username] --pw [password]'
     sys.exit(2)
-        
+
   sample = SimpleCRUD(user, pw)
-  sample.RunAppointment(doc, start, until)
-  #sample.RunEnrollmentCheck()
+  sample.run_appointment(doc, start, until)
+  #sample.run_enrollment_check()
 
 
 if __name__ == '__main__':
