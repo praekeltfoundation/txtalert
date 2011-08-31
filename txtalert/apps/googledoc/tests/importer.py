@@ -55,7 +55,7 @@ class ImporterTestCase(TestCase):
                                 self.invalid_doc_name, self.start, self.until
         )
         self.str_invalid_doc_name = str(self.invalid_doc_name)
-        self.assertIs(self.test_doc_name, self.str_invalid_doc_name)
+        self.assertEquals(self.test_doc_name, self.str_invalid_doc_name)
         self.assertIs(self.correct, False)
 
     def test_empty_worksheets(self):
@@ -70,7 +70,9 @@ class ImporterTestCase(TestCase):
         """Test for importing worksheets from a spreadsheet."""
         self.from_date = date(2011, 7, 18)
         self.to_date = date(2011, 9, 22)
-        self.enrolled_counter, self.correct_updates = self.importer.import_spread_sheet(self.spreadsheet, self.from_date, self.to_date)
+        self.enrolled_counter, self.correct_updates = self.importer.import_spread_sheet(
+                                self.spreadsheet, self.from_date, self.to_date
+        )
         self.assertEquals( self.enrolled_counter, self.correct_updates)
 
     def test_check_file_no_format_fail(self):
