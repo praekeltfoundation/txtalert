@@ -42,9 +42,7 @@ class Command(BaseCommand):
                     logging.debug("Import spreadsheet data using period.")
                 except:
                     print "Update error for", spreadsheet.spreadsheet
-                    traceback.print_exc()
                     logging.exception("Error while updating patient")
         except GoogleAccount.DoesNotExist:
             logging.exception("Google Account does not exists")
-            traceback.print_exc()
             return
