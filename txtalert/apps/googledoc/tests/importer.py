@@ -71,7 +71,7 @@ class ImporterTestCase(TestCase):
         """Test for importing worksheets from a spreadsheet."""
         self.from_date = date(2011, 7, 18)
         self.to_date = date(2011, 9, 22)
-        self.enrolled_counter, self.correct_updates = self.importer.import_spread_sheet(
+        self.enrolled, self.correct = self.importer.import_spread_sheet(
                              self.spreadsheet, self.from_date, self.to_date
         )
         self.assertEquals(self.enrolled_counter, self.correct_updates)
@@ -82,10 +82,10 @@ class ImporterTestCase(TestCase):
         self.file_numbers = ['+1234', '#ab789', 'abc8901@@', 'ab#12345']
         #random selection of invalid file numbers
         self.file_no_test = random.choice(self.file_numbers)
-        self.file_number, self.file_format = self.importer.check_file_no_format(
+        self.file_no, self.file_format = self.importer.check_file_no_format(
                                                             self.file_no_test
         )
-        self.assertEqual(self.file_number, self.file_no_test)
+        self.assertEqual(self.file_no, self.file_no_test)
         self.assertEqual(self.file_format, False)
 
     def test_check_file_no_pass(self):
@@ -94,11 +94,11 @@ class ImporterTestCase(TestCase):
         self.file_numbers = [1234, 'ab789', 'abc8901', 'ab12345']
         #random selection of invalid file numbers
         self.file_no_test = random.choice(self.file_numbers)
-        self.file_number, self.file_format = self.importer.check_file_no_format(
+        self.file_no, self.file_format = self.importer.check_file_no_format(
                                                       self.file_no_test
         )
         self.test_file_no = str(self.file_no_test)
-        self.assertEqual(self.file_number,  self.test_file_no)
+        self.assertEqual(self.file_no,  self.test_file_no)
         self.assertEqual(self.file_format, True)
 
     def test_check_msisdn_format_fail(self):
@@ -193,12 +193,12 @@ class ImporterTestCase(TestCase):
 
     def test_update_patients(self):
         """Test if a worksheet of patients is updated successfully."""
-        self.enrolled_counter, self.correct_updates = self.importer.update_patients(
+        self.enrolled, self.updates = self.importer.update_patients(
                                     self.enrolled_patients, self.spreadsheet,
                                     self.start, self.until
         )
-        self.assertEqual(self.enrolled_counter, 2)
-        self.assertEqual(self.correct_updates, 2)
+        self.assertEqual(self.enrolled, 2)
+        self.assertEqual(self.correct, 2)
 
     def test_invalid_file_no_(self):
         """Test if the file no is invalid."""

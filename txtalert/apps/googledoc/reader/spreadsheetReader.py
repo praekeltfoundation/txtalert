@@ -17,8 +17,6 @@
 
 __author__ = 'olwethu@byteorbit.com'
 
-import getopt
-import sys
 import gdata.spreadsheet.service
 from gdata.service import BadAuthentication, CaptchaRequired
 import gdata.service
@@ -431,38 +429,3 @@ class SimpleCRUD:
         #query the patient enrollment status
         exists = self.enrol_query(file_no)
         return exists
-'''
-def main():
-  # parse command line options
-  try:
-    opts, args = getopt.getopt(sys.argv[1:], "", ["user=", "pw="])
-  except getopt.error, msg:
-    print 'python spreadsheetReader.py --user [username] --pw [password] '
-    sys.exit(2)
-
-  user = ''
-  pw = ''
-  key = ''
-  # Process options
-  for o, a in opts:
-    if o == "--user":
-      user = a
-    elif o == "--pw":
-      pw = a
-
-  doc = 'Praekelt'
-  start = datetime.date(2011, 8, 15)
-  until = datetime.date(2011, 11, 21)
-
-  if user == '' or pw == '':
-    print 'python spreadsheetExample.py --user [username] --pw [password]'
-    sys.exit(2)
-
-  sample = SimpleCRUD(user, pw)
-  sample.run_appointment(doc, start, until)
-  #sample.run_enrollment_check()
-
-
-if __name__ == '__main__':
-  main()
-'''
