@@ -1,0 +1,53 @@
+[
+    {
+        "pk": 1, 
+        "model": "auth.group", 
+        "fields": {
+            "name": "Praekelt", 
+            "permissions": []
+        }
+    },
+    {
+        "pk": 1,
+        "model": "auth.user",
+        "fields": {
+            "username": "googledoc"
+        }
+    },
+    {
+        "pk":"1",
+        "model": "core.msisdn",
+        "fields":{
+            "msisdn":"27123456789"
+        }
+    },
+    {
+        "pk":"1",
+        "model": "core.patient",
+        "fields":{
+            "msisdns":["1"],
+            "id":"1",
+            "te_id":"1111111",
+            "owner":1
+        }
+    },
+
+    {
+        "pk":"2",
+        "model": "core.msisdn",
+        "fields":{
+            "msisdn":"27987654321"
+        }
+    },
+    {
+        "pk":"2",
+        "model": "core.patient",
+        "fields":{
+            "msisdns":["2"],
+            "id":"2",
+            "te_id":"9999999",
+            "owner":1          
+        }
+    }
+
+]

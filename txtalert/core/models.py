@@ -128,16 +128,16 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', 
                                         null=True, blank=True)
     
-    age = models.IntegerField('Age')
+    age = models.IntegerField('Age', null=True, blank=True)
     regiment = models.IntegerField(blank=True, null=True, choices=REGIMENT_CHOICES)
-    sex = models.CharField('Gender', max_length=3, choices=SEX_CHOICES)
+    sex = models.CharField('Gender', max_length=3, choices=SEX_CHOICES, blank=True)
     opted_in = models.BooleanField('Opted In', default=True)
     disclosed = models.BooleanField('Disclosed', default=False)
     deceased = models.BooleanField('Deceased', default=False)
     last_clinic = models.ForeignKey(Clinic, verbose_name='Clinic', 
                                         blank=True, null=True)
     risk_profile = models.FloatField('Risk Profile', blank=True, null=True)
-    language = models.ForeignKey(Language, verbose_name='Language', default=1)
+    language = models.ForeignKey(Language, verbose_name='Language', default=1, null=True, blank=True)
     
     # soft delete
     deleted = models.BooleanField(default=False)
@@ -235,9 +235,9 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     date = models.DateField('Date')
     status = models.CharField('Status', max_length=1, 
                                 choices=VISIT_STATUS_CHOICES)
-    comment = models.TextField('Reason', default='')
+    comment = models.TextField('Reason', default='', blank=True)
     clinic = models.ForeignKey(Clinic)
-    visit_type = models.CharField('Visit Type', blank=True, max_length=80, 
+    visit_type = models.CharField('Visit Type', null=True, blank=True, max_length=80, 
                                     choices=VISIT_TYPES)
     
     # soft delete
