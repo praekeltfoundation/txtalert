@@ -327,8 +327,10 @@ class SimpleCRUD:
             real_date = datetime.datetime.strptime(datestring, dateformat)
             real_date = real_date.date()
             return real_date
-        except ValueError, exceptions:
+        except ValueError:
             return ValueError
+        except TypeError:
+            return TypeError
 
     def database_record(self, dic):
         """
