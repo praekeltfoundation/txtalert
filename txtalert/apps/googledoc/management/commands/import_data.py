@@ -1,9 +1,8 @@
-from datetime import datetime, timedelta, date
+from datetime import timedelta, date
 from django.core.management.base import BaseCommand
 from txtalert.apps.googledoc.importer import Importer
 from txtalert.apps.googledoc.models import SpreadSheet, GoogleAccount
 import logging
-import traceback
 
 
 class Command(BaseCommand):

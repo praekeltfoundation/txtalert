@@ -242,7 +242,7 @@ class Importer(object):
             curr_patient = Patient.objects.get(te_id=file_no)
         except Patient.DoesNotExist:
             #log error in import log
-            logging.exception("Patient: %s not found in database" % file_no)
+            logging.debug("Patient: %s not found in database" % file_no)
             #create a new patient
             created = self.create_patient(patient_row, row_no, doc_name)
             return created
