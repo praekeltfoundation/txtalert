@@ -337,7 +337,7 @@ class Importer(object):
     def create_patient(self, patient_row, row_no, doc_name):
         #get the contents of the row
         file_no, file_format = self.check_file_no_format(patient_row['fileno'])
-        phone = self.check_msisdn_format(patient_row['phonenumber'])
+        phone, phone_format = self.check_msisdn_format(patient_row['phonenumber'])
         app_date = patient_row['appointmentdate1']
         app_status = patient_row['appointmentstatus1']
         #check if the file number is correct format
@@ -364,6 +364,8 @@ class Importer(object):
                     )
                     #save to database
                     new_patient.save()
+                    # add msisdn to list of msisdns
+                    new_patient.msisdns.add(msisdn)
                 #catch relational integrity error
                 except IntegrityError:
                     logging.exception("Cannot create patient invalid field.")
@@ -439,6 +441,8 @@ class Importer(object):
                 #check if the phone number is not on the list of MSISDN add it
                 if phone not in curr_patient.msisdns.all():
                     curr_patient.msisdns.add(phone)
+                    #set the patient's active msisdn to recently added msisdn
+                    curr_patient.active_msisdn = phone
                 logging.debug('Phone number update for patient: %s' %
                                curr_patient
                 )
