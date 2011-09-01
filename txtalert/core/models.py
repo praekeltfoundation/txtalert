@@ -85,6 +85,8 @@ class FilteredQuerySetManager(models.Manager):
 class SoftDeleteMixin(object):
     
     def really_delete(self, *args, **kwargs):
+        self.history.all().delete()
+        self.visit_set.all().delete()
         super(SoftDeleteMixin, self).delete(*args, **kwargs)
     
     def delete(self):
