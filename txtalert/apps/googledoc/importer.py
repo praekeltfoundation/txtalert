@@ -9,7 +9,6 @@ import logging
 MSISDNS_RE = re.compile(r'^([+]?(0|27)[0-9]{9}/?)+$')
 PHONE_RE = re.compile(r'[0-9]{9}')
 MSISDN_RE = re.compile(r'^([+?0][0-9]{9}/?)+$')
-DATE_RE = re.compile(r'^[0-9]{4}[/?-][0-9]{1,2}[/?-][0-9]{1,2}$')
 FILE_NO = re.compile(r'^[a-zA-Z0-9]+$')
 STATUS_RE = re.compile(r'^[a-zA-Z]+$')
 
@@ -218,14 +217,12 @@ class Importer(object):
             phone, phone_format = self.check_msisdn_format(
                                                     patient_row['phonenumber']
             )
-            app_date, date_format = self.check_date_format(
-                                               patient_row['appointmentdate1']
-            )
+            app_date = patient_row['appointmentdate1']
             app_status, status_format = self.check_appointment_status(
                                             patient_row['appointmentstatus1']
             )
         #check if the data to be updated is in the correct formats
-        if file_format and phone_format and date_format and status_format:
+        if file_format and phone_format and status_format:
             if row_no < 10:
                 row_no = '0' + str(row_no)
                 visit_id = str(row_no) + '-' + file_no
@@ -291,30 +288,6 @@ class Importer(object):
             logging.exception("Appointment status is not characters")
 
         return (status, status_format)
-
-    def check_date_format(self, appointment_date):
-        app_date = str(appointment_date)
-        #check that the date format is correct
-        try:
-            #check date format
-            match = DATE_RE.match(app_date)
-            try:
-                app_date = match.group()
-                correct_format = True
-                #return the correct file number
-                return (appointment_date, correct_format)
-            except AttributeError:
-                logging.exception(
-                     "Date format is incorrect"
-                )
-                correct_format = False
-                return (appointment_date, correct_format)
-        except TypeError:
-            logging.exception(
-                     "The appointment date is empty"
-            )
-            correct_format = False
-            return (appointment_date, correct_format)
 
     def check_file_no_format(self, file_number):
         #ensure the file number is a string type
@@ -394,9 +367,7 @@ class Importer(object):
         phone, phone_format = self.check_msisdn_format(
                                                 patient_row['phonenumber']
         )
-        app_date, date_format = self.check_date_format(
-                                               patient_row['appointmentdate1']
-        )
+        app_date = patient_row['appointmentdate1']
         app_status = patient_row['appointmentstatus1']
         #check if the file number is correct format
         if file_format:
@@ -437,7 +408,7 @@ class Importer(object):
                     #convert string enroment to a choice key used in database
                     status = self.update_needed(app_status)
                     #if patient is enrolled create a visit instanceprint
-                    if enrolled and date_format and patient_created and clinic:
+                    if enrolled and patient_created and clinic:
                         #call method to create a visit for the new patient
                         visit, visit_created = self.create_visit(
                                                     visit_id, new_patient,
