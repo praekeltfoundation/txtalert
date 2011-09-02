@@ -15,9 +15,8 @@ FILE_NO = re.compile(r'^[a-zA-Z0-9]+$')
 #the amount of time to cache a enrollment status
 CACHE_TIMEOUT = 30
 
-
 class Importer(object):
-    def __init__(self, email, password):
+    def __init__(self, owner, email, password):
         '''
         @arguments:
         email: The user's google email account username.
@@ -28,6 +27,7 @@ class Importer(object):
         to perfom a ProgrammaticLogin on the user's account for
         spreadsheet access.
         '''
+        self.owner = owner
         self.email = email
         self.password = password
         self.reader = SimpleCRUD(self.email, self.password)
@@ -119,56 +119,65 @@ class Importer(object):
         #counter for number of patients found on the enrollement worksheet
         enrolled_counter = 0
         #loop for checking which patient details need to be updated
+        
+        # FIXME: this is a bad bug
+        if len(month_worksheet) == 1:
+            month_worksheet = month_worksheet.values()[0]
+        
         for patient in month_worksheet:
-            file_no = month_worksheet[patient]['fileno']
-            #call method to get the cached enrollemnt status for the patient
-            enrolled = self.get_cache_enrollement_status(file_no)
-            #check if the cache has the patient's enrollment status
-            if enrolled:
-                logging.debug("Patient's enrollment status cached")
-                #check if the patient was enrolled
-                if enrolled == True:
-                    logging.debug("Patient: %s status is True" % file_no)
-                    #update the patient
-                    update_flag = self.update_patient(month_worksheet[patient],
-                                                      patient, doc_name)
-                    enrolled_counter = enrolled_counter + 1
-                    if update_flag == True:
-                        correct_updates = correct_updates + 1
-                        logging.debug(
-                            "Cached enrollment status for patient: %s" %
-                            file_no
-                        )
-                '''
-                #check if patient needs to enroll
-                elif enrolled is False:
-                    logging.exception(
-                    'Patient: %s cannot update with cached enrollment status' %
-                    file_no
-                    )'''
-            #cache patient's appointment status if it was not cached.
-            else:
-                #call method to set cache
-                cache_status = self.set_cache_enrollement_status(
-                                           doc_name, file_no, start, until
-                )
-                #check if the patient is enrolled
-                if cache_status == True:
-                    #add to the enrolled patient counter
-                    enrolled_counter = enrolled_counter + 1
-                    #update enrolled patient
-                    update_flag = self.update_patient(
-                                   month_worksheet[patient], patient, doc_name
-                    )
-                    if update_flag == True:
-                        correct_updates = correct_updates + 1
-                        logging.debug("Updating the patient: %s" % file_no)
-                #else, patient not enrolled
+            try:
+                file_no = month_worksheet[patient]['fileno']
+                #call method to get the cached enrollemnt status for the patient
+                enrolled = self.get_cache_enrollement_status(file_no)
+                #check if the cache has the patient's enrollment status
+                if enrolled:
+                    logging.debug("Patient's enrollment status cached")
+                    #check if the patient was enrolled
+                    if enrolled == True:
+                        logging.debug("Patient: %s status is True" % file_no)
+                        #update the patient
+                        update_flag = self.update_patient(month_worksheet[patient],
+                                                          patient, doc_name)
+                        enrolled_counter = enrolled_counter + 1
+                        if update_flag == True:
+                            correct_updates = correct_updates + 1
+                            logging.debug(
+                                "Cached enrollment status for patient: %s" %
+                                file_no
+                            )
+                    '''
+                    #check if patient needs to enroll
+                    elif enrolled is False:
+                        logging.exception(
+                        'Patient: %s cannot update with cached enrollment status' %
+                        file_no
+                        )'''
+                #cache patient's appointment status if it was not cached.
                 else:
-                    logging.exception(
-                    'Patient: %s cannot update with False enrollment status' %
-                    file_no
+                    #call method to set cache
+                    cache_status = self.set_cache_enrollement_status(
+                                               doc_name, file_no, start, until
                     )
+                    #check if the patient is enrolled
+                    if cache_status == True:
+                        #add to the enrolled patient counter
+                        enrolled_counter = enrolled_counter + 1
+                        #update enrolled patient
+                        update_flag = self.update_patient(
+                                       month_worksheet[patient], patient, doc_name
+                        )
+                        if update_flag == True:
+                            correct_updates = correct_updates + 1
+                            logging.debug("Updating the patient: %s" % file_no)
+                    #else, patient not enrolled
+                    else:
+                        logging.exception(
+                        'Patient: %s cannot update with False enrollment status' %
+                        file_no
+                        )
+            except KeyError:
+                logging.exception('Key error while reading %s for %s' % 
+                    (month_worksheet[patient], patient))
 
         return (enrolled_counter, correct_updates)
 
@@ -351,20 +360,20 @@ class Importer(object):
             else:
                 visit_id = str(row_no) + '-' + file_no
             #get the owner
-            owner = self.get_or_create_owner('googledoc')
+            # owner = self.get_or_create_owner('googledoc')
             #if phone format is valid create patient's msisdn
             if phone_format:
                 #create or get phone number
                 msisdn, msisdn_created = self.get_or_create_msisdn(phone)
             #check if the patient field are valid formats
-            if owner and msisdn and file_no:
+            if self.owner and msisdn and file_no:
                 #try to create a patient with the contents of the worksheet row
                 try:
                     #create a new patient
                     new_patient = Patient(
                                               te_id=file_no,
                                               active_msisdn=msisdn,
-                                              owner=owner
+                                              owner=self.owner
                     )
                     #save to database
                     new_patient.save()
@@ -408,7 +417,7 @@ class Importer(object):
 
     def get_or_create_clinic(self, doc_name):
         #get or create a clinic with the name of the spreadsheet
-        clinic, created = Clinic.objects.get_or_create(name='Praekelt')
+        clinic, created = Clinic.objects.get_or_create(name=doc_name)
         return clinic
 
     def get_or_create_owner(self, name):

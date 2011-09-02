@@ -2,6 +2,7 @@ from django.db import models
 
 
 class GoogleAccount(models.Model):
+    user = models.ForeignKey('auth.User')
     username = models.CharField('Google Username', max_length=250)
     password = models.CharField('Google Password', max_length=250)
 
@@ -11,7 +12,7 @@ class GoogleAccount(models.Model):
         ordering=['-id']
 
     def __unicode__(self):
-        return u'%s %s' % (self.username, self.password)
+        return u'%s for %s' % (self.username, self.user)
 
 
 class SpreadSheet(models.Model):

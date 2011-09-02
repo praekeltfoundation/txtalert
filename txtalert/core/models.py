@@ -123,12 +123,12 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     )
     
     owner = models.ForeignKey('auth.User')
-    te_id = models.CharField('MRS ID', max_length=255, unique=True)
+    te_id = models.CharField('Patient ID', max_length=255, unique=True)
     name = models.CharField(blank=True, max_length=100)
     surname = models.CharField(blank=True, max_length=100)
     msisdns = models.ManyToManyField(MSISDN, related_name='contacts')
-    active_msisdn = models.ForeignKey(MSISDN, verbose_name='Active MSISDN', 
-                                        null=True, blank=True)
+    active_msisdn = models.ForeignKey(MSISDN, 
+                verbose_name='Active phone number', null=True, blank=True)
     
     age = models.IntegerField('Age', null=True, blank=True)
     regiment = models.IntegerField(blank=True, null=True, choices=REGIMENT_CHOICES)
@@ -232,7 +232,7 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     )
     
     patient = models.ForeignKey(Patient)
-    te_visit_id = models.CharField('TE Visit id', max_length=20, unique=True,
+    te_visit_id = models.CharField('Visit id', max_length=20, unique=True,
                                     null=True)
     date = models.DateField('Date')
     status = models.CharField('Status', max_length=1, 
@@ -275,7 +275,14 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
             request_type='later_date', status='pending')
     
     def __unicode__(self):
-        return "%s at %s" % (self.get_visit_type_display(), self.date)
+        try:
+            return "Visit with status %s of type %s at %s for patient %s" % (
+                self.get_status_display(), self.get_visit_type_display() or 'unknown', self.date, 
+                self.patient)
+        except Patient.DoesNotExist:
+            return "Visit with status %s of type %s at %s" % (
+                self.get_status_display(), self.get_visit_type_display() or 'unknown', self.date)
+            
     
 
 

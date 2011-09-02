@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.contrib.auth.models import User
 from txtalert.apps.googledoc.models import SpreadSheet, GoogleAccount
 from txtalert.apps.googledoc.importer import Importer
 from txtalert.apps.googledoc.reader.spreadsheetReader import SimpleCRUD
@@ -20,7 +21,8 @@ class ImporterTestCase(TestCase):
         self.empty_spreadsheet = 'Empty Spreadsheet'
         self.start = date.today() - timedelta(days=14)
         self.until = date.today()
-        self.importer = Importer(self.email, self.password)
+        self.user = User.objects.all()[0]
+        self.importer = Importer(self.user, self.email, self.password)
         # make sure we're actually testing some data
         self.assertTrue(Patient.objects.count() > 0)
         self.assertTrue(Visit.objects.count() > 0)

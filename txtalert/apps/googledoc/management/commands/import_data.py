@@ -17,6 +17,7 @@ class Command(BaseCommand):
         try:
             for account in GoogleAccount.objects.all():
                 importer = Importer(
+                    owner=account.user,
                     email=account.username,
                     password=account.password
                 )
@@ -25,10 +26,11 @@ class Command(BaseCommand):
                     spreadsheet = SpreadSheet.objects.get(account=account)
                     logging.debug("Spreadsheet for: %s" % account.username)
                 except SpreadSheet.DoesNotExist:
-                    logging.exception("No Spreadsheet for account: %s\n" %
+                    logging.error("No Spreadsheet for account: %s\n" %
                                       account)
+                    return
                 except MultipleObjectsReturned:
-                    logging.exception("Account can only have one spreadsheet.")
+                    logging.error("Account can only have one spreadsheet.")
                     return
                 # from midnight
                 midnight = date.today()

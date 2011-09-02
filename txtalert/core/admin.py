@@ -22,6 +22,10 @@ from txtalert.apps.general.jquery import AutoCompleteWidget, FilteredSelectWidge
 
 from models import *
 
+def users_in_same_group_as(user):
+    groups = user.groups.all()
+    groups_users = User.objects.distinct().filter(groups__in=groups)
+    return groups_users
 
 class PleaseCallMeForm(forms.ModelForm):
     msisdn = forms.ModelChoiceField(MSISDN.objects)
@@ -42,9 +46,7 @@ class PleaseCallMeAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         else:
-            groups = request.user.groups.all()
-            groups_users = User.objects.distinct().filter(groups__in=groups)
-            return qs.filter(user__in=groups_users)
+            return qs.filter(user__in=users_in_same_group_as(request.user))
 
 class PatientForm(forms.ModelForm):
     active_msisdn = forms.ModelChoiceField(
@@ -56,13 +58,45 @@ class PatientAdmin(admin.ModelAdmin):
     list_display = ('te_id', 'sex', 'age', 'last_clinic', 'active_msisdn')
     list_filter = ('last_clinic',)
     search_fields = ['msisdns__msisdn']
+    readonly_fields = ('owner','last_clinic',)
+    
+    def queryset(self, request):
+        qs = super(PatientAdmin, self).queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            qs = qs.filter(owner__in=users_in_same_group_as(request.user))
+            return qs
+    
+    def save_model(self, request, obj, form, change):
+        if not request.user.is_superuser:
+            obj.user = request.user
+        obj.save()
+    
 
-        
+class VisitAdmin(admin.ModelAdmin):
+    readonly_fields = ('patient','clinic', 'te_visit_id')
+    exclude = ('deleted',)
+    def queryset(self, request):
+        qs = super(VisitAdmin, self).queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            return qs.filter(patient__owner__in=users_in_same_group_as(request.user))
+    
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "patient":
+            if not request.user.is_superuser:
+                kwargs['queryset'] = Patient.objects.filter(owner=users_in_same_group_as(request.user))
+        return super(VisitAdmin, self).formfield_for_choice_field(db_field, request, **kwargs)
+    
+    
+
 admin.site.register(PleaseCallMe, PleaseCallMeAdmin)
 admin.site.register(Patient, PatientAdmin)
 
 admin.site.register(MSISDN)
 admin.site.register(Language)
 admin.site.register(Clinic)
-admin.site.register(Visit)
+admin.site.register(Visit, VisitAdmin)
 admin.site.register(Event)
