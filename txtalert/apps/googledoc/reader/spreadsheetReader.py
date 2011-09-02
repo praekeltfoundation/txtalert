@@ -41,7 +41,7 @@ class SimpleCRUD:
         self.gd_client.source = 'Import Google SpreadSheet to Database'
         try:
             self.gd_client.ProgrammaticLogin()
-        except BadAuthentication, CaptchaRequired:
+        except (BadAuthentication, CaptchaRequired):
             logging.exception("Invalid loggin values or captcha error.")
             raise
         self.curr_key = ''
@@ -200,14 +200,23 @@ class SimpleCRUD:
             curr_date = start + datetime.timedelta(days=day)
             #access the rows inside the worksheet
             for row in worksheet:
-                #check if the worksheet has a patient with this date
-                if worksheet[row]['appointmentdate1'] == curr_date:
-                    #row for final worksheet
-                    patient_row = {row: worksheet[row]}
-                    #update the new worksheet
-                    patients_worksheet.update(patient_row)
-                    #clear temp locations
-                    patient_row = {}
+                try:
+                    #check if the worksheet has a patient with this date
+                    if worksheet[row]:
+                        if worksheet[row]['appointmentdate1'] == curr_date:
+                            test_date_error = worksheet[row]['appointmentdate1']
+                            if type(test_date_error) == datetime.date:
+                                #row for final worksheet
+                                patient_row = {row: worksheet[row]}
+                                #update the new worksheet
+                                patients_worksheet.update(patient_row)
+                                #clear temp locations
+                                patient_row = {}
+                    else:
+                        logging.error('Empty row %s at %s' % (worksheet[row], row))
+                except KeyError, e:
+                     logging.error('Error reading row %s at %s in %s' %
+                     (worksheet[row], row, period))
         return patients_worksheet
 
     def enrol_query(self, file_no):
@@ -323,14 +332,9 @@ class SimpleCRUD:
         """
         #date must be in this format
         dateformat = '%d/%m/%Y'
-        try:
-            real_date = datetime.datetime.strptime(datestring, dateformat)
-            real_date = real_date.date()
-            return real_date
-        except ValueError:
-            return ValueError
-        except TypeError:
-            return TypeError
+        real_date = datetime.datetime.strptime(datestring.strip(), dateformat)
+        real_date = real_date.date()
+        return real_date
 
     def database_record(self, dic):
         """
@@ -345,6 +349,7 @@ class SimpleCRUD:
         @returns:
         appDic: The row with proper contents.
         """
+        logging.debug('Importing %s' % dic)
         app_dic = dic
         appDic = {}
         for key in app_dic:
@@ -367,10 +372,17 @@ class SimpleCRUD:
                     appDic.update(temp_dic)
                     temp_dic = {}
             elif key == 'appointmentdate1':
-                app_date = self.date_object_creator(app_dic[key])
-                temp_dic = {key: app_date}
-                appDic.update(temp_dic)
-                temp_dic = {}
+                try:
+                     date_value = app_dic[key]
+                     if date_value:
+                         app_date = self.date_object_creator(date_value)
+                         temp_dic = {key: app_date}
+                         appDic.update(temp_dic)
+                         temp_dic = {}
+                     else:
+                         logging.error('No date given in %s' % app_dic)
+                except (ValueError, TypeError), e:
+                    logging.exception('Error parsing date in %s' % app_dic)
             elif key == 'appointmentstatus1':
                 try:
                     temp_dic = {key: app_dic[key]}

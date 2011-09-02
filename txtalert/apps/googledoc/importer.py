@@ -9,8 +9,9 @@ import logging
 MSISDNS_RE = re.compile(r'^([+]?(0|27)[0-9]{9}/?)+$')
 PHONE_RE = re.compile(r'[0-9]{9}')
 MSISDN_RE = re.compile(r'^([+?0][0-9]{9}/?)+$')
-DATE_RE = re.compile(r'^[0-9]{1,2}[/?-][0-9]{1,2}[/?-][0-9]{4}$')
+DATE_RE = re.compile(r'^[0-9]{4}[/?-][0-9]{1,2}[/?-][0-9]{1,2}$')
 FILE_NO = re.compile(r'^[a-zA-Z0-9]+$')
+STATUS_RE = re.compile(r'^[a-zA-Z]+$')
 
 #the amount of time to cache a enrollment status
 CACHE_TIMEOUT = 30
@@ -51,6 +52,10 @@ class Importer(object):
         self.until = until
         self.doc_name = str(doc_name)
         self.month = self.reader.run_appointment(self.doc_name, start, until)
+        #counts how many enrolled patients where updated correctly
+        correct_updates = 0
+        #counter for number of patients found on the enrollement worksheet
+        enrolled_counter = 0
         #check if a worksheet was returned
         if self.month == False:
             logging.exception("Incorrect spreadsheet or worksheet name")
@@ -59,47 +64,30 @@ class Importer(object):
             #return the name of invalid spreadsheet and the flag
             return (self.doc_name, valid_name)
         #if spreadsheet was found check if it has more than one worksheet
-        elif len(self.month) > 1:
-            #loop through the worksheets in the spreadsheet
-            for worksheet in self.month:
-                #check that the spreadsheet has data to update
-                if len(self.month[worksheet]) != 0:
-                    #if true do update each enrolled patient
-                    enrolled_counter, correct_updates = self.update_patients(
-                        self.month[worksheet], self.doc_name, start, until
-                    )
-                    #return enrolled and updated counters
-                    return enrolled_counter, correct_updates
-                #if the worksheet does not have data dont do updates
-                else:
-                    logging.exception("The are no patient's to update")
-                    #flag for checking if the spreadsheet has data
-                    data = False
-                    #return empty spreadsheet name and flag
-                    return (self.doc_name, data)
-        #check that the spreadsheet has data to update
-        elif len(self.month) == 1:
-            #check that the spreadsheet has data to update
-            if len(self.month) != 0:
-                #call function to process the worksheet appointment data
-                enrolled_counter, correct_updates = self.update_patients(
-                    self.month, self.doc_name, start, until
-                )
-                return enrolled_counter, correct_updates
+        else:
+            if len(self.month) > 0:
+                #loop through the worksheets in the spreadsheet
+                for worksheet in self.month:
+                    #check that the spreadsheet has data to update
+                    if len(self.month[worksheet]) != 0:
+                        #if true do update each enrolled patient
+                        enrolled_counter, correct_updates = self.update_patients(
+                            self.month[worksheet], self.doc_name, start, until
+                        )
+                        #return enrolled and updated counters
+                        return enrolled_counter, correct_updates
+                    #if the worksheet does not have data dont do updates
+                    else:
+                        logging.exception("The are no patient's to update")
+                        #flag for checking if the spreadsheet has data
+                        data = False
+                        #return empty spreadsheet name and flag
+                        return enrolled_counter, correct_updates
             else:
-                logging.exception("The are no patient's to update")
-                #flag for checking if the spreadsheet has data
+                logging.exception("The spreadsheet is empty.")
                 data = False
-                #return empty spreadsheet name and flag
                 return (self.doc_name, data)
-
-        #check if the spreadsheet has no rows
-        elif len(self.month) == 0:
-            logging.exception("The spreadsheet is empty.")
-            #flag for checking if the spreadsheet has data
-            data = False
-            return (self.doc_name, data)
-
+     
     def update_patients(self, month_worksheet, doc_name, start, until):
         """
         @arguments:
@@ -130,8 +118,10 @@ class Importer(object):
                 if enrolled == True:
                     logging.debug("Patient: %s status is True" % file_no)
                     #update the patient
-                    update_flag = self.update_patient(month_worksheet[patient],
-                                                      patient, doc_name)
+                    update_flag = self.update_patient(
+                                    month_worksheet[patient],
+                                    patient, doc_name, start, until
+                    )
                     enrolled_counter = enrolled_counter + 1
                     if update_flag == True:
                         correct_updates = correct_updates + 1
@@ -139,13 +129,13 @@ class Importer(object):
                             "Cached enrollment status for patient: %s" %
                             file_no
                         )
-                '''
+                
                 #check if patient needs to enroll
                 elif enrolled is False:
                     logging.exception(
                     'Patient: %s cannot update with cached enrollment status' %
                     file_no
-                    )'''
+                    )
             #cache patient's appointment status if it was not cached.
             else:
                 #call method to set cache
@@ -158,7 +148,8 @@ class Importer(object):
                     enrolled_counter = enrolled_counter + 1
                     #update enrolled patient
                     update_flag = self.update_patient(
-                                   month_worksheet[patient], patient, doc_name
+                                    month_worksheet[patient],
+                                    patient, doc_name, start, until
                     )
                     if update_flag == True:
                         correct_updates = correct_updates + 1
@@ -201,7 +192,7 @@ class Importer(object):
         enrolled = cache.get(file_no)
         return enrolled
 
-    def update_patient(self, patient_row, row, doc_name):
+    def update_patient(self, patient_row, row, doc_name, start, until):
         '''
         @rguments:
         patient_row: A row that contains a patients appointment info.
@@ -227,41 +218,104 @@ class Importer(object):
             phone, phone_format = self.check_msisdn_format(
                                                     patient_row['phonenumber']
             )
-            app_date = patient_row['appointmentdate1']
-            app_status = patient_row['appointmentstatus1']
-
-        if row_no < 10:
-            row_no = '0' + str(row_no)
-            visit_id = str(row_no) + '-' + file_no
-        else:
-            visit_id = str(row_no) + '-' + file_no
-
-        #try to get the current patient from the database
-        try:
-            #try to locate the patient on the database
-            curr_patient = Patient.objects.get(te_id=file_no)
-        except Patient.DoesNotExist:
-            #log error in import log
-            logging.debug("Patient: %s not found in database" % file_no)
-            #create a new patient
-            created = self.create_patient(patient_row, row_no, doc_name)
-            return created
-
-        #if patient exist perform update
-        if curr_patient:
-            #call method to do appointment status update
-            app_update = self.update_appointment_status(app_status,
-                                                        app_date, visit_id)
-            #call method to update phone number
-            phone_update = self.update_msisdn(phone, curr_patient)
-            #check if no error occured during patient updated
-            if app_update and phone_update:
-                patient_update = True
-                return  (patient_update)
+            app_date, date_format = self.check_date_format(
+                                               patient_row['appointmentdate1']
+            )
+            app_status, status_format = self.check_appointment_status(
+                                            patient_row['appointmentstatus1']
+            )
+        #check if the data to be updated is in the correct formats
+        if file_format and phone_format and date_format and status_format:
+            if row_no < 10:
+                row_no = '0' + str(row_no)
+                visit_id = str(row_no) + '-' + file_no
             else:
-                patient_update = False
-                return  (patient_update)
+                visit_id = str(row_no) + '-' + file_no
 
+            #try to get the current patient from the database
+            try:
+                #try to locate the patient on the database
+                curr_patient = Patient.objects.get(te_id=file_no)
+            except Patient.DoesNotExist:
+                #log error in import log
+                logging.debug("Patient: %s not found in database" % file_no)
+                #create a new patient
+                created = self.create_patient(
+                                             patient_row, row_no, doc_name,
+                                             start, until
+                )
+                return created
+
+            #if patient exist perform update and appointment date is valid
+            if curr_patient:
+                #get or create a clinic
+                clinic = self.get_or_create_clinic(doc_name)
+                #call method to do appointment status update
+                app_update = self.update_appointment_status(
+                        app_status, curr_patient, app_date, visit_id, clinic
+                )
+                #call method to update phone number
+                phone_update = self.update_msisdn(phone, curr_patient)
+                #check if no error occured during patient updated
+                if app_update or phone_update:
+                    patient_update = True
+                    return  (patient_update)
+                else:
+                    patient_update = False
+                    return  (patient_update)
+        #if any of the format are incorrect dont update patient
+        else:
+            logging.exception("Invalid data format for patient: %s" % file_no)
+            patient_update = False
+            return patient_update
+
+    def check_appointment_status(self, status):
+        status_format = False
+        status_options = ['missed', 'scheduled', 'attended', 'rescheduled']
+        #check if the status is a string
+        try:
+            #check if the correct format
+            match = STATUS_RE.match(status)
+            try:
+                #return the string to check
+                app_status = match.group()
+                app_status = app_status.lower()
+                #check if the status is in the valid options list
+                for valid_status in status_options:
+                    #check if the status is valid
+                    if valid_status == app_status:
+                        status_format = True
+            except AttributeError:
+                logging.exception("Appointment status invalid format")
+        except TypeError:
+            logging.exception("Appointment status is not characters")
+
+        return (status, status_format)
+
+    def check_date_format(self, appointment_date):
+        app_date = str(appointment_date)
+        #check that the date format is correct
+        try:
+            #check date format
+            match = DATE_RE.match(app_date)
+            try:
+                app_date = match.group()
+                correct_format = True
+                #return the correct file number
+                return (appointment_date, correct_format)
+            except AttributeError:
+                logging.exception(
+                     "Date format is incorrect"
+                )
+                correct_format = False
+                return (appointment_date, correct_format)
+        except TypeError:
+            logging.exception(
+                     "The appointment date is empty"
+            )
+            correct_format = False
+            return (appointment_date, correct_format)
+        
     def check_file_no_format(self, file_number):
         #ensure the file number is a string type
         file_no = str(file_number)
@@ -334,13 +388,15 @@ class Importer(object):
             phone_update = False
             return (phone, phone_update)
 
-    def create_patient(self, patient_row, row_no, doc_name):
+    def create_patient(self, patient_row, row_no, doc_name, start, until):
         #get the contents of the row
         file_no, file_format = self.check_file_no_format(patient_row['fileno'])
         phone, phone_format = self.check_msisdn_format(
                                                 patient_row['phonenumber']
         )
-        app_date = patient_row['appointmentdate1']
+        app_date, date_format = self.check_date_format(
+                                               patient_row['appointmentdate1']
+        )
         app_status = patient_row['appointmentstatus1']
         #check if the file number is correct format
         if file_format:
@@ -368,43 +424,65 @@ class Importer(object):
                     )
                     #save to database
                     new_patient.save()
+                    patient_created = True
                     # add msisdn to list of msisdns
                     new_patient.msisdns.add(msisdn)
+                    #get or create a clinic
+                    clinic = self.get_or_create_clinic(doc_name)
+                    enrolled = self.set_cache_enrollement_status(
+                                    doc_name, file_no, start, until
+                    )
+                    #check if the enrollment check was cached
+                    enrolled = cache.get(file_no)
+                    #converts a string enroment to a choice key used in database
+                    status = self.update_needed(app_status)
+                    #if patient is enrolled create a visit instanceprint
+                    if enrolled and date_format and patient_created and clinic:
+                        #call method to create a visit for the new patient
+                        visit, visit_created = self.create_visit(
+                                                    visit_id, new_patient,
+                                                    app_date, status, clinic
+                        )
+                        if visit_created:
+                            #indicate that patient and visit was created
+                            created = True
+                            logging.debug("Created patient's visit")
+                            return created
+                    elif not enrolled:
+                        #the patient was created and erollment status is false
+                        return patient_created
                 #catch relational integrity error
                 except IntegrityError:
-                    logging.exception("Cannot create patient invalid field.")
-                    created = False
-                    return created
-                #get or create a clinic
-                clinic = self.get_or_create_clinic(doc_name)
-                #check if the enrollment check was cached
-                enrolled = cache.get(file_no)
-                #converts a string enroment to a choice key used in database
-                status = self.update_needed(app_status)
-                #if patient is enrolled create a visit instance
-                if enrolled:
-                    #use spreadsheet data to create visit
-                    try:
-                        #create a the visit
-                        new_visit = Visit(
-                                           te_visit_id=visit_id,
-                                           patient=new_patient,
-                                           date=app_date,
-                                           status=status,
-                                           clinic=clinic
-                        )
-                        new_visit.save()
-                    except IntegrityError:
-                        logging.exception("Failed to create patient visit.")
-                        created = False
-                        return created
-
-                created = True
+                    logging.exception("Failed to create patient invalid field")
+                    patient_created = False
+                    return patient_created
         #if any of the patient data was incorrect dont create patient
         else:
-            #patient could not be created becuase of the error
+            logging.debug("Error creating patient with invalid file number")
+            #indicate that the patient could not be created becuase of the error
             created = False
         return created
+
+    def create_visit(self, visit_id, new_patient, app_date, app_status, clinic):
+        #use spreadsheet data to create visit
+        try:
+            #create a the visit
+            new_visit = Visit(
+                                 te_visit_id=visit_id,
+                                 patient=new_patient,
+                                 date=app_date,
+                                 status=app_status,
+                                 clinic=clinic
+            )
+            new_visit.save()
+            logging.debug("Created the visit %s for new patien" % visit_id)
+            visit_created = True
+            visit = new_visit
+        except IntegrityError:
+            logging.exception("Failed to create visit %s." % visit_id)
+            visit_created = False
+            visit = Null
+        return (visit, visit_created)
 
     def get_or_create_clinic(self, doc_name):
         #get or create a clinic with the name of the spreadsheet
@@ -484,7 +562,8 @@ class Importer(object):
         elif status == 'Scheduled':
             return 's'
 
-    def update_appointment_status(self, app_status, app_date, visit_id):
+    def update_appointment_status(self, app_status, new_patient,
+                                  app_date, visit_id, clinic_name):
         """
         @rgument:
         app_status: appointment status.
@@ -503,23 +582,33 @@ class Importer(object):
         @returns:
         updated: indicates whether the appointment status was updated.
         """
+        #converts a string enroment to a choice key used in database
+        status = self.update_needed(app_status)
         try:
             #get patient's visit instance
             curr_visit = Visit.objects.get(te_visit_id=visit_id)
         except Visit.DoesNotExist:
             #log error in import log
-            logging.exception("Cannot make visit appointment")
-            #flag to day the visit does not exist
-            visit_exists = False
-            return visit_exists
+            logging.debug("Creating a new visit for patient")
+            
+            if type(clinic_name) == str:
+                clinic = self.get_or_create_clinic(clinic_name)
+            else:
+                clinic = clinic_name
+            curr_visit, visit_created = self.create_visit(
+                                                  visit_id, new_patient,
+                                                  app_date, status, clinic
+            )
+            #check if the visit was created
+            if not visit_created:
+                return status
 
         #stores variable used to check if appointment updates are needed
         progress = self.update_needed(app_status)
         #dont update if the status has not changed
         if progress == curr_visit.status:
-            updated = True
             logging.debug("The appointment status does not require an update")
-            return updated
+            return status
 
         #if visit exist update to current status
         if curr_visit:
