@@ -204,8 +204,9 @@ class SimpleCRUD:
                     #check if the worksheet has a patient with this date
                     if worksheet[row]:
                         if worksheet[row]['appointmentdate1'] == curr_date:
-                            test_date_error = worksheet[row]['appointmentdate1']
-                            if type(test_date_error) == datetime.date:
+                            #test if the current date is in month range
+                            date_range = worksheet[row]['appointmentdate1']
+                            if type(date_range) == datetime.date:
                                 #row for final worksheet
                                 patient_row = {row: worksheet[row]}
                                 #update the new worksheet
@@ -213,10 +214,13 @@ class SimpleCRUD:
                                 #clear temp locations
                                 patient_row = {}
                     else:
-                        logging.error('Empty row %s at %s' % (worksheet[row], row))
+                        logging.error('Empty row %s at %s' % (
+                                                         worksheet[row], row)
+                        )
                 except KeyError, e:
-                     logging.error('Error reading row %s at %s in %s' %
-                     (worksheet[row], row, period))
+                     logging.error('Error reading row %s at %s in %s' % (
+                                               worksheet[row], row, period)
+                     )
         return patients_worksheet
 
     def enrol_query(self, file_no):
@@ -373,14 +377,14 @@ class SimpleCRUD:
                     temp_dic = {}
             elif key == 'appointmentdate1':
                 try:
-                     date_value = app_dic[key]
-                     if date_value:
-                         app_date = self.date_object_creator(date_value)
-                         temp_dic = {key: app_date}
-                         appDic.update(temp_dic)
-                         temp_dic = {}
-                     else:
-                         logging.error('No date given in %s' % app_dic)
+                    date_value = app_dic[key]
+                    if date_value:
+                        app_date = self.date_object_creator(date_value)
+                        temp_dic = {key: app_date}
+                        appDic.update(temp_dic)
+                        temp_dic = {}
+                    else:
+                        logging.error('No date given in %s' % app_dic)
                 except (ValueError, TypeError), e:
                     logging.exception('Error parsing date in %s' % app_dic)
             elif key == 'appointmentstatus1':

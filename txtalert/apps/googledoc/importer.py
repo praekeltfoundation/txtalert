@@ -87,7 +87,7 @@ class Importer(object):
                 logging.exception("The spreadsheet is empty.")
                 data = False
                 return (self.doc_name, data)
-     
+
     def update_patients(self, month_worksheet, doc_name, start, until):
         """
         @arguments:
@@ -129,7 +129,7 @@ class Importer(object):
                             "Cached enrollment status for patient: %s" %
                             file_no
                         )
-                
+
                 #check if patient needs to enroll
                 elif enrolled is False:
                     logging.exception(
@@ -315,7 +315,7 @@ class Importer(object):
             )
             correct_format = False
             return (appointment_date, correct_format)
-        
+
     def check_file_no_format(self, file_number):
         #ensure the file number is a string type
         file_no = str(file_number)
@@ -434,7 +434,7 @@ class Importer(object):
                     )
                     #check if the enrollment check was cached
                     enrolled = cache.get(file_no)
-                    #converts a string enroment to a choice key used in database
+                    #convert string enroment to a choice key used in database
                     status = self.update_needed(app_status)
                     #if patient is enrolled create a visit instanceprint
                     if enrolled and date_format and patient_created and clinic:
@@ -459,11 +459,11 @@ class Importer(object):
         #if any of the patient data was incorrect dont create patient
         else:
             logging.debug("Error creating patient with invalid file number")
-            #indicate that the patient could not be created becuase of the error
+            #indicate that patient could not be created becuase of the error
             created = False
         return created
 
-    def create_visit(self, visit_id, new_patient, app_date, app_status, clinic):
+    def create_visit(self, visit_id, new_patient, app_date, status, clinic):
         #use spreadsheet data to create visit
         try:
             #create a the visit
@@ -471,7 +471,7 @@ class Importer(object):
                                  te_visit_id=visit_id,
                                  patient=new_patient,
                                  date=app_date,
-                                 status=app_status,
+                                 status=status,
                                  clinic=clinic
             )
             new_visit.save()
@@ -590,7 +590,6 @@ class Importer(object):
         except Visit.DoesNotExist:
             #log error in import log
             logging.debug("Creating a new visit for patient")
-            
             if type(clinic_name) == str:
                 clinic = self.get_or_create_clinic(clinic_name)
             else:
