@@ -272,42 +272,48 @@ class ImporterTestCase(TestCase):
 
     def test_invalid_visit_id(self):
         """Visit not on the database."""
-        (self.app_status, self.app_date, self.visit_id) = (
-                                   'Scheduled', date(2011, 8, 10), 'jjjjjjj'
+        (self.app_status, self.app_date, self.visit_id, self.curr_patient) = (
+            'Scheduled', date(2011, 8, 10), 'jjjjjjj', 
+            Patient.objects.get(te_id='9999999')
         )
-        self.visit_exists = self.importer.update_appointment_status(
-                                self.app_status, self.app_date, self.visit_id
-        )
-        self.assertIs(self.visit_exists, False)
+        original_count = Visit.objects.count()
+        status = self.importer.update_appointment_status(
+            self.spreadsheet, self.app_status, self.app_date, 
+            self.curr_patient, self.visit_id)
+        self.assertEqual(status, 's')
+        self.assertEqual(Visit.objects.count(), original_count + 1)
 
     def test_update_not_needed(self):
         """Appointment status already updated."""
-        (self.app_status, self.app_date, self.visit_id) = (
-                                  'Scheduled', date(2011, 8, 10), '02-9999999'
+        (self.app_status, self.app_date, self.visit_id, self.curr_patient) = (
+          'Scheduled', date(2011, 8, 10), '02-9999999', 
+          Patient.objects.get(te_id='9999999')
         )
         self.updated = self.importer.update_appointment_status(
-                                self.app_status, self.app_date, self.visit_id
-        )
+            self.spreadsheet, self.app_status, self.app_date, 
+            self.curr_patient, self.visit_id)
         self.assertEquals(self.updated, True)
 
     def test_status_is_updated(self):
         """Checks that the status was updated"""
-        (self.app_status, self.app_date, self.visit_id) = (
-                                     'Missed', date(2011, 8, 10), '02-9999999'
+        (self.app_status, self.app_date, self.visit_id, self.curr_patient) = (
+             'Missed', date(2011, 8, 10), '02-9999999',
+             Patient.objects.get(te_id='9999999')
         )
         self.status_updated = self.importer.update_appointment_status(
-                                self.app_status, self.app_date, self.visit_id
-        )
+            self.spreadsheet, self.app_status, self.app_date, 
+            self.curr_patient, self.visit_id)
         self.assertEquals(self.status_updated, 'm')
 
     def test_status_not_updated(self):
         """Test that the update failed."""
-        (self.app_status, self.app_date, self.visit_id) = (
-                                      'Missed', date(2011, 8, 1), '02-9999999'
+        (self.app_status, self.app_date, self.visit_id, self.curr_patient) = (
+            'Missed', date(2011, 8, 1), '02-9999999', 
+            Patient.objects.get(te_id='9999999')
         )
         self.status_updated = self.importer.update_appointment_status(
-                                self.app_status, self.app_date, self.visit_id
-        )
+            self.spreadsheet, self.app_status, self.app_date, 
+            self.curr_patient, self.visit_id)
         self.assertEquals(self.status_updated, 'm')
 
 

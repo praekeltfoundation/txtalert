@@ -250,8 +250,8 @@ class Importer(object):
         #if patient exist perform update
         if curr_patient:
             #call method to do appointment status update
-            app_update = self.update_appointment_status(app_status,
-                                                        app_date, visit_id)
+            app_update = self.update_appointment_status(doc_name, app_status,
+                                            app_date, curr_patient, visit_id)
             #call method to update phone number
             phone_update = self.update_msisdn(phone, curr_patient)
             #check if no error occured during patient updated
@@ -484,7 +484,8 @@ class Importer(object):
         elif status == 'Scheduled':
             return 's'
 
-    def update_appointment_status(self, app_status, app_date, visit_id):
+    def update_appointment_status(self, doc_name, app_status, app_date, patient,
+        visit_id):
         """
         @rgument:
         app_status: appointment status.
@@ -505,13 +506,18 @@ class Importer(object):
         """
         try:
             #get patient's visit instance
-            curr_visit = Visit.objects.get(te_visit_id=visit_id)
+            curr_visit = Visit.objects.get(patient=patient,
+                te_visit_id=visit_id)
         except Visit.DoesNotExist:
             #log error in import log
-            logging.exception("Cannot make visit appointment")
+            logging.error("Cannot find visit appointment, creating instead")
             #flag to day the visit does not exist
-            visit_exists = False
-            return visit_exists
+            # visit_exists = False
+            status = self.update_needed(app_status)
+            curr_visit = Visit.objects.create(patient=patient, status=status,
+                te_visit_id=visit_id, date=app_date,
+                clinic=self.get_or_create_clinic(doc_name))
+            return curr_visit.status
 
         #stores variable used to check if appointment updates are needed
         progress = self.update_needed(app_status)
