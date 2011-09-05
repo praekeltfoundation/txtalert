@@ -41,7 +41,7 @@ class SimpleCRUD:
         self.gd_client.source = 'Import Google SpreadSheet to Database'
         try:
             self.gd_client.ProgrammaticLogin()
-        except BadAuthentication, CaptchaRequired:
+        except (BadAuthentication, CaptchaRequired):
             logging.exception("Invalid loggin values or captcha error.")
             raise
         self.curr_key = ''
@@ -196,25 +196,31 @@ class SimpleCRUD:
         period = until - start
         #get patient info for each day in period
         for day in range(period.days + 1):
-                #the day to check from the worksheet
-                curr_date = start + datetime.timedelta(days=day)
-                #access the rows inside the worksheet
-                for row in worksheet:
-                    try:
-                        #check if the worksheet has a patient with this date
-                        if worksheet[row]:
-                            if worksheet[row]['appointmentdate1'] == curr_date:
+            #the day to check from the worksheet
+            curr_date = start + datetime.timedelta(days=day)
+            #access the rows inside the worksheet
+            for row in worksheet:
+                try:
+                    #check if the worksheet has a patient with this date
+                    if worksheet[row]:
+                        if worksheet[row]['appointmentdate1'] == curr_date:
+                            #test if the current date is in month range
+                            date_range = worksheet[row]['appointmentdate1']
+                            if type(date_range) == datetime.date:
                                 #row for final worksheet
                                 patient_row = {row: worksheet[row]}
                                 #update the new worksheet
                                 patients_worksheet.update(patient_row)
                                 #clear temp locations
                                 patient_row = {}
-                        else:
-                            logging.error('Empty row %s at %s' % (worksheet[row], row))
-                    except KeyError, e:
-                        logging.error('Error reading row %s at %s in %s' % 
-                            (worksheet[row], row, period))
+                    else:
+                        logging.error('Empty row %s at %s' % (
+                                                         worksheet[row], row)
+                        )
+                except KeyError, e:
+                     logging.error('Error reading row %s at %s in %s' % (
+                                               worksheet[row], row, period)
+                     )
         return patients_worksheet
 
     def enrol_query(self, file_no):

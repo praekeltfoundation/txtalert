@@ -27,18 +27,19 @@ class ImporterTestCase(TestCase):
         self.assertTrue(Patient.objects.count() > 0)
         self.assertTrue(Visit.objects.count() > 0)
         self.assertTrue(Clinic.objects.count() > 0)
+        self.random_msisdn = random.choice(range(111111111, 999999999, 123456))
         self.enrolled_patients = {
                                     1: {
                                          'appointmentdate1': date(2011, 8, 1),
                                          'fileno': 1111111,
                                          'appointmentstatus1': 'Missed',
-                                         'phonenumber': 999999999
+                                         'phonenumber': self.random_msisdn
                                         },
                                     2: {
                                          'appointmentdate1': date(2011, 8, 10),
                                          'fileno': 9999999,
                                          'appointmentstatus1': 'Attended',
-                                         'phonenumber': 111111111
+                                         'phonenumber': self.random_msisdn
                                         }
         }
 
@@ -137,15 +138,19 @@ class ImporterTestCase(TestCase):
 
     def test_create_patient_pass(self):
         """Test if the patient was created."""
+        self.random_patient = random.choice(range(11111, 99999, 1234))
+        self.random_patient = str(self.random_patient)
         self.new_patient = {
                                'appointmentdate1': date(2011, 10, 1),
-                               'fileno': '10101011',
+                               'fileno': self.random_patient,
                                'appointmentstatus1': 'Scheduled',
-                               'phonenumber': 190909090
+                               'phonenumber': self.random_msisdn
         }
-        self.row = 3
+        self.random_row = random.choice(range(1, 99, 1))
+        self.row = self.random_row
         self.created = self.importer.create_patient(
-                                self.new_patient, self.row, self.spreadsheet
+                                self.new_patient, self.row, self.spreadsheet,
+                                self.start, self.until
         )
         self.assertIs(self.created, True)
 
@@ -159,7 +164,8 @@ class ImporterTestCase(TestCase):
         }
         self.row = 12
         self.created = self.importer.create_patient(
-                                self.new_patient, self.row, self.spreadsheet
+                                self.new_patient, self.row, self.spreadsheet,
+                                self.start, self.until
         )
         self.assertIs(self.created, False)
 
@@ -216,7 +222,8 @@ class ImporterTestCase(TestCase):
         }
         self.row_no = 2
         self.valid = self.importer.update_patient(
-                               self.patient_row, self.row_no, self.spreadsheet
+                               self.patient_row, self.row_no, self.spreadsheet,
+                               self.start, self.until
         )
         self.assertIs(self.valid, False)
 
@@ -229,22 +236,25 @@ class ImporterTestCase(TestCase):
                                'phonenumber': 987654321
         }
         self.row_no = 2
-        self.exists = self.importer.update_patient(
-                               self.patient_row, self.row_no, self.spreadsheet
+        self.created = self.importer.update_patient(
+                               self.patient_row, self.row_no, self.spreadsheet,
+                               self.start, self.until
         )
-        self.assertEqual(self.exists, True)
+        self.assertEqual(self.created, True)
 
     def test_successful_patient_update(self):
         """Test that a patient was successfully updated."""
+        self.msisdn = random.choice(range(111111111, 999999999, 123456))
         self.patient_row = {
                                'appointmentdate1': date(2011, 8, 9),
                                'fileno': 9999999,
                                'appointmentstatus1': 'Attended',
-                               'phonenumber': 987654321
+                               'phonenumber': self.msisdn
         }
         self.row_no = 2
         self.patient_updated = self.importer.update_patient(
-                              self.patient_row, self.row_no, self.spreadsheet
+                              self.patient_row, self.row_no, self.spreadsheet,
+                              self.start, self.until
         )
         self.assertEqual(self.patient_updated, True)
 
@@ -274,48 +284,53 @@ class ImporterTestCase(TestCase):
 
     def test_invalid_visit_id(self):
         """Visit not on the database."""
-        (self.app_status, self.app_date, self.visit_id, self.curr_patient) = (
-            'Scheduled', date(2011, 8, 10), 'jjjjjjj', 
-            Patient.objects.get(te_id='9999999')
+        (self.app_status, self.app_date, self.visit_id,  self.curr_patient) = (
+                                   'Scheduled', date(2011, 8, 10), 'jjjjjjj',
+                                   Patient.objects.get(te_id='9999999')
         )
         original_count = Visit.objects.count()
         status = self.importer.update_appointment_status(
-            self.spreadsheet, self.app_status, self.app_date, 
-            self.curr_patient, self.visit_id)
+            self.app_status,  self.curr_patient, self.app_date,
+            self.visit_id, self.spreadsheet
+        )
         self.assertEqual(status, 's')
         self.assertEqual(Visit.objects.count(), original_count + 1)
 
     def test_update_not_needed(self):
         """Appointment status already updated."""
         (self.app_status, self.app_date, self.visit_id, self.curr_patient) = (
-          'Scheduled', date(2011, 8, 10), '02-9999999', 
-          Patient.objects.get(te_id='9999999')
+                                'Scheduled', date(2011, 8, 10), '02-9999999',
+                                Patient.objects.get(te_id='9999999')
         )
         self.updated = self.importer.update_appointment_status(
-            self.spreadsheet, self.app_status, self.app_date, 
-            self.curr_patient, self.visit_id)
-        self.assertEquals(self.updated, True)
+                        self.app_status,  self.curr_patient, self.app_date,
+                        self.visit_id, self.spreadsheet
+        )
+        self.status = 's'
+        self.assertEquals(self.status, 's')
 
     def test_status_is_updated(self):
         """Checks that the status was updated"""
         (self.app_status, self.app_date, self.visit_id, self.curr_patient) = (
-             'Missed', date(2011, 8, 10), '02-9999999',
-             Patient.objects.get(te_id='9999999')
+                                     'Missed', date(2011, 8, 10), '02-9999999',
+                                     Patient.objects.get(te_id='9999999')
         )
         self.status_updated = self.importer.update_appointment_status(
-            self.spreadsheet, self.app_status, self.app_date, 
-            self.curr_patient, self.visit_id)
+                    self.app_status,  self.curr_patient, self.app_date,
+                    self.visit_id, self.spreadsheet
+        )
         self.assertEquals(self.status_updated, 'm')
 
     def test_status_not_updated(self):
         """Test that the update failed."""
         (self.app_status, self.app_date, self.visit_id, self.curr_patient) = (
-            'Missed', date(2011, 8, 1), '02-9999999', 
-            Patient.objects.get(te_id='9999999')
+                                      'Missed', date(2011, 8, 1), '02-9999999',
+                                      Patient.objects.get(te_id='9999999')
         )
         self.status_updated = self.importer.update_appointment_status(
-            self.spreadsheet, self.app_status, self.app_date, 
-            self.curr_patient, self.visit_id)
+                    self.app_status,  self.curr_patient, self.app_date,
+                    self.visit_id, self.spreadsheet
+        )
         self.assertEquals(self.status_updated, 'm')
 
 
