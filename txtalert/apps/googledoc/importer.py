@@ -432,7 +432,7 @@ class Importer(object):
             logging.debug("Error creating patient with invalid file number")
             #indicate that patient could not be created becuase of the error
             created = False
-        return created
+            return created
 
     def create_visit(self, visit_id, new_patient, app_date, status, clinic):
         #use spreadsheet data to create visit
@@ -452,7 +452,7 @@ class Importer(object):
         except IntegrityError:
             logging.exception("Failed to create visit %s." % visit_id)
             visit_created = False
-            visit = Null
+            visit = None
         return (visit, visit_created)
 
     def get_or_create_clinic(self, doc_name):
