@@ -23,7 +23,8 @@ from models import *
 
 
 class SettingAdmin(admin.ModelAdmin):
-    fields = ('name', 'type', 'int_value', 'text_value', 'object_type', 'object_id')
+    fields = ('name', 'type', 'int_value', 'text_value', 'object_type', 
+        'object_id', 'group')
 
     class Media:
         js = ('/scriptaculous/media/js/prototype.js',)

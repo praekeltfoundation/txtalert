@@ -25,7 +25,7 @@ class GatewayModelTestCase(TestCase):
     def test_send_sms_unicode(self):
         sms = SendSMS(
             msisdn='27123456789',
-            smstext='',
+            smstext='smstext',
             delivery=datetime.now(),
             expiry=datetime.now(),
             priority='Standard',
@@ -33,7 +33,7 @@ class GatewayModelTestCase(TestCase):
             identifier='identifier'
         )
         self.assertEquals(
-            u'SendSMS: identifier - 27123456789',
+            u'SendSMS: identifier - 27123456789: smstext',
             unicode(sms)
         )
     

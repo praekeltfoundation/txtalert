@@ -63,7 +63,6 @@ def send_stats_for_group(gateway, today, group):
     yesterday = today - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
     twoweeks = today + timedelta(weeks=2)
-    
     users = group.user_set.all()
     visits = Visit.objects.filter(patient__opted_in=True, 
                                     patient__owner__in=users)
@@ -82,7 +81,7 @@ def send_stats_for_group(gateway, today, group):
     total_count = SendSMS.objects.filter(delivery__gte=today, user__in=users).count()
     
     # send email with stats
-    emails = Setting.objects.get(name='Stats Emails').value.split('\r\n')
+    emails = group.setting_set.get(name='Stats Emails').value.split('\r\n')
     message = REMINDERS_EMAIL_TEXT % {
         'total': total_count, 
         'date': today, 
@@ -97,7 +96,7 @@ def send_stats_for_group(gateway, today, group):
     mail.send_mail('[TxtAlert] Messages Sent Report', message, settings.SERVER_EMAIL, emails, fail_silently=True)
     
     # send sms with stats
-    msisdns = Setting.objects.get(name='Stats MSISDNs').value.split('\r\n')
+    msisdns = group.setting_set.get(name='Stats MSISDNs').value.split('\r\n')
     message = REMINDERS_SMS_TEXT % {
         'total': total_count, 
         'attended': attended_count,
@@ -182,11 +181,15 @@ def missed(gateway, user, visits, today):
 
 
 def all(gateway, group_names):
+    print group_names
     groups = Group.objects.filter(name__in=group_names)
+    print Group.objects.all()
+    print groups
     for group in groups:
         for user in group.user_set.all():
             visits = Visit.objects.filter(patient__opted_in=True,
-                                            clinic__user=user)
+                                            patient__owner=user)
+            print visits.count()
             today = datetime.now().date()
             logger.debug('Sending reminders for %s: tomorrow' % user)
             tomorrow(gateway, user, visits, today)

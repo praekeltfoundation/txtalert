@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, date
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.conf import settings
+from optparse import make_option
 from txtalert.apps.general.settings.models import Setting
 from txtalert.apps.therapyedge.importer import Importer
 from txtalert.core.models import Clinic
@@ -10,6 +11,11 @@ import sys, traceback
 
 class Command(BaseCommand):
     help = "Can be run as a cronjob or directly to send import TherapyEdge data."
+    option_list = BaseCommand.option_list + (
+        make_option('--username', dest='username',
+            help='Specifies the user to import for.'),
+    )
+    
     def handle(self, *args, **kwargs):
         importer = Importer(
             uri='https://%s:%s@41.0.13.99/tools/ws/sms/patients/server.php' % (
@@ -18,7 +24,12 @@ class Command(BaseCommand):
             ),
             verbose=settings.DEBUG
         )
-        for clinic in Clinic.objects.filter(active=True):
+        username = kwargs.get('username')
+        if not username:
+            sys.exit('Please provide --username')
+        
+        user = User.objects.get(username=username)
+        for clinic in Clinic.objects.filter(active=True, user=user):
             # from midnight
             midnight = datetime.now().replace(
                 hour=0,
@@ -32,7 +43,7 @@ class Command(BaseCommand):
             print clinic.name, 'from', since, 'until', until
             try:
                 for key, value in importer.import_all_changes(
-                        User.objects.get(username='kumbu'),
+                        user,
                         clinic, 
                         since=since,
                         until=until

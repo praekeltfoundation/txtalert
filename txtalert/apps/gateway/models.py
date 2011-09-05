@@ -69,7 +69,8 @@ class SendSMS(models.Model):
         get_latest_by = 'id'
     
     def __unicode__(self):
-        return u"SendSMS: %s - %s" % (self.identifier, self.msisdn)
+        return u"SendSMS: %s - %s: %s" % (self.identifier, self.msisdn, 
+            self.smstext)
 
 
 class PleaseCallMe(models.Model):

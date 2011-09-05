@@ -458,7 +458,8 @@ class Importer(object):
 
     def get_or_create_clinic(self, doc_name):
         #get or create a clinic with the name of the spreadsheet
-        clinic, created = Clinic.objects.get_or_create(name=doc_name)
+        clinic, created = Clinic.objects.get_or_create(name=doc_name,
+            user=self.owner)
         return clinic
 
     def get_or_create_owner(self, name):

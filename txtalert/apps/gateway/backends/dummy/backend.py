@@ -18,7 +18,7 @@ class Gateway(object):
                         priority='standard', receipt='Y'):
         delivery = delivery or datetime.now()
         expiry = expiry or (datetime.now() + timedelta(days=1))
-        return SendSMS.objects.create(
+        sms = SendSMS.objects.create(
                                         user=user, 
                                         msisdn=msisdn, 
                                         smstext=smstext, 
@@ -27,6 +27,8 @@ class Gateway(object):
                                         priority=priority, 
                                         receipt=receipt, 
                                         identifier=random_string()[:8])
+        print sms
+        return sms
     
     def send_bulk_sms(self, user, msisdns, smstexts, *args, **kwargs):
         return [self.send_one_sms(user, msisdn, smstext, *args, **kwargs)

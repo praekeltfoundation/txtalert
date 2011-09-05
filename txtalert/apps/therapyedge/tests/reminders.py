@@ -102,13 +102,15 @@ class RemindersI18NTestCase(TestCase):
         Setting.objects.create(
             name='Stats Emails',
             type='t',
-            text_value='simon@soocial.com'
+            text_value='simon@soocial.com',
+            group=self.group,
         )
         
         Setting.objects.create(
             name='Stats MSISDNs',
             type='t',
-            text_value='27123456789'
+            text_value='27123456789',
+            group=self.group,
         )
         
         def create_visit(status, date):

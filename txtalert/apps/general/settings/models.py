@@ -29,8 +29,9 @@ class Setting(models.Model):
         ('o', 'Object'),
     )
 
-    name = models.CharField('Name', max_length=255, unique=True)
+    name = models.CharField('Name', max_length=255)
     type = models.CharField('Type', max_length=1, choices=TYPE_CHOICES, default='n', blank=False)
+    group = models.ForeignKey('auth.Group')
     removable = models.BooleanField('Removable', default=True)
     int_value = models.IntegerField('Integer Value', blank=True, null=True)
     text_value = models.TextField('Text Value', blank=True, null=True)
