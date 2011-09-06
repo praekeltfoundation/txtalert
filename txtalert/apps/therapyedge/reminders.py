@@ -22,7 +22,7 @@ from django.contrib.auth.models import Group
 
 from txtalert.apps.general.settings.models import Setting
 from txtalert.apps.gateway.models import SendSMS
-from txtalert.core.models import Visit
+from txtalert.core.models import Visit, MessageType
 import logging
 
 logger = logging.getLogger("reminders")
@@ -113,40 +113,43 @@ def send_stats_for_group(gateway, today, group):
     
 
 
-def send_messages(gateway, user, message_key, patients, message_formatter=lambda x: x):
+def send_messages(gateway, group, user, message_key, patients, message_formatter=lambda x: x):
     send_sms_per_language = {}
     for language, patients in group_by_language(patients).items():
         # We only can send messages to patients with an active msisdn
         patients = filter(lambda p:p.active_msisdn, patients)
-        message = message_formatter(getattr(language, message_key))
+        message_type = MessageType.objects.get(group=group, name=message_key,
+            language=language)
         # we make a set out of it to avoid having duplicate MSISDNs, this can
         # happen if a patient has two different visits on the same day
         msisdns = set([patient.active_msisdn.msisdn for patient in patients])
         send_sms_per_language[language] = gateway.send_sms(
             user,
             msisdns, 
-            [message] * len(msisdns)
+            [message_type.message] * len(msisdns)
         )
     return send_sms_per_language
 
-def tomorrow(gateway, user, visits, today):
+def tomorrow(gateway, group, user, visits, today):
     # send reminders for patients due tomorrow
     tomorrow = today + timedelta(days=1)
     visits_tomorrow = visits.filter(date__exact=tomorrow).select_related()
     return send_messages(
         gateway,
+        group,
         user,
         message_key='tomorrow_message',
         patients=[visit.patient for visit in visits_tomorrow]
     )
 
 
-def two_weeks(gateway, user, visits, today):
+def two_weeks(gateway, group, user, visits, today):
     # send reminders for patients due in two weeks
     twoweeks = today + timedelta(weeks=2)
     visits_in_two_weeks = visits.filter(date__exact=twoweeks).select_related()
     return send_messages(
         gateway,
+        group,
         user,
         message_key='twoweeks_message',
         patients=[visit.patient for visit in visits_in_two_weeks],
@@ -154,26 +157,28 @@ def two_weeks(gateway, user, visits, today):
     )
 
 
-def attended(gateway, user, visits, today):
+def attended(gateway, group, user, visits, today):
     # send reminders to patients who attended their visits
     yesterday = today - timedelta(days=1)
     attended_yesterday = visits.filter(status__exact='a', \
                                         date__exact=yesterday).select_related()
     return send_messages(
         gateway,
+        group,
         user,
         message_key='attended_message',
         patients=[visit.patient for visit in attended_yesterday]
     )
 
 
-def missed(gateway, user, visits, today):
+def missed(gateway, group, user, visits, today):
     # send reminders to patients who missed their visits
     yesterday = today - timedelta(days=1)
     missed_yesterday = visits.filter(status__exact='m', \
                                         date__exact=yesterday).select_related()
     return send_messages(
         gateway,
+        group,
         user,
         message_key='missed_message',
         patients=[visit.patient for visit in missed_yesterday]
@@ -181,21 +186,17 @@ def missed(gateway, user, visits, today):
 
 
 def all(gateway, group_names):
-    print group_names
     groups = Group.objects.filter(name__in=group_names)
-    print Group.objects.all()
-    print groups
     for group in groups:
         for user in group.user_set.all():
             visits = Visit.objects.filter(patient__opted_in=True,
                                             patient__owner=user)
-            print visits.count()
             today = datetime.now().date()
             logger.debug('Sending reminders for %s: tomorrow' % user)
-            tomorrow(gateway, user, visits, today)
+            tomorrow(gateway, group, user, visits, today)
             logger.debug('Sending reminders for %s: two weeks' % user)
-            two_weeks(gateway, user, visits, today)
+            two_weeks(gateway, group, user, visits, today)
             logger.debug('Sending reminders for %s: attended yesterday' % user)
-            attended(gateway, user, visits, today)
+            attended(gateway, group, user, visits, today)
             logger.debug('Sending reminders for %s: missed yesterday' % user)
-            missed(gateway, user, visits, today)
+            missed(gateway, group, user, visits, today)

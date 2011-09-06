@@ -107,6 +107,19 @@ class AuthProfile(models.Model):
     def __unicode__(self):
         return u"AuthProfile for %s - %s" % (self.patient, self.user)
 
+
+class MessageType(models.Model):
+    """A type of message sent to a patient"""
+    group = models.ForeignKey('auth.Group')
+    language = models.ForeignKey('core.Language')
+    name = models.CharField(max_length=255)
+    message = models.TextField()
+
+    def __unicode__(self):
+        return u"MessageType: %s in %s for %s" % (self.name, self.language, 
+            self.group)
+
+
 class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     SEX_CHOICES = (
         ('m', 'male'),

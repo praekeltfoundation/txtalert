@@ -10,7 +10,7 @@ from txtalert.apps import gateway
 
 class RemindersI18NTestCase(TestCase):
     
-    fixtures = ['patients', 'clinics']
+    fixtures = ['patients', 'clinics', 'message_types']
     
     def setUp(self):
         self.patient = Patient.objects.all()[0]
@@ -49,7 +49,8 @@ class RemindersI18NTestCase(TestCase):
     
     def send_reminders(self, _type):
         fn = getattr(reminders, _type)
-        return fn(gateway.gateway, self.user, Visit.objects.all(), datetime.now().date())
+        return fn(gateway.gateway, self.group, self.user, Visit.objects.all(), 
+            datetime.now().date())
     
     def test_tomorrow(self):
         tomorrow = self.calculate_date(days=1)

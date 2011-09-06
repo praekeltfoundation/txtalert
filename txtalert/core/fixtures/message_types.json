@@ -1,0 +1,440 @@
+[{
+    "pk": 1,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm.",
+        "group": 1,
+        "name": "missed_message",
+        "language": 1
+    }
+},
+{
+    "pk": 2,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "group": 1,
+        "name": "attended_message",
+        "language": 1
+    }
+},
+{
+    "pk": 3,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "See you at the clinic tomorrow morning.",
+        "group": 1,
+        "name": "tomorrow_message",
+        "language": 1
+    }
+},
+{
+    "pk": 4,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "group": 1,
+        "name": "twoweeks_message",
+        "language": 1
+    }
+},
+{
+    "pk": 5,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm.",
+        "group": 1,
+        "name": "missed_message",
+        "language": 2
+    }
+},
+{
+    "pk": 6,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "group": 1,
+        "name": "attended_message",
+        "language": 2
+    }
+},
+{
+    "pk": 7,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "See you at the clinic tomorrow morning.",
+        "group": 1,
+        "name": "tomorrow_message",
+        "language": 2
+    }
+},
+{
+    "pk": 8,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "group": 1,
+        "name": "twoweeks_message",
+        "language": 2
+    }
+},
+{
+    "pk": 9,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm.",
+        "group": 1,
+        "name": "missed_message",
+        "language": 3
+    }
+},
+{
+    "pk": 10,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "group": 1,
+        "name": "attended_message",
+        "language": 3
+    }
+},
+{
+    "pk": 11,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "See you at the clinic tomorrow morning.",
+        "group": 1,
+        "name": "tomorrow_message",
+        "language": 3
+    }
+},
+{
+    "pk": 12,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "group": 1,
+        "name": "twoweeks_message",
+        "language": 3
+    }
+},
+{
+    "pk": 13,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm.",
+        "group": 1,
+        "name": "missed_message",
+        "language": 4
+    }
+},
+{
+    "pk": 14,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "group": 1,
+        "name": "attended_message",
+        "language": 4
+    }
+},
+{
+    "pk": 15,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "See you at the clinic tomorrow morning.",
+        "group": 1,
+        "name": "tomorrow_message",
+        "language": 4
+    }
+},
+{
+    "pk": 16,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "group": 1,
+        "name": "twoweeks_message",
+        "language": 4
+    }
+},
+{
+    "pk": 17,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm.",
+        "group": 1,
+        "name": "missed_message",
+        "language": 5
+    }
+},
+{
+    "pk": 18,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "group": 1,
+        "name": "attended_message",
+        "language": 5
+    }
+},
+{
+    "pk": 19,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "See you at the clinic tomorrow morning.",
+        "group": 1,
+        "name": "tomorrow_message",
+        "language": 5
+    }
+},
+{
+    "pk": 20,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "group": 1,
+        "name": "twoweeks_message",
+        "language": 5
+    }
+},
+{
+    "pk": 21,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm.",
+        "group": 1,
+        "name": "missed_message",
+        "language": 6
+    }
+},
+{
+    "pk": 22,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "group": 1,
+        "name": "attended_message",
+        "language": 6
+    }
+},
+{
+    "pk": 23,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "See you at the clinic tomorrow morning.",
+        "group": 1,
+        "name": "tomorrow_message",
+        "language": 6
+    }
+},
+{
+    "pk": 24,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "group": 1,
+        "name": "twoweeks_message",
+        "language": 6
+    }
+},
+{
+    "pk": 25,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm.",
+        "group": 1,
+        "name": "missed_message",
+        "language": 7
+    }
+},
+{
+    "pk": 26,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "group": 1,
+        "name": "attended_message",
+        "language": 7
+    }
+},
+{
+    "pk": 27,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "See you at the clinic tomorrow morning.",
+        "group": 1,
+        "name": "tomorrow_message",
+        "language": 7
+    }
+},
+{
+    "pk": 28,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "group": 1,
+        "name": "twoweeks_message",
+        "language": 7
+    }
+},
+{
+    "pk": 29,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm.",
+        "group": 1,
+        "name": "missed_message",
+        "language": 8
+    }
+},
+{
+    "pk": 30,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "group": 1,
+        "name": "attended_message",
+        "language": 8
+    }
+},
+{
+    "pk": 31,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "See you at the clinic tomorrow morning.",
+        "group": 1,
+        "name": "tomorrow_message",
+        "language": 8
+    }
+},
+{
+    "pk": 32,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "group": 1,
+        "name": "twoweeks_message",
+        "language": 8
+    }
+},
+{
+    "pk": 33,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm.",
+        "group": 1,
+        "name": "missed_message",
+        "language": 9
+    }
+},
+{
+    "pk": 34,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "group": 1,
+        "name": "attended_message",
+        "language": 9
+    }
+},
+{
+    "pk": 35,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "See you at the clinic tomorrow morning.",
+        "group": 1,
+        "name": "tomorrow_message",
+        "language": 9
+    }
+},
+{
+    "pk": 36,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "group": 1,
+        "name": "twoweeks_message",
+        "language": 9
+    }
+},
+{
+    "pk": 37,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm.",
+        "group": 1,
+        "name": "missed_message",
+        "language": 10
+    }
+},
+{
+    "pk": 38,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "group": 1,
+        "name": "attended_message",
+        "language": 10
+    }
+},
+{
+    "pk": 39,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "See you at the clinic tomorrow morning.",
+        "group": 1,
+        "name": "tomorrow_message",
+        "language": 10
+    }
+},
+{
+    "pk": 40,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "group": 1,
+        "name": "twoweeks_message",
+        "language": 10
+    }
+},
+{
+    "pk": 41,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You missed your visit. Send a please call me to 0820878470 and we will call you to make a new visit. Or call 0114890878 Mon to Fri 8am to 4pm.",
+        "group": 1,
+        "name": "missed_message",
+        "language": 11
+    }
+},
+{
+    "pk": 42,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "Thank you for attending your clinic visit! We will remind you of your next visit closer to the time.",
+        "group": 1,
+        "name": "attended_message",
+        "language": 11
+    }
+},
+{
+    "pk": 43,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "See you at the clinic tomorrow morning.",
+        "group": 1,
+        "name": "tomorrow_message",
+        "language": 11
+    }
+},
+{
+    "pk": 44,
+    "model": "core.messagetype",
+    "fields": {
+        "message": "You have an visit at the clinic on %(date)s. Send a please call me to 0820878470 if you cannot attend.",
+        "group": 1,
+        "name": "twoweeks_message",
+        "language": 11
+    }
+}]
