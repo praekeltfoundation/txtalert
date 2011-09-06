@@ -92,6 +92,9 @@ class VisitAdmin(admin.ModelAdmin):
     
     
 
+class MessageTypeAdmin(admin.ModelAdmin):
+    list_filter = ('group', 'language', 'name')
+
 admin.site.register(PleaseCallMe, PleaseCallMeAdmin)
 admin.site.register(Patient, PatientAdmin)
 
@@ -100,4 +103,4 @@ admin.site.register(Language)
 admin.site.register(Clinic)
 admin.site.register(Visit, VisitAdmin)
 admin.site.register(Event)
-admin.site.register(MessageType)
+admin.site.register(MessageType, MessageTypeAdmin)
