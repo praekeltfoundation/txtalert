@@ -30,7 +30,7 @@ logger = logging.getLogger("reminders")
 
 REMINDERS_EMAIL_TEXT = \
 """
-%(total)s TXTAlert Messages Sent on %(date)s
+%(total)s TXTAlert %(group)s Messages Sent on %(date)s
 Attened Yesterday: %(attended)s
 Missed Yesterday: %(missed)s (%(missed_percentage).1f%%)
 Pending Tomorrow: %(tomorrow)s
@@ -39,7 +39,7 @@ Pending in 2 weeks: %(two_weeks)s
 
 REMINDERS_SMS_TEXT = \
 """
-TXTAlert %(total)s Messages Sent:
+TXTAlert %(total)s %(group)s Messages Sent:
 Attended Yesterday - %(attended)s
 Missed Yesterday - %(missed)s (%(missed_percentage).1f%%)
 Pending Tomorrow - %(tomorrow)s
@@ -83,6 +83,7 @@ def send_stats_for_group(gateway, today, group):
     # send email with stats
     emails = group.setting_set.get(name='Stats Emails').value.split('\r\n')
     message = REMINDERS_EMAIL_TEXT % {
+        'group': group.name.title(),
         'total': total_count, 
         'date': today, 
         'attended': attended_count,
@@ -93,11 +94,12 @@ def send_stats_for_group(gateway, today, group):
     }
     logger.info('Sending stat emails to: %s' % ', '.join(emails))
     logger.debug(message)
-    mail.send_mail('[TxtAlert] Messages Sent Report', message, settings.SERVER_EMAIL, emails, fail_silently=True)
+    mail.send_mail('[TxtAlert] %s Messages Sent Report' % group.name, message, settings.SERVER_EMAIL, emails, fail_silently=True)
     
     # send sms with stats
     msisdns = group.setting_set.get(name='Stats MSISDNs').value.split('\r\n')
     message = REMINDERS_SMS_TEXT % {
+        'group': group.name.title(),
         'total': total_count, 
         'attended': attended_count,
         'missed': missed_count, 

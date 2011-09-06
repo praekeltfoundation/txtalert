@@ -154,7 +154,8 @@ class RemindersI18NTestCase(TestCase):
             'missed': 1,
             'missed_percentage': (1.0/2.0 * 100), # 1 out of 2 visits was missed
             'tomorrow': 2,
-            'two_weeks': 2
+            'two_weeks': 2,
+            'group': self.group.name.title(),
         }
         # check if this is so
         self.assertEquals(message.body, expecting_mail_body)
@@ -169,6 +170,7 @@ class RemindersI18NTestCase(TestCase):
             'missed_percentage': (1.0/2.0 * 100),
             'tomorrow': 2, 
             'two_weeks': 2,
+            'group': self.group.name.title(),
         }
         self.assertEquals(stat_sms.smstext, expecting_sms_text)
         self.assertEquals(stat_sms.msisdn, '27123456789')
