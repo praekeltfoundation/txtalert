@@ -11,7 +11,7 @@ from txtalert.core.models import PleaseCallMe as CorePleaseCallMe
 from txtalert.core.utils import normalize_msisdn
 from txtalert.core.forms import RequestCallForm
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import logging
 import iso8601
 import re
@@ -197,6 +197,14 @@ class PatientHandler(BaseHandler):
                     clinic_name = ''
                 
                 visits = patient.visit_set.all()
+                attended = visits.filter(status='a').count()
+                rescheduled = visits.filter(status='r').count()
+                missed = visits.filter(status='m').count()
+                total = visits.filter(date__lt=date.today()).count()
+                if total:
+                    attendance = int(float(attended) / float(total) * 100)
+                else:
+                    attendance = 0.0
                 
                 return {
                     'msisdn': msisdn,
@@ -206,11 +214,11 @@ class PatientHandler(BaseHandler):
                     'next_appointment': visit_info,
                     'visit_id': visit.pk if visit else '',
                     'clinic': clinic_name,
-                    'attendance': int((1.0 - patient.risk_profile) * 100),
-                    'total': visits.count(),
-                    'attended': visits.filter(status='a').count(),
-                    'rescheduled': visits.filter(status='r').count(),
-                    'missed': visits.filter(status='m').count(),
+                    'attendance': attendance,
+                    'total': total,
+                    'attended': attended,
+                    'rescheduled': rescheduled,
+                    'missed': missed,
                 }
             except Patient.DoesNotExist:
                 pass

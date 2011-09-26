@@ -57,7 +57,7 @@ class PatientAdmin(admin.ModelAdmin):
     form = PatientForm
     list_display = ('te_id', 'sex', 'age', 'last_clinic', 'active_msisdn')
     list_filter = ('last_clinic',)
-    search_fields = ['msisdns__msisdn']
+    search_fields = ['msisdns__msisdn', 'te_id', 'name', 'surname']
     readonly_fields = ('owner','last_clinic',)
     
     def queryset(self, request):
@@ -70,7 +70,12 @@ class PatientAdmin(admin.ModelAdmin):
     
     def save_model(self, request, obj, form, change):
         if not request.user.is_superuser:
-            obj.user = request.user
+            obj.owner = request.user
+        else:
+            try:
+                obj.owner
+            except User.DoesNotExist:
+                obj.owner = request.user
         obj.save()
     
 

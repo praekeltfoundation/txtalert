@@ -10,13 +10,14 @@
     {% if forloop.first %}
         <div class="widget rescheduled border">
             <span class="black">
-                <strong>Next:</strong>{{visit.date|date:"j F Y"}}
-            </span><br>
+                <strong>Next:</strong> {{visit.date|date:"j F Y"}}
+            </span><small>{{visit.get_status_display}}</small><br>
             {{visit.clinic.name}} <a href="{% url bookings:appointment_change visit_id=visit.pk %}">(Change)</a>
         </div>
     {% else %}
         <div class="widget border">
-            <span class="black">{{visit.date|date:"j F Y"}}</span><br>
+            <span class="black">{{visit.date|date:"j F Y"}}</span>
+            <small>{{visit.get_status_display}}</small><br>
             {{visit.clinic.name}} <a href="{% url bookings:appointment_change visit_id=visit.pk %}">(Change)</a>
         </div>
     {% endif %}

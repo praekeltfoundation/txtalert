@@ -10,22 +10,34 @@ class Command(BaseCommand):
     help = "Generate flat pages required for txtAlert:bookings"
     option_list = BaseCommand.option_list + (
         make_option('--patient-id', dest='patient_id', help='How many patients to create'),
+        make_option('--clinic', dest='clinic', help='Which clinic should the patient attend?'),
     )
     def handle(self, *args, **options):
         patient_id = options['patient_id']
+        clinic = options['clinic']
         if not patient_id:
-            print 'Please provided and --patient-id'
+            print 'Please provided a --patient-id'
             sys.exit(1)
+        if not clinic:
+            print 'Please provide a --clinic'
+            sys.exit(1)
+
         
         patient = Patient.objects.get(te_id=patient_id)
-        clinic = Clinic.objects.all()[0]
+        clinic = Clinic.objects.get(name=clinic)
         last_year = datetime.today() - timedelta(days=365)
-        for i in range(15):
+        for i in range(20):
             date = last_year + timedelta(days=(i*28))
             if date < datetime.today():
-                status = 'a'
+                if i == 12:
+                    status = 'm'
+                else:
+                    status = 'a'
             else:
-                status = 's'
+                if i == 14:
+                    status = 'r'
+                else:
+                    status = 's'
             
             patient.visit_set.create(
                 clinic=clinic,
