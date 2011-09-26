@@ -44,7 +44,7 @@ class Command(BaseCommand):
                 status=status,
                 date=date,
                 visit_type='arv',
-                te_visit_id = 'visit-%s' % Visit.objects.count()+1
+                te_visit_id = 'visit-%s' % (Visit.objects.count()+1,)
             )
             
         
