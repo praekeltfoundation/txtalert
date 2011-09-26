@@ -71,12 +71,21 @@ class Clinic(models.Model):
     
 
 
+def users_in_group_with(user):
+    groups = user.groups.all()
+    users = User.objects.filter(groups__in=groups)
+    return users
+
 class FilteredQuerySetManager(models.Manager):
     def __init__(self, *args, **kwargs):
         super(FilteredQuerySetManager, self).__init__()
         self.args = args
         self.kwargs = kwargs
     
+    def in_group_with(self, user):
+        users_in_group = users_in_group_with(user)
+        return self.get_query_set().filter(owner__in=users_in_group)
+
     def get_query_set(self):
         return super(FilteredQuerySetManager, self) \
                 .get_query_set() \
@@ -228,6 +237,11 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         
 
 class VisitManager(FilteredQuerySetManager):
+
+    def in_group_with(self, user):
+        users_in_group = users_in_group_with(user)
+        return self.get_query_set().filter(patient__owner__in=users_in_group)
+    
     def upcoming(self):
         return self.get_query_set().filter(date__gte=date.today())
     

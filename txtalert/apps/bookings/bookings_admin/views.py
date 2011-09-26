@@ -76,7 +76,7 @@ def find_patient(request):
         if msisdn:
             msisdn = normalize_msisdn(msisdn)
         
-        patients = Patient.objects.filter(
+        patients = Patient.objects.in_group_with(request.user).filter(
             Q(te_id__icontains=request.GET.get('patient_id') or 'False') |
             Q(active_msisdn__msisdn__icontains=msisdn) |
             Q(name__contains=request.GET.get('name') or 'False') | 
@@ -179,7 +179,7 @@ def appointments(request):
         'date': day
     })
     
-    visits = Visit.objects.filter(date=day)
+    visits = Visit.objects.in_group_with(request.user).filter(date=day)
     try:
         first_upcoming_visit = Visit.objects.upcoming()[0]
     except IndexError:
