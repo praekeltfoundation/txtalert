@@ -47,9 +47,9 @@ urlpatterns += patterns('',
     (r'^api/v1/', include('txtalert.apps.api.urls')),
 )
 
-# HAPRoxy health check
+# HAProxy health check
 urlpatterns += patterns('',
-    (r'^health/$', health, name='health')
+    (r'^health/$', health, name='health'),
 )
 
 # statics
