@@ -20,14 +20,18 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.http import HttpResponse
 
 admin.autodiscover()
+
+def health(request):
+    return HttpResponse('')
 
 # web site
 urlpatterns = patterns('',
     # Uncomment this for admin docs:
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    
+
     (r'', include('txtalert.apps.general.jquery.urls')),
     (r'', include('txtalert.core.urls')),
     (r'^therapyedge/', include('txtalert.apps.therapyedge.urls')),
@@ -40,7 +44,12 @@ urlpatterns = patterns('',
 
 # web API
 urlpatterns += patterns('',
-   (r'^api/v1/', include('txtalert.apps.api.urls')),
+    (r'^api/v1/', include('txtalert.apps.api.urls')),
+)
+
+# HAPRoxy health check
+urlpatterns += patterns('',
+    (r'^health/$', health, name='health')
 )
 
 # statics
