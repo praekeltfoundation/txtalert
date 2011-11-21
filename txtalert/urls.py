@@ -49,7 +49,7 @@ urlpatterns += patterns('',
 
 # HAProxy health check
 urlpatterns += patterns('',
-    (r'^health/$', health, name='health'),
+    url(r'^health/$', health, name="health")
 )
 
 # statics
