@@ -133,6 +133,7 @@ class PCMHandler(BaseHandler):
             created_at__gt=datetime.now() - timedelta(hours=2)).exists():
             resp = rc.DUPLICATE_ENTRY
             resp.content = ''
+            resp['Content-Length'] = 0
             return resp
 
         pcm = PleaseCallMe.objects.create(user=user, sms_id=sms_id,
@@ -141,6 +142,7 @@ class PCMHandler(BaseHandler):
                                         message=message)
         resp = rc.CREATED
         resp.content = 'Please Call Me registered'
+        resp['Content-Length'] = len(resp.content)
         return resp
 
 
