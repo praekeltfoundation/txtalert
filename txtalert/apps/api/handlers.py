@@ -132,7 +132,7 @@ class PCMHandler(BaseHandler):
             message=message,
             created_at__gt=datetime.now() - timedelta(hours=2)).exists():
             resp = rc.DUPLICATE_ENTRY
-            resp.content = "Already registered in the last two hours"
+            # resp.content = "Already registered in the last two hours"
             return resp
 
         pcm = PleaseCallMe.objects.create(user=user, sms_id=sms_id,
