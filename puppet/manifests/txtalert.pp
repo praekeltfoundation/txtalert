@@ -70,6 +70,12 @@ class txtalert::repo {
     }
 }
 
+# Bugfix for https://bitbucket.org/jespern/django-piston/issue/173/
+file { "/var/praekelt/txtalert/ve/lib/python2.6/site-packages/piston/__init__.py":
+    ensure => "file",
+    owner => "ubuntu",
+}
+
 # Create these accounts
 class txtalert::accounts {
     postgres::role { "txtalert":
@@ -122,31 +128,6 @@ exec { "Install requirements":
     cwd => "/var/praekelt/txtalert",
     timeout => "0", # disable timeout
     onlyif => "test -d ve"
-}
-
-file {
-    "/var/praekelt/txtalert/environments/develop.py":
-        ensure => "file",
-        owner => "ubuntu",
-        content => "
-
-from txtalert.env.settings import *
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'postgresql_psycopg2',
-        'NAME': 'txtalert_dev',
-        'USER': 'txtalert',
-        'PASSWORD': 'txtalert',
-        'HOST': 'localhost',
-        'PORT': ''
-    }
-}
-
-DEBUG = False
-TEMPLATE_DEBUG = DEBUG
-
-"
 }
 
 file { "/etc/nginx/sites-enabled/development.txtalert.conf":
@@ -209,11 +190,11 @@ User["ubuntu"]
     -> Class["txtalert::packages"] 
     -> Class["txtalert::accounts"]
     -> Class["txtalert::database"]
-    -> File["/etc/nginx/sites-enabled/development.txtalert.conf"]
+    #-> File["/etc/nginx/sites-enabled/development.txtalert.conf"]
     -> Class["txtalert::repo"]
     -> Exec["Create virtualenv"] 
     -> Exec["Install requirements"] 
-    -> File['/var/praekelt/txtalert/environments/develop.py']
+    -> File["/var/praekelt/txtalert/ve/lib/python2.6/site-packages/piston/__init__.py"]
     -> Exec['Syncdb']
     -> Exec['Migrate']
     -> Exec['Collect static']
