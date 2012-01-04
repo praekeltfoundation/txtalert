@@ -76,6 +76,12 @@ file { "/var/praekelt/txtalert/ve/lib/python2.6/site-packages/piston/__init__.py
     owner => "ubuntu",
 }
 
+# Create logs path.
+file { "/var/praekelt/txtalert/logs":
+    ensure => "directory",
+    owner => "ubuntu",
+}
+
 # Create these accounts
 class txtalert::accounts {
     postgres::role { "txtalert":
@@ -114,20 +120,22 @@ Host github.com
 "
 }
 
+class txtalert::ve {
+    exec { "create_virtualenv":
+        command => "virtualenv --no-site-packages ve",
+        cwd => "/var/praekelt/txtalert",
+        unless => "test -d ve"
+    }
 
-exec { "Create virtualenv":
-    command => "virtualenv --no-site-packages ve",
-    cwd => "/var/praekelt/txtalert",
-    unless => "test -d ve"
-}
-
-exec { "Install requirements":
-    command => ". ve/bin/activate && \
-                    pip install -r requirements.pip && \
-                deactivate",
-    cwd => "/var/praekelt/txtalert",
-    timeout => "0", # disable timeout
-    onlyif => "test -d ve"
+    exec { "pip_requirements":
+        command => ". ve/bin/activate && \
+                        pip install -r requirements.pip && \
+                    deactivate",
+        cwd => "/var/praekelt/txtalert",
+        timeout => "0", # disable timeout
+        onlyif => "test -d ve",
+        require => Exec['create_virtualenv'];
+    }
 }
 
 file { "/etc/nginx/sites-enabled/development.txtalert.conf":
@@ -179,7 +187,8 @@ class txtalert {
         txtalert::accounts, 
         txtalert::packages, 
         txtalert::database,
-        txtalert::repo
+        txtalert::repo,
+        txtalert::ve
 }
 
 User["ubuntu"]
@@ -192,8 +201,10 @@ User["ubuntu"]
     -> Class["txtalert::database"]
     #-> File["/etc/nginx/sites-enabled/development.txtalert.conf"]
     -> Class["txtalert::repo"]
-    -> Exec["Create virtualenv"] 
-    -> Exec["Install requirements"] 
+    -> File["/var/praekelt/txtalert/logs"]
+    -> Class["txtalert::ve"]
+    #-> Exec["Create virtualenv"] 
+    #-> Exec["Install requirements"] 
     -> File["/var/praekelt/txtalert/ve/lib/python2.6/site-packages/piston/__init__.py"]
     -> Exec['Syncdb']
     -> Exec['Migrate']
