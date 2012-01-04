@@ -47,6 +47,29 @@ class txtalert::packages {
     }
 }
 
+# Clone, update and checkout development repo.
+class txtalert::repo {
+    exec { "clone_repo":
+        command => "git clone https://github.com/smn/txtalert.git",
+        cwd => "/var/praekelt",
+        unless => "test -d /var/praekelt/txtalert/.git"
+    }
+
+    exec { "update_repo":
+        command => "git pull",
+        cwd => "/var/praekelt/txtalert",
+        onlyif => "test -d /var/praekelt/txtalert/.git",
+        require => Exec['clone_repo'];
+    }
+    
+    exec { "checkout_dev_branch":
+        command => "git checkout -b develop origin/develop",
+        cwd => "/var/praekelt/txtalert",
+        unless => "git branch | grep '* develop'",
+        require => Exec['update_repo'];
+    }
+}
+
 # Create these accounts
 class txtalert::accounts {
     postgres::role { "txtalert":
@@ -85,23 +108,6 @@ Host github.com
 "
 }
 
-exec { "Clone git repository":
-    command => "git clone https://github.com/smn/txtalert.git",
-    cwd => "/var/praekelt",
-    unless => "test -d /var/praekelt/txtalert/.git"
-}
-
-exec { "Checkout development branch":
-    command => "git checkout -b develop origin/develop",
-    cwd => "/var/praekelt/txtalert",
-    unless => "git branch | grep '* develop'"
-}
-
-exec { "Update git repository":
-    command => "git pull",
-    cwd => "/var/praekelt/txtalert",
-    onlyif => "test -d /var/praekelt/txtalert/.git"
-}
 
 exec { "Create virtualenv":
     command => "virtualenv --no-site-packages ve",
@@ -191,12 +197,12 @@ class txtalert {
     include 
         txtalert::accounts, 
         txtalert::packages, 
-        txtalert::database
+        txtalert::database,
+        txtalert::repo
 }
 
 User["ubuntu"]
     -> File["/home/ubuntu"]
-    #-> Exec["Resynchronize apt package index"] 
     -> File["/var/praekelt"] 
     -> File["/home/ubuntu/.ssh"] 
     -> File["/home/ubuntu/.ssh/config"] 
@@ -204,9 +210,7 @@ User["ubuntu"]
     -> Class["txtalert::accounts"]
     -> Class["txtalert::database"]
     -> File["/etc/nginx/sites-enabled/development.txtalert.conf"]
-    -> Exec["Clone git repository"]
-    -> Exec["Update git repository"]
-    -> Exec["Checkout development branch"] 
+    -> Class["txtalert::repo"]
     -> Exec["Create virtualenv"] 
     -> Exec["Install requirements"] 
     -> File['/var/praekelt/txtalert/environments/develop.py']
