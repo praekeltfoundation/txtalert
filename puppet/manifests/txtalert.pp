@@ -86,7 +86,7 @@ Host github.com
 }
 
 exec { "Clone git repository":
-    command => "git clone git@github.com:smn/txtalert.git",
+    command => "git clone https://github.com/smn/txtalert.git",
     cwd => "/var/praekelt",
     unless => "test -d /var/praekelt/txtalert/.git"
 }
