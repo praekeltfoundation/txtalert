@@ -1,56 +1,51 @@
-# defaults for Exec
-user {  "ubuntu":
+# Defaults for exec
+user {"ubuntu":
     ensure => "present",
     home => "/home/ubuntu",
     shell => "/bin/bash"
 }
 
-file {
-    "/home/ubuntu":
-        ensure => "directory",
-        owner => "ubuntu";
+file { "/home/ubuntu":
+    ensure => "directory",
+    owner => "ubuntu";
 }
 
+# Globally set exec paths and user.
 Exec {
     path => ["/bin", "/usr/bin", "/usr/local/bin"],
     user => 'ubuntu',
 }
 
-# Make sure packge index is updated
-class apt::update {
-    exec { "Resynchronize apt package index":
-        command => "aptitude update",
+
+# Install required packages.
+class txtalert::packages {
+    package { [
+        "build-essential",
+        "python",
+        "python-dev",
+        "python-setuptools",
+        "python-pip",
+        "python-virtualenv",
+        "postgresql-8.4",
+        "libpq-dev",
+        "rabbitmq-server",
+        "git-core",
+        "openjdk-6-jre-headless",
+        "libcurl4-openssl-dev",
+        "memcached",
+        "tidy",
+        "curl",
+        "nginx"]:
+        ensure => latest, 
+        require => Exec['update_apt'];
+    }
+
+    # Update package index.
+    exec { "update_apt":
+        command => "apt-get update",
         user => "root",
     }
 }
-
-# Install these packages after apt-get update
-define apt::package($ensure='latest') {
-    package { $name: 
-        ensure => $ensure, 
-        require => Class['apt::update'];
-    }
-}
-
-class txtalert::packages {
-    apt::package { "build-essential": ensure => latest }
-    apt::package { "python": ensure => latest }
-    apt::package { "python-dev": ensure => latest }
-    apt::package { "python-setuptools": ensure => latest }
-    apt::package { "python-pip": ensure => latest }
-    apt::package { "python-virtualenv": ensure => latest }
-    apt::package { "postgresql-8.4": ensure => latest }
-    apt::package { "libpq-dev": ensure => latest }
-    apt::package { "rabbitmq-server": ensure => latest }
-    apt::package { "git-core": ensure => latest }
-    apt::package { "openjdk-6-jre-headless": ensure => latest }
-    apt::package { "libcurl4-openssl-dev": ensure => latest }
-    apt::package { "memcached": ensure => latest }
-    apt::package { "tidy": ensure => latest }
-    apt::package { "curl": ensure => latest }
-    apt::package { "nginx": ensure => latest }
-}
-
 
 # Create these accounts
 class txtalert::accounts {
@@ -192,15 +187,16 @@ exec { "Collect static":
 }
 
 class txtalert {
-    include apt::update,
-                txtalert::accounts,
-                txtalert::packages, 
-                txtalert::database
+    #include apt::update,
+    include 
+        txtalert::accounts, 
+        txtalert::packages, 
+        txtalert::database
 }
 
 User["ubuntu"]
     -> File["/home/ubuntu"]
-    -> Exec["Resynchronize apt package index"] 
+    #-> Exec["Resynchronize apt package index"] 
     -> File["/var/praekelt"] 
     -> File["/home/ubuntu/.ssh"] 
     -> File["/home/ubuntu/.ssh/config"] 
