@@ -18,7 +18,7 @@ from defaults import *
 
 DEBUG = True
 
-DATABASE_ENGINE = 'sqlite3'
+DATABASE_ENGINE = 'django.db.backends.sqlite3'
 DATABASE_NAME = join(APP_ROOT, 'db', 'txtalert_demo.db')
 DATABASE_USER = ''
 DATABASE_PASSWORD = ''
