@@ -1,4 +1,4 @@
-# Defaults for exec
+# Defaults for exec.
 user {"ubuntu":
     ensure => "present",
     home => "/home/ubuntu",
@@ -16,26 +16,53 @@ Exec {
     user => 'ubuntu',
 }
 
+# Stop HAProxy complaining about file limits.
+class haproxy::limits {
+    # Adds a line to a file if not already present.
+    define line($file, $line) {
+        exec { "echo '${line}' >> ${file}":
+            user => "root",
+            unless => "grep '${line}' ${file}"
+        }
+    }
 
+    line {"soft_limit":
+        file => "/etc/security/limits.conf",
+        line => "ubuntu soft nofile 16384"
+    }
+
+    line {"hard_limit":
+        file => "/etc/security/limits.conf",
+        line => "ubuntu hard nofile 16384"
+    }
+    
+    line {"pam_limits":
+        file => "/etc/pam.d/common-session",
+        line => "session required pam_limits.so"
+    }
+}
+    
 # Install required packages.
 class txtalert::packages {
     package { [
         "build-essential",
+        "curl",
+        "git-core",
+        "haproxy",
+        "libcurl4-openssl-dev",
+        "libpq-dev",
+        "memcached",
+        "nginx",
+        "openjdk-6-jre-headless",
         "python",
         "python-dev",
         "python-setuptools",
         "python-pip",
         "python-virtualenv",
         "postgresql-8.4",
-        "libpq-dev",
         "rabbitmq-server",
-        "git-core",
-        "openjdk-6-jre-headless",
-        "libcurl4-openssl-dev",
-        "memcached",
-        "tidy",
-        "curl",
-        "nginx"]:
+        "supervisor",
+        "tidy"]:
         ensure => latest, 
         require => Exec['update_apt'];
     }
@@ -63,9 +90,11 @@ class txtalert::repo {
     }
     
     exec { "checkout_dev_branch":
-        command => "git checkout -b develop origin/develop",
+        #command => "git checkout -b develop origin/develop",
+        command => "git checkout -b feature/envcleanup origin/feature/envcleanup",
         cwd => "/var/praekelt/txtalert",
-        unless => "git branch | grep '* develop'",
+        #unless => "git branch | grep '* develop'",
+        unless => "git branch | grep '* feature/envcleanup'",
         require => Exec['update_repo'];
     }
 }
@@ -184,6 +213,7 @@ exec { "Collect static":
 class txtalert {
     #include apt::update,
     include 
+        haproxy::limits,
         txtalert::accounts, 
         txtalert::packages, 
         txtalert::database,
@@ -199,12 +229,11 @@ User["ubuntu"]
     -> Class["txtalert::packages"] 
     -> Class["txtalert::accounts"]
     -> Class["txtalert::database"]
-    #-> File["/etc/nginx/sites-enabled/development.txtalert.conf"]
+    -> File["/etc/nginx/sites-enabled/development.txtalert.conf"]
     -> Class["txtalert::repo"]
     -> File["/var/praekelt/txtalert/logs"]
     -> Class["txtalert::ve"]
-    #-> Exec["Create virtualenv"] 
-    #-> Exec["Install requirements"] 
+    -> Class["haproxy::limits"]
     -> File["/var/praekelt/txtalert/ve/lib/python2.6/site-packages/piston/__init__.py"]
     -> Exec['Syncdb']
     -> Exec['Migrate']
