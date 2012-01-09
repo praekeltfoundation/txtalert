@@ -1,23 +1,40 @@
-# Defaults for exec.
-user {"ubuntu":
-    ensure => "present",
-    home => "/home/ubuntu",
-    shell => "/bin/bash"
-}
-
-file { "/home/ubuntu":
-    ensure => "directory",
-    owner => "ubuntu";
-}
-
 # Globally set exec paths and user.
 Exec {
     path => ["/bin", "/usr/bin", "/usr/local/bin"],
     user => 'ubuntu',
 }
 
-# Stop HAProxy complaining about file limits.
-class haproxy::limits {
+# System setup/init class.
+class txtalert::sysinit {
+    # Create required paths and files.
+    file { "ubuntu_home":
+        path => "/home/ubuntu",
+        ensure => "directory",
+        owner => "ubuntu";
+    }
+
+    file { "webapp_path":
+        path => "/var/praekelt",
+        ensure => "directory",
+        owner => "ubuntu";
+    }
+
+    file { "ubuntu_ssh_path":
+        path => "/home/ubuntu/.ssh",
+        ensure => "directory",
+        owner => "ubuntu",
+    }
+
+    file { "ubuntu_ssh_config":
+        path => "/home/ubuntu/.ssh/config",
+        ensure => "file",
+        owner => "ubuntu",
+        content => "
+Host github.com
+    StrictHostKeyChecking no
+    "
+    }
+
     # Adds a line to a file if not already present.
     define line($file, $line) {
         exec { "echo '${line}' >> ${file}":
@@ -25,7 +42,8 @@ class haproxy::limits {
             unless => "grep '${line}' ${file}"
         }
     }
-
+    
+    # Stop HAProxy complaining about file limits.
     line {"soft_limit":
         file => "/etc/security/limits.conf",
         line => "ubuntu soft nofile 16384"
@@ -40,10 +58,8 @@ class haproxy::limits {
         file => "/etc/pam.d/common-session",
         line => "session required pam_limits.so"
     }
-}
     
-# Install required packages.
-class txtalert::packages {
+    # Install required packages.
     package { [
         "build-essential",
         "curl",
@@ -97,29 +113,31 @@ class txtalert::repo {
         unless => "git branch | grep '* feature/envcleanup'",
         require => Exec['update_repo'];
     }
+
+    # Create logs path.
+    file { "/var/praekelt/txtalert/logs":
+        ensure => "directory",
+        owner => "ubuntu",
+    }
 }
 
-# Bugfix for https://bitbucket.org/jespern/django-piston/issue/173/
-file { "/var/praekelt/txtalert/ve/lib/python2.6/site-packages/piston/__init__.py":
-    ensure => "file",
-    owner => "ubuntu",
+# Bugfix class.
+class txtalert::bugfixes {
+    # Bugfix for https://bitbucket.org/jespern/django-piston/issue/173/
+    file { "piston_bugfix_173":
+        path => "/var/praekelt/txtalert/ve/lib/python2.6/site-packages/piston/__init__.py",
+        ensure => "file",
+        owner => "ubuntu",
+    }
 }
 
-# Create logs path.
-file { "/var/praekelt/txtalert/logs":
-    ensure => "directory",
-    owner => "ubuntu",
-}
-
-# Create these accounts
-class txtalert::accounts {
+# Configure database.
+class txtalert::database {
     postgres::role { "txtalert":
         ensure => present,
         password => txtalert,
     }
-}
-
-class txtalert::database {
+    
     postgres::database { "txtalert_dev":
         ensure => present,
         owner => txtalert,
@@ -127,28 +145,7 @@ class txtalert::database {
     }
 }
 
-file {
-    "/var/praekelt":
-        ensure => "directory",
-        owner => "ubuntu";
-}
-
-file {
-    "/home/ubuntu/.ssh":
-        ensure => "directory",
-        owner => "ubuntu",
-}
-
-file {
-    "/home/ubuntu/.ssh/config":
-        ensure => "file",
-        owner => "ubuntu",
-        content => "
-Host github.com
-    StrictHostKeyChecking no
-"
-}
-
+# Create and init ve.
 class txtalert::ve {
     exec { "create_virtualenv":
         command => "virtualenv --no-site-packages ve",
@@ -167,78 +164,78 @@ class txtalert::ve {
     }
 }
 
-file { "/etc/nginx/sites-enabled/development.txtalert.conf":
-    ensure => symlink,
-    target => "/var/praekelt/txtalert/config/nginx/development.conf"
+class txtalert::symlinks {
+    file { "/etc/nginx/sites-enabled/development.txtalert.conf":
+        ensure => symlink,
+        target => "/var/praekelt/txtalert/config/nginx/development.conf"
+    }
+    
+    file { "/etc/nginx/sites-enabled/default":
+        ensure => absent,
+    }
+
+    file { "/etc/supervisor/conf.d/supervisord.develop.conf":
+        ensure => symlink,
+        target => "/var/praekelt/txtalert/supervisord.develop.conf"
+    }
 }
 
-exec { "Syncdb":
-    command => ". ve/bin/activate && \
+class txtalert::django_maint {
+    exec { "django_syncdb":
+        command => ". ve/bin/activate && \
                     ./manage.py syncdb --noinput --settings=environments.develop && \
-                deactivate
-                ",
-    cwd => "/var/praekelt/txtalert",
-}
-exec { "Migrate":
-    command => ". ve/bin/activate && \
+                    deactivate",
+        cwd => "/var/praekelt/txtalert",
+    }
+
+    exec { "django_migrate":
+        command => ". ve/bin/activate && \
                     ./manage.py migrate --no-initial-data --settings=environments.develop && \
-                deactivate
-                ",
-    timeout => "0",
-    cwd => "/var/praekelt/txtalert",
-}
+                    deactivate",
+        timeout => "0",
+        cwd => "/var/praekelt/txtalert",
+    }
 
-exec { "Restart txtAlert":
-    command => ". ve/bin/activate && \
-                    supervisorctl -c supervisord.develop.conf reload && \
-                deactivate",
-    cwd => "/var/praekelt/txtalert",
-    onlyif => "ps -p `cat tmp/pids/supervisord.pid`"
-}
-exec { "Start txtAlert":
-    command => ". ve/bin/activate && \
-                    supervisord -c supervisord.develop.conf && \
-                deactivate",
-    cwd => "/var/praekelt/txtalert",
-    unless => "ps -p `cat tmp/pids/supervisord.pid`"
-}
-
-exec { "Collect static":
-    command => ". ve/bin/activate && \
+    exec { "django_collect_static":
+        command => ". ve/bin/activate && \
                     ./manage.py collectstatic --settings=environments.develop --noinput && \
-                deactivate",
-    cwd => "/var/praekelt/txtalert"
+                    deactivate",
+        cwd => "/var/praekelt/txtalert"
+    }
+}
+
+# Reload supervisor thus (re)starting processes.
+exec { "supervisor_reload":
+    command => "supervisorctl reload",
+    user => "root",
 }
 
 class txtalert {
-    #include apt::update,
     include 
-        haproxy::limits,
-        txtalert::accounts, 
-        txtalert::packages, 
-        txtalert::database,
+        txtalert::bugfixes,
+        txtalert::database, 
+        txtalert::django_maint, 
         txtalert::repo,
+        txtalert::symlinks,
+        txtalert::sysinit,
         txtalert::ve
 }
 
-User["ubuntu"]
-    -> File["/home/ubuntu"]
-    -> File["/var/praekelt"] 
-    -> File["/home/ubuntu/.ssh"] 
-    -> File["/home/ubuntu/.ssh/config"] 
-    -> Class["txtalert::packages"] 
-    -> Class["txtalert::accounts"]
-    -> Class["txtalert::database"]
-    -> File["/etc/nginx/sites-enabled/development.txtalert.conf"]
-    -> Class["txtalert::repo"]
-    -> File["/var/praekelt/txtalert/logs"]
-    -> Class["txtalert::ve"]
-    -> Class["haproxy::limits"]
-    -> File["/var/praekelt/txtalert/ve/lib/python2.6/site-packages/piston/__init__.py"]
-    -> Exec['Syncdb']
-    -> Exec['Migrate']
-    -> Exec['Collect static']
-    -> Exec["Restart txtAlert"]
-    -> Exec["Start txtAlert"]
+# Create 'ubuntu' user.
+user { "ubuntu":
+    ensure => "present",
+    home => "/home/ubuntu",
+    shell => "/bin/bash"
+}
 
+User["ubuntu"]
+    -> Class["txtalert::sysinit"] 
+    -> Class["txtalert::database"] 
+    -> Class["txtalert::repo"] 
+    -> Class["txtalert::ve"] 
+    -> Class["txtalert::bugfixes"] 
+    -> Class["txtalert::django_maint"] 
+    -> Class["txtalert::symlinks"] 
+    -> Exec["supervisor_reload"]
+    
 include txtalert
