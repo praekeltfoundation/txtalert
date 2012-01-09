@@ -164,6 +164,7 @@ class txtalert::ve {
     }
 }
 
+# Create supervisor and nginx symlinks.
 class txtalert::symlinks {
     file { "/etc/nginx/sites-enabled/development.txtalert.conf":
         ensure => symlink,
@@ -180,6 +181,7 @@ class txtalert::symlinks {
     }
 }
 
+# Django syncd, mograte and static calls.
 class txtalert::django_maint {
     exec { "django_syncdb":
         command => ". ve/bin/activate && \
