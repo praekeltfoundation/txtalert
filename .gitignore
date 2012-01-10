@@ -15,6 +15,7 @@ logs/*.log
 nosetests.xml
 pep8.txt
 tmp/coverage/*
+*.swp
 ve/
 webroot/media/upload/*
 widget.wgt
