@@ -126,7 +126,7 @@ class SimpleCRUD:
         curr_month = start.month
         #get all the worksheet names between the start and end date
         for name in range(curr_month - 1, until.month):
-            worksheet_name = months[name]
+            worksheet_name = "%s %s" % (months[name], until.year)
             #process the current worksheet
             app_worksheet = self.get_worksheet(worksheet_name)
             #check if the worksheet was found and has contents
