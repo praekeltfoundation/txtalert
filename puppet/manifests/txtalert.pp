@@ -63,14 +63,14 @@ package { [
     "python-setuptools",
     "python-pip",
     "python-virtualenv",
-    "postgresql-8.4",
+    "postgresql",
     "supervisor"
     ]:
     ensure => latest,
     subscribe => Exec['update_apt'];
 }
 
-exec { "clone repo":
+exec { "clone_repo":
     command => "git clone https://github.com/smn/txtalert.git",
     cwd => "/var/praekelt",
     unless => "test -d /var/praekelt/txtalert",
@@ -84,27 +84,28 @@ exec { "clone repo":
 file { "/var/praekelt/txtalert/logs":
     ensure => "directory",
     owner => "ubuntu",
-    subscribe => File['/var/praekelt/']
+    subscribe => Exec['clone_repo'],
 }
 
 # Create tmp paths
 file { "/var/praekelt/txtalert/tmp/":
     ensure => "directory",
     owner => "ubuntu",
-    subscribe => File['/var/praekelt/']
+    subscribe => Exec['clone_repo'],
 }
 
 # Create pids paths
 file { "/var/praekelt/txtalert/tmp/pids/":
     ensure => "directory",
     owner => "ubuntu",
-    subscribe => File['/var/praekelt/txtalert/tmp/']
+    subscribe => File['/var/praekelt/txtalert/tmp/'],
 }
 
 # Postgres role
 postgres::role { "txtalert":
     ensure => present,
     password => txtalert,
+    subscribe => Package["postgresql"],
 }
 
 # Postgres database
@@ -118,7 +119,7 @@ file { "/etc/nginx/sites-enabled/development.txtalert.conf":
     ensure => symlink,
     target => "/var/praekelt/txtalert/config/nginx/development.conf",
     subscribe => [
-        Exec['clone repo'],
+        Exec['clone_repo'],
         Package['nginx'],
     ]
 }
@@ -131,25 +132,25 @@ file { "/etc/supervisor/conf.d/supervisord.develop.conf":
     ensure => symlink,
     target => "/var/praekelt/txtalert/supervisord.develop.conf",
     subscribe => [
-        Exec['clone repo'],
+        Exec['clone_repo'],
         Package['supervisor']
     ]
 }
 
-exec { 'create virtualenv':
+exec { 'create_virtualenv':
     command => 'virtualenv --no-site-packages ve',
     cwd => '/var/praekelt/txtalert',
     unless => 'test -d /var/praekelt/txtalert/ve',
     subscribe => [
         Package['python-virtualenv'],
-        Exec['clone repo'],
+        Exec['clone_repo'],
     ]
 }
 
-exec { 'install packages':
+exec { 'install_packages':
     command => 'pip -E ./ve/ install -r requirements.pip',
     cwd => '/var/praekelt/txtalert',
-    subscribe => Exec['create virtualenv']
+    subscribe => Exec['create_virtualenv']
 }
 
 # Bugfix for https://bitbucket.org/jespern/django-piston/issue/173/
@@ -157,5 +158,5 @@ file { "piston_bugfix_173":
     path => "/var/praekelt/txtalert/ve/lib/python2.6/site-packages/piston/__init__.py",
     ensure => "file",
     owner => "ubuntu",
-    subscribe => Exec['install packages']
+    subscribe => Exec['install_packages']
 }
