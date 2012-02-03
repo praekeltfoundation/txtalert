@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
-def listify(filename):
-    return filter(None, open(filename,'r').readlines())
+def listify(filename, filter_callable=None):
+    return filter(filter_callable, open(filename,'r').readlines())
 
 setup(
     name = "txtalert",
@@ -13,7 +13,12 @@ setup(
     author = 'Praekelt Foundation',
     author_email = "dev@praekeltfoundation.org",
     packages = find_packages(),
-    install_requires = listify('requirements.pip'),
+    dependency_links = [
+        'https://github.com/smn/vumi-client/tarball/master#egg=vumi-client',
+    ],
+    install_requires = [
+        'vumi-client',
+        ] + listify('requirements.pip', lambda x: 'git+git' not in x),
     classifiers = listify('CLASSIFIERS.txt')
 )
 
