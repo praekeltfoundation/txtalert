@@ -52,7 +52,7 @@ class PleaseCallMeAdmin(admin.ModelAdmin):
         if db_field.name == "clinic":
             if not request.user.is_superuser:
                 kwargs['queryset'] = Clinic.objects.filter(user__in=users_in_same_group_as(request.user))
-        return super(VisitAdmin, self).formfield_for_choice_field(db_field, request, **kwargs)
+        return super(PleaseCallMe, self).formfield_for_choice_field(db_field, request, **kwargs)
 
 
 class PatientForm(forms.ModelForm):
