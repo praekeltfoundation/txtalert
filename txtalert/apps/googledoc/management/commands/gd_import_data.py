@@ -21,29 +21,18 @@ class Command(BaseCommand):
                     email=account.username,
                     password=account.password
                 )
-                try:
-                    #get the spreadsheet for this acount holder
-                    spreadsheet = SpreadSheet.objects.get(account=account)
-                    logging.debug("Spreadsheet for: %s" % account.username)
-                except SpreadSheet.DoesNotExist:
-                    logging.error("No Spreadsheet for account: %s\n" %
-                                      account)
-                    return
-                except MultipleObjectsReturned:
-                    logging.error("Account can only have one spreadsheet.")
-                    return
-                # from midnight
-                midnight = date.today()
-                start = midnight - timedelta(days=1)
-                # until 14 days later
-                until = midnight + timedelta(days=14)
-                try:
-                    importer.import_spread_sheet(spreadsheet.spreadsheet,
-                                                 start, until)
-                    logging.debug("Import spreadsheet data using period.")
-                except:
-                    print "Update error for", spreadsheet.spreadsheet
-                    logging.exception("Error while updating patient")
+                for spreadsheet in Spreadsheet.objects.filter(account=account):
+                    midnight = date.today()
+                    start = midnight - timedelta(days=1)
+                    # until 14 days later
+                    until = midnight + timedelta(days=14)
+                    try:
+                        importer.import_spread_sheet(spreadsheet.spreadsheet,
+                                                     start, until)
+                        logging.debug("Import spreadsheet data using period.")
+                    except:
+                        print "Update error for", spreadsheet.spreadsheet
+                        logging.exception("Error while updating patient")
         except GoogleAccount.DoesNotExist:
             logging.exception("Google Account does not exists")
             return
