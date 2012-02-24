@@ -189,7 +189,7 @@ class Importer(object):
 
     def get_cache_enrollement_status(self, doc_name, file_no):
         #check if the enrollment check was cached
-        enrolled = cache.get(':'.join(doc_name,file_no))
+        enrolled = cache.get(':'.join([doc_name,file_no]))
         return enrolled
 
     def update_patient(self, patient_row, row, doc_name, start, until):
