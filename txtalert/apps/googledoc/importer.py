@@ -110,7 +110,7 @@ class Importer(object):
         for patient in month_worksheet:
             file_no = month_worksheet[patient]['fileno']
             #call method to get the cached enrollemnt status for the patient
-            enrolled = self.get_cache_enrollement_status(file_no)
+            enrolled = self.get_cache_enrollement_status(doc_name, file_no)
             #check if the cache has the patient's enrollment status
             if enrolled:
                 logging.debug("Patient's enrollment status cached")
@@ -168,7 +168,7 @@ class Importer(object):
         if self.reader.run_enrollment_check(doc_name, file_no,
                                             start, until) is True:
             #cache the enrollment check
-            cache.set(file_no, True, CACHE_TIMEOUT)
+            cache.set(':'.join(doc_name,file_no), True, CACHE_TIMEOUT)
             logging.debug("Caching True status for patient: %s" %
                            file_no
             )
@@ -178,7 +178,7 @@ class Importer(object):
         elif self.reader.run_enrollment_check(doc_name, file_no,
                                               start, until) is False:
             #cache the enrollment check
-            cache.set(file_no, False, CACHE_TIMEOUT)
+            cache.set(':'.join(doc_name,file_no), False, CACHE_TIMEOUT)
             logging.exception(
                                "Caching False status for patient: %s" %
                                file_no
@@ -187,9 +187,9 @@ class Importer(object):
             enrolled_cache = False
             return enrolled_cache
 
-    def get_cache_enrollement_status(self, file_no):
+    def get_cache_enrollement_status(self, doc_name, file_no):
         #check if the enrollment check was cached
-        enrolled = cache.get(file_no)
+        enrolled = cache.get(':'.join(doc_name,file_no))
         return enrolled
 
     def update_patient(self, patient_row, row, doc_name, start, until):
