@@ -57,6 +57,7 @@ class SimpleCRUD:
         specified by doc_name. Gets a key which
         is used as a unique idenfier for the spreadsheet.
         """
+        logging.info("Getting %s" % (doc_name,))
         q = gdata.spreadsheet.service.DocumentQuery()
         q['title'] = doc_name
         q['title-exact'] = 'true'
@@ -203,6 +204,7 @@ class SimpleCRUD:
                 try:
                     #check if the worksheet has a patient with this date
                     if worksheet[row]:
+                        print worksheet[row]
                         if worksheet[row]['appointmentdate1'] == curr_date:
                             #test if the current date is in month range
                             date_range = worksheet[row]['appointmentdate1']
@@ -221,6 +223,7 @@ class SimpleCRUD:
                      logging.error('Error reading row %s at %s in %s' % (
                                                worksheet[row], row, period)
                      )
+                     logging.error(e)
         return patients_worksheet
 
     def enrol_query(self, file_no):
@@ -371,7 +374,7 @@ class SimpleCRUD:
                     temp_dic = {key: int(app_dic[key])}
                     appDic.update(temp_dic)
                     temp_dic = {}
-                except ValueError:
+                except (ValueError, TypeError), e:
                     temp_dic = {key: TypeError}
                     appDic.update(temp_dic)
                     temp_dic = {}
