@@ -5,6 +5,7 @@ from django.core.cache import cache
 from django.db import IntegrityError
 import re
 import logging
+import hashlib
 
 MSISDNS_RE = re.compile(r'^([+]?(0|27)[0-9]{9}/?)+$')
 PHONE_RE = re.compile(r'[0-9]{9}')
@@ -163,12 +164,15 @@ class Importer(object):
 
         return (enrolled_counter, correct_updates)
 
+    def cache_key(self, *args):
+        return hashlib.md5(''.join(args)).hexdigest()
+
     def set_cache_enrollement_status(self, doc_name, file_no, start, until):
          #check if the patient has enrolled
         if self.reader.run_enrollment_check(doc_name, file_no,
                                             start, until) is True:
             #cache the enrollment check
-            cache.set(':'.join([doc_name,file_no]), True, CACHE_TIMEOUT)
+            cache.set(self.cache_key(doc_name, file_no), True, CACHE_TIMEOUT)
             logging.debug("Caching True status for patient: %s" %
                            file_no
             )
@@ -178,7 +182,7 @@ class Importer(object):
         elif self.reader.run_enrollment_check(doc_name, file_no,
                                               start, until) is False:
             #cache the enrollment check
-            cache.set(':'.join([doc_name,file_no]), False, CACHE_TIMEOUT)
+            cache.set(self.cache_key(doc_name, file_no), False, CACHE_TIMEOUT)
             logging.exception(
                                "Caching False status for patient: %s" %
                                file_no
@@ -189,7 +193,7 @@ class Importer(object):
 
     def get_cache_enrollement_status(self, doc_name, file_no):
         #check if the enrollment check was cached
-        enrolled = cache.get(':'.join([doc_name,file_no]))
+        enrolled = cache.get(self.cache_key(doc_name, file_no))
         return enrolled
 
     def update_patient(self, patient_row, row, doc_name, start, until):
