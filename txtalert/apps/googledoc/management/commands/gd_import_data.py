@@ -21,7 +21,7 @@ class Command(BaseCommand):
                     email=account.username,
                     password=account.password
                 )
-                for spreadsheet in Spreadsheet.objects.filter(account=account):
+                for spreadsheet in SpreadSheet.objects.filter(account=account):
                     midnight = date.today()
                     start = midnight - timedelta(days=1)
                     # until 14 days later
