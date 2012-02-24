@@ -168,7 +168,7 @@ class Importer(object):
         if self.reader.run_enrollment_check(doc_name, file_no,
                                             start, until) is True:
             #cache the enrollment check
-            cache.set(':'.join(doc_name,file_no), True, CACHE_TIMEOUT)
+            cache.set(':'.join([doc_name,file_no]), True, CACHE_TIMEOUT)
             logging.debug("Caching True status for patient: %s" %
                            file_no
             )
@@ -178,7 +178,7 @@ class Importer(object):
         elif self.reader.run_enrollment_check(doc_name, file_no,
                                               start, until) is False:
             #cache the enrollment check
-            cache.set(':'.join(doc_name,file_no), False, CACHE_TIMEOUT)
+            cache.set(':'.join([doc_name,file_no]), False, CACHE_TIMEOUT)
             logging.exception(
                                "Caching False status for patient: %s" %
                                file_no
