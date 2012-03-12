@@ -209,8 +209,10 @@ class Importer(object):
         else:
             if coming_date.date() > visit.date:
                 visit.status = 'r'
-            else:
-                visit.status = 'm'
+            # due to opt-in issues, we can no longer infer missed visits from
+            # overdue comming dates stored locally
+            #else:
+                #visit.status = 'm'
         
         visit.clinic = clinic
         visit.patient = patient
