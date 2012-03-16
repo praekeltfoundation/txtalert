@@ -14,6 +14,7 @@ class Command(BaseCommand):
     help = 'Can run as Cron job or directly to import google spreadsheet data.'
 
     def handle(self, *args, **kwargs):
+        print "STARTING gd_import_test"
         try:
             for account in GoogleAccount.objects.all():
                 importer = Importer(
