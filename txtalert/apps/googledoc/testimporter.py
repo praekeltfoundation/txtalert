@@ -49,6 +49,7 @@ class Importer(object):
 
         self.month: stores the complete spreadsheet(has worksheets(s))
         """
+        print "STARTING import_spread_sheet"
         self.start = start
         self.until = until
         self.doc_name = str(doc_name)
