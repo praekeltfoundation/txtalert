@@ -31,8 +31,8 @@ class Command(BaseCommand):
                         print "SPREADSHEET", spreadsheet.spreadsheet
                         print "START", start
                         print "UNTIL", until
-                        #importer.import_spread_sheet(spreadsheet.spreadsheet,
-                                                     #start, until)
+                        importer.import_spread_sheet(spreadsheet.spreadsheet,
+                                                     start, until)
                         logging.debug("Import spreadsheet data using period.")
                     except:
                         print "Update error for", spreadsheet.spreadsheet
