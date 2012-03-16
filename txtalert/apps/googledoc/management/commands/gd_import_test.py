@@ -28,8 +28,11 @@ class Command(BaseCommand):
                     # until 14 days later
                     until = midnight + timedelta(days=14)
                     try:
-                        importer.import_spread_sheet(spreadsheet.spreadsheet,
-                                                     start, until)
+                        print "SPREADSHEET", spreadsheet.spreadsheet
+                        print "START", start
+                        print "UNTIL", until
+                        #importer.import_spread_sheet(spreadsheet.spreadsheet,
+                                                     #start, until)
                         logging.debug("Import spreadsheet data using period.")
                     except:
                         print "Update error for", spreadsheet.spreadsheet
