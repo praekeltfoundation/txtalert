@@ -72,6 +72,7 @@ class Importer(object):
                     #check that the spreadsheet has data to update
                     if len(self.month[worksheet]) != 0:
                         #if true do update each enrolled patient
+                        print "DDDDDDDDDDDDDDDDDDDDDDDD"
                         #enrolled_counter, correct_updates = self.update_patients(
                             #self.month[worksheet], self.doc_name, start, until
                         #)
