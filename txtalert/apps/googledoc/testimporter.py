@@ -73,10 +73,10 @@ class Importer(object):
                     #check that the spreadsheet has data to update
                     if len(self.month[worksheet]) != 0:
                         #if true do update each enrolled patient
-                        print "DDDDDDDDDDDDDDDDDDDDDDDD"
-                        #enrolled_counter, correct_updates = self.update_patients(
-                            #self.month[worksheet], self.doc_name, start, until
-                        #)
+                        print "UPDATE_PATIENTS"
+                        enrolled_counter, correct_updates = self.update_patients(
+                            self.month[worksheet], self.doc_name, start, until
+                        )
                         #return enrolled and updated counters
                         return enrolled_counter, correct_updates
                     #if the worksheet does not have data dont do updates
@@ -214,6 +214,13 @@ class Importer(object):
         @returns:
         patient_update: successful updates flag.
         '''
+        print "UPDATE_PATIENT"
+        print "\tPATIENT_ROW", patient_row
+        print "\tROW", row
+        print "\tDOC_NAME", doc_name
+        print "\tSTART", start
+        print "\tUNTIL", until
+        return false
         #check that the arguments are proper types
         if type(row) == int and type(patient_row) == dict:
             row_no = row
