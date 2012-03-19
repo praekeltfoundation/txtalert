@@ -220,7 +220,7 @@ class Importer(object):
         print "\tDOC_NAME", doc_name
         print "\tSTART", start
         print "\tUNTIL", until
-        return false
+        return False
         #check that the arguments are proper types
         if type(row) == int and type(patient_row) == dict:
             row_no = row
