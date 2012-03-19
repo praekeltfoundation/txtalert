@@ -220,7 +220,7 @@ class Importer(object):
         print "\tDOC_NAME", doc_name
         print "\tSTART", start
         print "\tUNTIL", until
-        return False
+        #return False
         #check that the arguments are proper types
         if type(row) == int and type(patient_row) == dict:
             row_no = row
@@ -568,6 +568,12 @@ class Importer(object):
         @returns:
         updated: indicates whether the appointment status was updated.
         """
+        print "UPDATE_APPOINTMENT_STATUS"
+        print "\tAPP_STATUS", app_status
+        print "\tNEW_PATIENT", new_patient
+        print "\tAPP_DATE", app_date
+        print "\tVISIT_ID", visit_id
+        print "\tCLINIC_NAME", clinic_name
         #converts a string enroment to a choice key used in database
         status = self.update_needed(app_status)
         try:
