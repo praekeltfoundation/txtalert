@@ -188,12 +188,15 @@ def missed(gateway, group, user, visits, today):
     )
 
 
-def all(gateway, group_names, date=None):
+def all(gateway, group_names, date=None, clinic_name=None):
     groups = Group.objects.filter(name__in=group_names)
     for group in groups:
         for user in group.user_set.all():
             visits = Visit.objects.filter(patient__opted_in=True,
                                             patient__owner=user)
+            if clinic_name:
+                print 'filtering for clinic_name', clinic_name
+                visits = visits.filter(clinic__name=clinic_name)
             today = date or datetime.now().date()
             logger.debug('Sending reminders for %s: tomorrow' % user)
             tomorrow(gateway, group, user, visits, today)
