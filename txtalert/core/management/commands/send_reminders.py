@@ -30,5 +30,5 @@ class Command(BaseCommand):
         else:
             today = datetime.now().date()
 
-        reminders.all(selected_gateway, [group_name])
+        reminders.all(selected_gateway, [group_name], today)
         reminders.send_stats(selected_gateway, [group_name], today)
