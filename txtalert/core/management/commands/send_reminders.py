@@ -32,7 +32,7 @@ class Command(BaseCommand):
         else:
             today = datetime.now().date()
 
-        clinic_name = options.get('clinic')
+        clinic_name = options.get('clinic_name')
 
         reminders.all(selected_gateway, [group_name], today, clinic_name)
         reminders.send_stats(selected_gateway, [group_name], today)
