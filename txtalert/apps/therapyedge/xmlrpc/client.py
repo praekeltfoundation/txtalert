@@ -100,6 +100,16 @@ class Client(object):
         return self.call_method('comingvisits', *args, **kwargs)
     
     def get_missed_visits(self, *args, **kwargs):
+        # TherapyEdge will return scheduled but unattended future visits as missed
+        # So we can't ask for missed visits after midnight last night
+        # Therefore the 'until' parameter must be reset to midnight
+        midnight = datetime.now().replace(
+            hour=0,
+            minute=0,
+            second=0,
+            microsecond=0
+        )
+        kwargs.update({"until": midnight})
         return self.call_method('missedvisits', *args, **kwargs)
     
     def get_done_visits(self, *args, **kwargs):
