@@ -109,6 +109,8 @@ class Client(object):
             second=0,
             microsecond=0
         )
+        print args
+        print midnight
         return self.call_method('missedvisits', args[0], midnight, **kwargs)
     
     def get_done_visits(self, *args, **kwargs):
