@@ -109,8 +109,7 @@ class Client(object):
             second=0,
             microsecond=0
         )
-        kwargs.update({"until": midnight})
-        return self.call_method('missedvisits', *args, **kwargs)
+        return self.call_method('missedvisits', args[0], midnight, **kwargs)
     
     def get_done_visits(self, *args, **kwargs):
         return self.call_method('donevisits', *args, **kwargs)
