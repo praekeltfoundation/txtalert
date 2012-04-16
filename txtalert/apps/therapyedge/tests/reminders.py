@@ -49,7 +49,7 @@ class RemindersI18NTestCase(TestCase):
 
     def send_reminders(self, _type):
         fn = getattr(reminders, _type)
-        return fn(gateway.gateway, self.group, self.user, Visit.objects.all(),
+        return fn(gateway.gateway, self.clinic, self.user, Visit.objects.all(),
             datetime.now().date())
 
     def test_tomorrow(self):
