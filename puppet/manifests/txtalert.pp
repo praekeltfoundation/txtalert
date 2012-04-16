@@ -1,223 +1,162 @@
-# defaults for Exec
-user {  "ubuntu":
-    ensure => "present",
-    home => "/home/ubuntu",
-    shell => "/bin/bash"
-}
-
-file {
-    "/home/ubuntu":
-        ensure => "directory",
-        owner => "ubuntu";
-}
-
+# Globally set exec paths and user.
 Exec {
     path => ["/bin", "/usr/bin", "/usr/local/bin"],
     user => 'ubuntu',
 }
 
-# Make sure packge index is updated
-class apt::update {
-    exec { "Resynchronize apt package index":
-        command => "aptitude update",
+# Update package index.
+exec { "update_apt":
+    command => "apt-get update",
+    user => "root",
+}
+
+# Ensure Ubuntu user exists
+user { "ubuntu":
+    ensure => "present",
+    home => "/home/ubuntu",
+    shell => "/bin/bash"
+}
+
+# Create the deployment directory
+file { "/var/praekelt/":
+    ensure => "directory",
+    owner => "ubuntu",
+    subscribe => User["ubuntu"]
+}
+
+# Adds a line to a file if not already present.
+define line($file, $line) {
+    exec { "echo '${line}' >> ${file}":
         user => "root",
+        unless => "grep '${line}' ${file}"
     }
 }
 
-# Install these packages after apt-get update
-define apt::package($ensure='latest') {
-    package { $name: 
-        ensure => $ensure, 
-        require => Class['apt::update'];
-    }
+# Stop HAProxy complaining about file limits.
+line {"soft_limit":
+    file => "/etc/security/limits.conf",
+    line => "ubuntu soft nofile 16384"
 }
 
-class txtalert::packages {
-    apt::package { "build-essential": ensure => latest }
-    apt::package { "python": ensure => latest }
-    apt::package { "python-dev": ensure => latest }
-    apt::package { "python-setuptools": ensure => latest }
-    apt::package { "python-pip": ensure => latest }
-    apt::package { "python-virtualenv": ensure => latest }
-    apt::package { "postgresql-8.4": ensure => latest }
-    apt::package { "libpq-dev": ensure => latest }
-    apt::package { "rabbitmq-server": ensure => latest }
-    apt::package { "git-core": ensure => latest }
-    apt::package { "openjdk-6-jre-headless": ensure => latest }
-    apt::package { "libcurl4-openssl-dev": ensure => latest }
-    apt::package { "memcached": ensure => latest }
-    apt::package { "tidy": ensure => latest }
-    apt::package { "curl": ensure => latest }
-    apt::package { "nginx": ensure => latest }
+line {"hard_limit":
+    file => "/etc/security/limits.conf",
+    line => "ubuntu hard nofile 16384"
 }
 
-
-# Create these accounts
-class txtalert::accounts {
-    postgres::role { "txtalert":
-        ensure => present,
-        password => txtalert,
-    }
+line {"pam_limits":
+    file => "/etc/pam.d/common-session",
+    line => "session required pam_limits.so"
 }
 
-class txtalert::database {
-    postgres::database { "txtalert_dev":
-        ensure => present,
-        owner => txtalert,
-        template => "template0",
-    }
+# Install required packages.
+package { [
+    "build-essential",
+    "curl",
+    "git-core",
+    "haproxy",
+    "libcurl4-openssl-dev",
+    "libpq-dev",
+    "memcached",
+    "nginx",
+    "python",
+    "python-dev",
+    "python-setuptools",
+    "python-pip",
+    "python-virtualenv",
+    "postgresql",
+    "supervisor"
+    ]:
+    ensure => latest,
+    subscribe => Exec['update_apt'];
 }
 
-file {
-    "/var/praekelt":
-        ensure => "directory",
-        owner => "ubuntu";
-}
-
-file {
-    "/home/ubuntu/.ssh":
-        ensure => "directory",
-        owner => "ubuntu",
-}
-
-file {
-    "/home/ubuntu/.ssh/config":
-        ensure => "file",
-        owner => "ubuntu",
-        content => "
-Host github.com
-    StrictHostKeyChecking no
-"
-}
-
-exec { "Clone git repository":
-    command => "git clone git@github.com:smn/txtalert.git",
+exec { "clone_repo":
+    command => "git clone https://github.com/smn/txtalert.git",
     cwd => "/var/praekelt",
-    unless => "test -d /var/praekelt/txtalert/.git"
+    unless => "test -d /var/praekelt/txtalert",
+    subscribe => [
+        Package['git-core'],
+        File['/var/praekelt/'],
+    ]
 }
 
-exec { "Checkout development branch":
-    command => "git checkout -b develop origin/develop",
-    cwd => "/var/praekelt/txtalert",
-    unless => "git branch | grep '* develop'"
+# Create logs path.
+file { "/var/praekelt/txtalert/logs":
+    ensure => "directory",
+    owner => "ubuntu",
+    subscribe => Exec['clone_repo'],
 }
 
-exec { "Update git repository":
-    command => "git pull",
-    cwd => "/var/praekelt/txtalert",
-    onlyif => "test -d /var/praekelt/txtalert/.git"
+# Create tmp paths
+file { "/var/praekelt/txtalert/tmp/":
+    ensure => "directory",
+    owner => "ubuntu",
+    subscribe => Exec['clone_repo'],
 }
 
-exec { "Create virtualenv":
-    command => "virtualenv --no-site-packages ve",
-    cwd => "/var/praekelt/txtalert",
-    unless => "test -d ve"
+# Create pids paths
+file { "/var/praekelt/txtalert/tmp/pids/":
+    ensure => "directory",
+    owner => "ubuntu",
+    subscribe => File['/var/praekelt/txtalert/tmp/'],
 }
 
-exec { "Install requirements":
-    command => ". ve/bin/activate && \
-                    pip install -r requirements.pip && \
-                deactivate",
-    cwd => "/var/praekelt/txtalert",
-    timeout => "0", # disable timeout
-    onlyif => "test -d ve"
+# Postgres role
+postgres::role { "txtalert":
+    ensure => present,
+    password => txtalert,
+    subscribe => Package["postgresql"],
 }
 
-file {
-    "/var/praekelt/txtalert/environments/develop.py":
-        ensure => "file",
-        owner => "ubuntu",
-        content => "
-
-from txtalert.env.settings import *
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'postgresql_psycopg2',
-        'NAME': 'txtalert_dev',
-        'USER': 'txtalert',
-        'PASSWORD': 'txtalert',
-        'HOST': 'localhost',
-        'PORT': ''
-    }
-}
-
-DEBUG = False
-TEMPLATE_DEBUG = DEBUG
-
-"
+# Postgres database
+postgres::database { "txtalert_dev":
+    ensure => present,
+    owner => txtalert,
+    template => "template0",
 }
 
 file { "/etc/nginx/sites-enabled/development.txtalert.conf":
     ensure => symlink,
-    target => "/var/praekelt/txtalert/config/nginx/development.conf"
+    target => "/var/praekelt/txtalert/config/nginx/development.conf",
+    subscribe => [
+        Exec['clone_repo'],
+        Package['nginx'],
+    ]
 }
 
-exec { "Syncdb":
-    command => ". ve/bin/activate && \
-                    ./manage.py syncdb --noinput --settings=environments.develop && \
-                deactivate
-                ",
-    cwd => "/var/praekelt/txtalert",
-}
-exec { "Migrate":
-    command => ". ve/bin/activate && \
-                    ./manage.py migrate --no-initial-data --settings=environments.develop && \
-                deactivate
-                ",
-    timeout => "0",
-    cwd => "/var/praekelt/txtalert",
+file { "/etc/nginx/sites-enabled/default":
+    ensure => absent,
 }
 
-exec { "Restart txtAlert":
-    command => ". ve/bin/activate && \
-                    supervisorctl -c supervisord.develop.conf reload && \
-                deactivate",
-    cwd => "/var/praekelt/txtalert",
-    onlyif => "ps -p `cat tmp/pids/supervisord.pid`"
-}
-exec { "Start txtAlert":
-    command => ". ve/bin/activate && \
-                    supervisord -c supervisord.develop.conf && \
-                deactivate",
-    cwd => "/var/praekelt/txtalert",
-    unless => "ps -p `cat tmp/pids/supervisord.pid`"
+file { "/etc/supervisor/conf.d/supervisord.develop.conf":
+    ensure => symlink,
+    target => "/var/praekelt/txtalert/supervisord.develop.conf",
+    subscribe => [
+        Exec['clone_repo'],
+        Package['supervisor']
+    ]
 }
 
-exec { "Collect static":
-    command => ". ve/bin/activate && \
-                    ./manage.py collectstatic --settings=environments.develop --noinput && \
-                deactivate",
-    cwd => "/var/praekelt/txtalert"
+exec { 'create_virtualenv':
+    command => 'virtualenv --no-site-packages ve',
+    cwd => '/var/praekelt/txtalert',
+    unless => 'test -d /var/praekelt/txtalert/ve',
+    subscribe => [
+        Package['python-virtualenv'],
+        Exec['clone_repo'],
+    ]
 }
 
-class txtalert {
-    include apt::update,
-                txtalert::accounts,
-                txtalert::packages, 
-                txtalert::database
+exec { 'install_packages':
+    command => 'pip -E ./ve/ install -r requirements.pip',
+    cwd => '/var/praekelt/txtalert',
+    subscribe => Exec['create_virtualenv']
 }
 
-User["ubuntu"]
-    -> File["/home/ubuntu"]
-    -> Exec["Resynchronize apt package index"] 
-    -> File["/var/praekelt"] 
-    -> File["/home/ubuntu/.ssh"] 
-    -> File["/home/ubuntu/.ssh/config"] 
-    -> Class["txtalert::packages"] 
-    -> Class["txtalert::accounts"]
-    -> Class["txtalert::database"]
-    -> File["/etc/nginx/sites-enabled/development.txtalert.conf"]
-    -> Exec["Clone git repository"]
-    -> Exec["Update git repository"]
-    -> Exec["Checkout development branch"] 
-    -> Exec["Create virtualenv"] 
-    -> Exec["Install requirements"] 
-    -> File['/var/praekelt/txtalert/environments/develop.py']
-    -> Exec['Syncdb']
-    -> Exec['Migrate']
-    -> Exec['Collect static']
-    -> Exec["Restart txtAlert"]
-    -> Exec["Start txtAlert"]
-
-include txtalert
+# Bugfix for https://bitbucket.org/jespern/django-piston/issue/173/
+file { "piston_bugfix_173":
+    path => "/var/praekelt/txtalert/ve/lib/python2.6/site-packages/piston/__init__.py",
+    ensure => "file",
+    owner => "ubuntu",
+    subscribe => Exec['install_packages']
+}
