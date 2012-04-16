@@ -12,15 +12,18 @@ class Migration(DataMigration):
         clinics = Clinic.objects.all()
         for clinic in clinics:
             user = clinic.user
-            groups = user.groups.all()
-            message_types = MessageType.objects.filter(group__in=groups)
-            for message_type in message_types:
-                mt, created = MessageType.objects.get_or_create(group=None,
-                            clinic=clinic, language=message_type.language,
-                            name=message_type.name,
-                            message=message_type.message)
-                if created:
-                    print 'created %s' % (mt,)
+            if not user:
+                print 'clinic', clinic, 'does not have a user assigned.'
+            else:
+                groups = user.groups.all()
+                message_types = MessageType.objects.filter(group__in=groups)
+                for message_type in message_types:
+                    mt, created = MessageType.objects.get_or_create(group=None,
+                                clinic=clinic, language=message_type.language,
+                                name=message_type.name,
+                                message=message_type.message)
+                    if created:
+                        print 'created %s' % (mt,)
 
     def backwards(self, orm):
         "Write your backwards methods here."
