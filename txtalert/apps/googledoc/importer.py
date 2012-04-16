@@ -53,6 +53,7 @@ class Importer(object):
         self.until = until
         self.doc_name = str(doc_name)
         self.month = self.reader.run_appointment(self.doc_name, start, until)
+	print 'month!', self.month
         #counts how many enrolled patients where updated correctly
         correct_updates = 0
         #counter for number of patients found on the enrollement worksheet
@@ -462,6 +463,7 @@ class Importer(object):
 
     def get_or_create_clinic(self, doc_name):
         #get or create a clinic with the name of the spreadsheet
+        print 'get_or_create_clinic', repr(doc_name)
         clinic, created = Clinic.objects.get_or_create(name=doc_name,
             user=self.owner)
         return clinic
