@@ -14,7 +14,6 @@ class Command(BaseCommand):
     help = 'Can run as Cron job or directly to import google spreadsheet data.'
 
     def handle(self, *args, **kwargs):
-        print "STARTING gd_import_test"
         try:
             for account in GoogleAccount.objects.all():
                 importer = Importer(
@@ -28,9 +27,6 @@ class Command(BaseCommand):
                     # until 14 days later
                     until = midnight + timedelta(days=14)
                     try:
-                        print "SPREADSHEET", spreadsheet.spreadsheet
-                        print "START", start
-                        print "UNTIL", until
                         importer.import_spread_sheet(spreadsheet.spreadsheet,
                                                      start, until)
                         logging.debug("Import spreadsheet data using period.")
