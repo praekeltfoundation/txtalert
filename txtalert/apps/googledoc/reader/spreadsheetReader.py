@@ -50,6 +50,7 @@ class SimpleCRUD:
         self.list_feed = None
         self.spreadsheet_cache = {}
         self.worksheet_cache = defaultdict(dict)
+        self.listfeed_cache = {}
 
     def get_spreadsheet(self, doc_name):
         """
@@ -172,6 +173,8 @@ class SimpleCRUD:
         app_worksheet: Stores the worksheet contents.
         """
 
+        print self.curr_key
+        print self.worksheet_cache
         cache_dict = self.worksheet_cache.get(self.curr_key, {})
         cached_value = cache_dict.get(worksheet_name)
         if cached_value:
@@ -281,9 +284,17 @@ class SimpleCRUD:
 
     def list_get_action(self):
         """Gets the list feed for the worksheet and sends it to be processed"""
+        cache_key = ':'.join([self.curr_key, self.wksht_id])
+        cache_value = self.listfeed_cache.get(cache_key)
+        if cache_value:
+            return cache_value
+
         list_feed = self.gd_client.GetListFeed(self.curr_key, self.wksht_id)
         #get the enrollment worksheet
         sheet = self.process_file(feed=list_feed)
+
+        self.listfeed_cache[cache_key] = sheet
+
         return sheet
 
     def process_file(self, feed):
