@@ -157,10 +157,8 @@ class Importer(object):
                         logging.debug("Updating the patient: %s" % file_no)
                 #else, patient not enrolled
                 else:
-                    logging.exception(
-                    'Patient: %s cannot update with False enrollment status' %
-                    file_no
-                    )
+                    logging.exception('Cannot send reminder to Patient %s '
+                        'since she/he has not been enrolled' % (file_no,))
 
         return (enrolled_counter, correct_updates)
 
@@ -263,7 +261,7 @@ class Importer(object):
                     return  (patient_update)
         #if any of the format are incorrect dont update patient
         else:
-            logging.exception("Invalid data format for patient: %s" % file_no)
+            logging.exception("Invalid date format for patient: %s" % file_no)
             patient_update = False
             return patient_update
 
@@ -299,7 +297,7 @@ class Importer(object):
             match = FILE_NO.match(file_no)
             if match is None:
                 # No match, it isn't in the correct format.
-                logging.exception("%s is not in the correct format. "
+                logging.exception("Patient %s is not in the correct format. "
                     "Only letters and digits are allowed." % (file_no,))
                 return (file_number, False)
             try:
