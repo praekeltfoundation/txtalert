@@ -23,6 +23,7 @@ import gdata.service
 import gdata.spreadsheet
 import datetime
 import logging
+from collections import defaultdict
 
 
 class SimpleCRUD:
@@ -48,6 +49,7 @@ class SimpleCRUD:
         self.wksht_id = ''
         self.list_feed = None
         self.spreadsheet_cache = {}
+        self.worksheet_cache = defaultdict(dict)
 
     def get_spreadsheet(self, doc_name):
         """
@@ -170,6 +172,14 @@ class SimpleCRUD:
         app_worksheet: Stores the worksheet contents.
         """
 
+        cache_dict = self.worksheet_cache.get(self.curr_key)
+        cached_value = cache_dict.get(worksheet_name)
+        if cached_value:
+            wksht_id, app_worksheet = cached_value
+            self.wksht_id = wksht_id
+            print 'worksheet cache hit!'
+            return app_worksheet
+
         q = gdata.spreadsheet.service.DocumentQuery()
         q['title'] = worksheet_name
         q['title-exact'] = 'true'
@@ -179,6 +189,8 @@ class SimpleCRUD:
             #if worksheet is not enrollement sheet get data
             if worksheet_name != 'enrollment sheet':
                 app_worksheet = self.prompt_for_list_action()
+                cache_dict[worksheet_name] = ('%s' % (self.wksht_id,),
+                    app_worksheet)
                 return app_worksheet
 
         except IndexError:
