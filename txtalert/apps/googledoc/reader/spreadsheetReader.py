@@ -173,14 +173,11 @@ class SimpleCRUD:
         app_worksheet: Stores the worksheet contents.
         """
 
-        print self.curr_key
-        print self.worksheet_cache
         cache_dict = self.worksheet_cache.get(self.curr_key, {})
         cached_value = cache_dict.get(worksheet_name)
         if cached_value:
             wksht_id, app_worksheet = cached_value
             self.wksht_id = wksht_id
-            print 'worksheet cache hit!'
             return app_worksheet
 
         q = gdata.spreadsheet.service.DocumentQuery()
