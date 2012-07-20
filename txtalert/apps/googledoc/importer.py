@@ -301,6 +301,11 @@ class Importer(object):
         try:
             #check file number format
             match = FILE_NO.match(file_no)
+            if match is None:
+                # No match, it isn't in the correct format.
+                logging.exception("%s is not in the correct format. "
+                    "Only letters and digits are allowed." % (file_no,))
+                return (file_number, False)
             try:
                 #get string that matched pattern
                 file_no = match.group()
