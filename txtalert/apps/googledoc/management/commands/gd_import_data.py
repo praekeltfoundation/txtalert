@@ -29,7 +29,6 @@ class Command(BaseCommand):
                     try:
                         importer.import_spread_sheet(spreadsheet.spreadsheet,
                                                      start, until)
-                        logging.debug("Import spreadsheet data using period.")
                     except:
                         logging.exception("Update error for: %s" % (
                             spreadsheet.spreadsheet,))

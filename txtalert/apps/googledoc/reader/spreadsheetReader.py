@@ -47,6 +47,7 @@ class SimpleCRUD:
         self.curr_key = ''
         self.wksht_id = ''
         self.list_feed = None
+        self.spreadsheet_cache = {}
 
     def get_spreadsheet(self, doc_name):
         """
@@ -58,6 +59,12 @@ class SimpleCRUD:
         is used as a unique idenfier for the spreadsheet.
         """
         logging.info("Getting %s" % (doc_name,))
+
+        cached_value = self.spreadsheet_cache.get(doc_name)
+        if cached_value:
+            self.curr_key = cached_value
+            return True
+
         q = gdata.spreadsheet.service.DocumentQuery()
         q['title'] = doc_name
         q['title-exact'] = 'true'
@@ -65,10 +72,13 @@ class SimpleCRUD:
         try:
             self.curr_key = feed.entry[0].id.text.rsplit('/', 1)[1]
             found = True
+            self.spreadsheet_cache[doc_name] = self.curr_key
             return found
         except IndexError:
             logging.exception("Spreadsheet name is invalid")
             found = False
+            if doc_name in self.spreadsheet_cache:
+                del self.spreadsheet_cache[doc_name]
             return found
 
     def get_worksheet_data(self, worksheet_type, start, until):
