@@ -51,6 +51,7 @@ class SimpleCRUD:
         self.spreadsheet_cache = {}
         self.worksheet_cache = defaultdict(dict)
         self.listfeed_cache = {}
+        self.enrollment_cache = {}
 
     def get_spreadsheet(self, doc_name):
         """
@@ -262,16 +263,23 @@ class SimpleCRUD:
         enrolled: Flag to indicate if the patient was
                   found int the enrollment worksheet.
         """
+        cache_key = ':'.join([self.curr_key, self.wksht_id, str(file_no)])
+        cached_value = self.enrollment_cache.get(cache_key)
+        if cached_value:
+            return cached_value
+
         q = gdata.spreadsheet.service.ListQuery(text_query=str(file_no))
         feed = self.gd_client.GetListFeed(self.curr_key,
                                           self.wksht_id, query=q)
         #patient was found in the enrollment worksheet
         if feed.entry:
             enrolled = True
+            self.enrollment_cache[cache_key] = enrolled
             return enrolled
         #patient needs to enrol first
         if not feed.entry is None:
             enrolled = False
+            self.enrollment_cache[cache_key] = enrolled
             return enrolled
 
     def prompt_for_list_action(self):
