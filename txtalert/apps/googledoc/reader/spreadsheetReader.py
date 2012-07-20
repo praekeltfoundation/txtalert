@@ -204,7 +204,6 @@ class SimpleCRUD:
                 try:
                     #check if the worksheet has a patient with this date
                     if worksheet[row]:
-                        print worksheet[row]
                         if worksheet[row]['appointmentdate1'] == curr_date:
                             #test if the current date is in month range
                             date_range = worksheet[row]['appointmentdate1']
@@ -220,10 +219,9 @@ class SimpleCRUD:
                                                          worksheet[row], row)
                         )
                 except KeyError, e:
-                     logging.error('Error reading row %s at %s in %s' % (
-                                               worksheet[row], row, period)
-                     )
-                     logging.error(e)
+                    logging.error('Error reading row %s at %s in %s' % (
+                                               worksheet[row], row, period))
+                    logging.error(e)
         return patients_worksheet
 
     def enrol_query(self, file_no):

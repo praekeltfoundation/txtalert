@@ -31,7 +31,8 @@ class Command(BaseCommand):
                                                      start, until)
                         logging.debug("Import spreadsheet data using period.")
                     except:
-                        print "Update error for", spreadsheet.spreadsheet
+                        logging.exception("Update error for: %s" % (
+                            spreadsheet.spreadsheet,))
                         logging.exception("Error while updating patient")
         except GoogleAccount.DoesNotExist:
             logging.exception("Google Account does not exists")
