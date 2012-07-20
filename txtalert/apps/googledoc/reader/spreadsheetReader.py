@@ -74,7 +74,7 @@ class SimpleCRUD:
         try:
             self.curr_key = feed.entry[0].id.text.rsplit('/', 1)[1]
             found = True
-            self.spreadsheet_cache[doc_name] = self.curr_key
+            self.spreadsheet_cache[doc_name] = '%s' % (self.curr_key,)
             return found
         except IndexError:
             logging.exception("Spreadsheet name is invalid")
@@ -172,7 +172,7 @@ class SimpleCRUD:
         app_worksheet: Stores the worksheet contents.
         """
 
-        cache_dict = self.worksheet_cache.get(self.curr_key)
+        cache_dict = self.worksheet_cache.get(self.curr_key, {})
         cached_value = cache_dict.get(worksheet_name)
         if cached_value:
             wksht_id, app_worksheet = cached_value
@@ -191,6 +191,7 @@ class SimpleCRUD:
                 app_worksheet = self.prompt_for_list_action()
                 cache_dict[worksheet_name] = ('%s' % (self.wksht_id,),
                     app_worksheet)
+                self.worksheet_cache[self.curr_key] = cache_dict
                 return app_worksheet
 
         except IndexError:
