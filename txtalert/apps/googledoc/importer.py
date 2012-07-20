@@ -183,10 +183,6 @@ class Importer(object):
                                               start, until) is False:
             #cache the enrollment check
             cache.set(self.cache_key(doc_name, file_no), False, CACHE_TIMEOUT)
-            logging.exception(
-                               "Caching False status for patient: %s" %
-                               file_no
-            )
             #the patient is not enrolled, cache False for enrollement status
             enrolled_cache = False
             return enrolled_cache
