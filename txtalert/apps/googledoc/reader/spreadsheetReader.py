@@ -76,13 +76,13 @@ class SimpleCRUD:
         try:
             self.curr_key = feed.entry[0].id.text.rsplit('/', 1)[1]
             found = True
-            self.spreadsheet_cache[doc_name] = '%s' % (self.curr_key,)
+            # self.spreadsheet_cache[doc_name] = '%s' % (self.curr_key,)
             return found
         except IndexError:
             logging.exception("Spreadsheet name is invalid")
             found = False
-            if doc_name in self.spreadsheet_cache:
-                del self.spreadsheet_cache[doc_name]
+            # if doc_name in self.spreadsheet_cache:
+            #     del self.spreadsheet_cache[doc_name]
             return found
 
     def get_worksheet_data(self, worksheet_type, start, until):
@@ -192,7 +192,7 @@ class SimpleCRUD:
                 app_worksheet = self.prompt_for_list_action()
                 cache_dict[worksheet_name] = ('%s' % (self.wksht_id,),
                     app_worksheet)
-                self.worksheet_cache[self.curr_key] = cache_dict
+                # self.worksheet_cache[self.curr_key] = cache_dict
                 return app_worksheet
 
         except IndexError:
@@ -274,12 +274,12 @@ class SimpleCRUD:
         #patient was found in the enrollment worksheet
         if feed.entry:
             enrolled = True
-            self.enrollment_cache[cache_key] = enrolled
+            # self.enrollment_cache[cache_key] = enrolled
             return enrolled
         #patient needs to enrol first
         if not feed.entry is None:
             enrolled = False
-            self.enrollment_cache[cache_key] = enrolled
+            # self.enrollment_cache[cache_key] = enrolled
             return enrolled
 
     def prompt_for_list_action(self):
@@ -298,7 +298,7 @@ class SimpleCRUD:
         #get the enrollment worksheet
         sheet = self.process_file(feed=list_feed)
 
-        self.listfeed_cache[cache_key] = sheet
+        # self.listfeed_cache[cache_key] = sheet
 
         return sheet
 
