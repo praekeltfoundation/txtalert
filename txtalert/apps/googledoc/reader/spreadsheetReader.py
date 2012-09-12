@@ -25,6 +25,9 @@ import datetime
 import logging
 
 
+def removeNonAscii(s): return "".join(i for i in s if ord(i)<128)
+
+
 class SimpleCRUD:
     def __init__(self, email, password):
         """
@@ -362,7 +365,7 @@ class SimpleCRUD:
         for key in app_dic:
             if key == 'fileno':
                 try:
-                    temp_dic = {key: str(app_dic[key])}
+                    temp_dic = {key: str(removeNonAscii(app_dic[key]))}
                     appDic.update(temp_dic)
                     temp_dic = {}
                 except TypeError:
