@@ -26,7 +26,18 @@ import logging
 from collections import defaultdict
 
 
-def removeNonAscii(s): return "".join(i for i in s if ord(i)<128)
+def try_remove_non_ascii(s):
+    return_value = s
+    try:
+        return_value = "".join(i for i in s if ord(i)<128)
+    except:
+        pass
+    return return_value
+
+
+def try_clean_dict(d):
+    for k, v in d.items():
+        d[k] = try_remove_non_ascii(v)
 
 
 class SimpleCRUD:
@@ -399,10 +410,11 @@ class SimpleCRUD:
         logging.debug('Importing %s' % dic)
         app_dic = dic
         appDic = {}
+        try_clean_dict(app_dic)
         for key in app_dic:
             if key == 'fileno':
                 try:
-                    temp_dic = {key: str(removeNonAscii(app_dic[key]))}
+                    temp_dic = {key: str(app_dic[key])}
                     appDic.update(temp_dic)
                     temp_dic = {}
                 except TypeError:
