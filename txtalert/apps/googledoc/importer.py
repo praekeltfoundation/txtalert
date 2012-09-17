@@ -38,7 +38,6 @@ class Importer(object):
         self.password = password
         self.reader = SimpleCRUD(self.email, self.password)
         self.enrollment_cache_dict = {}
-        print "\nCreated Importer for GoogleDocs.\n"
 
     def is_enrolled_as(self, doc_name, file_no):
         file_nos = split_file_no(file_no)
@@ -70,7 +69,9 @@ class Importer(object):
 
         self.month: stores the complete spreadsheet(has worksheets(s))
         """
-        print "Importing:", doc_name
+        doc_bar = "    +-%s-+\n" % ("-"*len(doc_name))
+        pretty_doc_name = "%s    | %s |\n%s" % (doc_bar, doc_name, doc_bar)
+        logging.critical(" Importing:\n\n%s" % pretty_doc_name)
         self.start = start
         self.until = until
         self.doc_name = str(doc_name)
@@ -240,7 +241,19 @@ class Importer(object):
                     return  (patient_update)
         #if any of the format are incorrect dont update patient
         else:
-            logging.exception("Invalid date format for patient: %s" % file_no)
+            if not file_format:
+                logging.exception("Invalid File No. format (%s) for patient: %s" % (
+                    repr(file_no), file_no))
+            if not phone_format:
+                logging.exception("Invalid Phone No. format (%s) for patient: %s" % (
+                    str(phone), file_no))
+            if not status_format:
+                logging.exception("Invalid Status format (%s) for patient: %s" % (
+                    repr(app_status), file_no))
+            if not app_date:
+                logging.exception("Invalid Date format (%s) for patient: %s" % (
+                    repr(app_date), file_no))
+
             patient_update = False
             return patient_update
 
@@ -261,9 +274,11 @@ class Importer(object):
                     if valid_status == app_status:
                         status_format = True
             except AttributeError:
-                logging.exception("Appointment status invalid format")
+                pass
+                #logging.exception("Appointment status invalid format")
         except TypeError:
-            logging.exception("Appointment status is not characters")
+            pass
+            #logging.exception("Appointment status is not characters")
 
         return (status, status_format)
 
@@ -340,7 +355,8 @@ class Importer(object):
                 phone_update = False
                 return (phone, phone_update)
         else:
-            logging.exception("The phone number must be 9 to 11 digits")
+            logging.exception("The phone number must be 9 or 11 digits, (%s) is %s."
+                    % (phone, len(str(phone))))
             phone_update = False
             return (phone, phone_update)
 
