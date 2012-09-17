@@ -473,11 +473,12 @@ class SimpleCRUD:
                     logging.exception(
                             "Patient File No: %s in the Enrollment sheet " \
                             "is missing a Patient ID." % file_no)
-                enrollment_map[file_no] = patient_id
-                #print file_no, "--->", patient_id
-                other_keys = [x.strip() for x in file_no.split('/')]
-                if len(other_keys) > 1:
-                    for k in other_keys:
-                        enrollment_map[k] = row_dict['patientid']
-                        #print "\t", k, "--->", patient_id
+                else:
+                    enrollment_map[file_no] = patient_id
+                    #print file_no, "--->", patient_id
+                    other_keys = [x.strip() for x in file_no.split('/')]
+                    if len(other_keys) > 1:
+                        for k in other_keys:
+                            enrollment_map[k] = row_dict['patientid']
+                            #print "\t", k, "--->", patient_id
         return enrollment_map
