@@ -69,9 +69,7 @@ class Importer(object):
 
         self.month: stores the complete spreadsheet(has worksheets(s))
         """
-        doc_bar = "    +-%s-+\n" % ("-"*len(doc_name))
-        pretty_doc_name = "%s    | %s |\n%s" % (doc_bar, doc_name, doc_bar)
-        logging.critical(" Importing:\n\n%s" % pretty_doc_name)
+        logging.critical(" Importing:\n\n\t**** %s ****\n" % doc_name)
         self.start = start
         self.until = until
         self.doc_name = str(doc_name)
