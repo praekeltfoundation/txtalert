@@ -16,6 +16,13 @@ def patient_count(request):
                         )
     return (this_week_patients.count(), last_week_patients.count())
 
+@number_widget
+def total_patient_count(request):
+    last_week_end = datetime.now() - timedelta(weeks=1)
+    patients = Patient.objects
+    last_week_patients = patients.filter(
+                            created_at__lt=last_week_end)
+    return (patients.count(), last_week_patients.count())
 
 @number_widget
 def smss_sent(request):
