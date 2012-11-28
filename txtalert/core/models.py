@@ -260,7 +260,7 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     )
 
     patient = models.ForeignKey(Patient)
-    te_visit_id = models.CharField('Visit id', max_length=20, unique=True,
+    te_visit_id = models.CharField('Visit id', max_length=255, unique=True,
                                     null=True)
     date = models.DateField('Date')
     status = models.CharField('Status', max_length=1,
