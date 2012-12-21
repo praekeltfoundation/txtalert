@@ -48,6 +48,8 @@ def load_cd4_records(sender, **kwargs):
 
     if created:
         for row in read_cd4_document(instance.original.path):
+            if not row[MSISDN][1]:
+                continue
             normalized_msisdn = normalize_msisdn(int(row[MSISDN][1]))
             instance.record_set.create(
                 # string
