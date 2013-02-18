@@ -1,4 +1,6 @@
 from django_geckoboard.decorators import number_widget, line_chart, pie_chart, funnel
+from django.contrib.auth.models import User
+from django.db.mmodels import Count
 from datetime import datetime, timedelta, date
 from txtalert.core.models import Patient, PleaseCallMe, Visit
 from txtalert.apps.gateway.models import SendSMS
@@ -23,6 +25,23 @@ def total_patient_count(request):
     last_week_patients = patients.filter(
                             created_at__lt=last_week_end)
     return (patients.count(), last_week_patients.count())
+
+@funnel
+def total_patient_distribution(request):
+    distribution = Patient.objects.values('owner').annotate(
+                    count=Count('owner')).order_by('-count')
+    distribution_values = []
+    for row in distribution:
+        distribution_values.append((distribution['count'],
+                        User.objects.get(pk=row['owner']).first_name))
+
+    return {
+        "type": "standard",
+        "percentage": "show",
+        "items": distribution_values,
+        "sort": True
+    }
+
 
 @number_widget
 def smss_sent(request):

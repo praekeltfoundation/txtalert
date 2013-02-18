@@ -3,6 +3,7 @@ from txtalert.apps.geckoboard import views
 
 urlpatterns = patterns('',
     (r'^total_patient_count/$', views.total_patient_count),
+    (r'^total_patient_distribution/$', views.total_patient_distribution),
     (r'^patient_count/$', views.patient_count),
     (r'^smss_sent/$', views.smss_sent),
     (r'^smss_sent/breakdown/$', views.smss_sent_breakdown),
