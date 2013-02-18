@@ -31,7 +31,7 @@ def total_patient_distribution(request):
     distribution = Patient.objects.values('owner').annotate(
                     count=Count('owner')).order_by('-count')
     distribution_values = [
-        (Patient.objects.all.count(), 'All Patients'),
+        (Patient.objects.all().count(), 'All Patients'),
         ]
     for row in distribution:
         distribution_values.append((row['count'],
