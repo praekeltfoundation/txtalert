@@ -1,6 +1,6 @@
 from django_geckoboard.decorators import number_widget, line_chart, pie_chart, funnel
 from django.contrib.auth.models import User
-from django.db.mmodels import Count
+from django.db.models import Count
 from datetime import datetime, timedelta, date
 from txtalert.core.models import Patient, PleaseCallMe, Visit
 from txtalert.apps.gateway.models import SendSMS
