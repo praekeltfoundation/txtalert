@@ -32,7 +32,7 @@ def total_patient_distribution(request):
                     count=Count('owner')).order_by('-count')
     distribution_values = []
     for row in distribution:
-        distribution_values.append((distribution['count'],
+        distribution_values.append((row['count'],
                         User.objects.get(pk=row['owner']).first_name))
 
     return {
