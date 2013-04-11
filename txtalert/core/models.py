@@ -38,7 +38,7 @@ class MSISDN(models.Model):
         verbose_name = 'Mobile Number'
         verbose_name_plural = 'Mobile Numbers'
         ordering=['-id']
-    
+
     def __unicode__(self):
         return self.msisdn
 
@@ -49,26 +49,26 @@ class Language(models.Model):
     attended_message = models.TextField('Attended Message')
     tomorrow_message = models.TextField('Tomorrow Message')
     twoweeks_message = models.TextField('Two Weeks Message')
-    
+
     def __unicode__(self):
         return self.name
-    
+
 
 
 class Clinic(models.Model):
     te_id = models.CharField('TE ID', max_length=2, unique=True)
     active = models.BooleanField(default=True)
     name = models.CharField('Name', max_length=100)
-    user = models.ForeignKey(User, related_name='clinic', blank=True, 
+    user = models.ForeignKey(User, related_name='clinic', blank=True,
                                 null=True)
-    
+
     class Meta:
         verbose_name = 'Clinic'
         verbose_name_plural = 'Clinics'
-    
+
     def __unicode__(self):
         return self.name
-    
+
 
 
 def users_in_group_with(user):
@@ -81,7 +81,7 @@ class FilteredQuerySetManager(models.Manager):
         super(FilteredQuerySetManager, self).__init__()
         self.args = args
         self.kwargs = kwargs
-    
+
     def in_group_with(self, user):
         users_in_group = users_in_group_with(user)
         return self.get_query_set().filter(owner__in=users_in_group)
@@ -92,12 +92,12 @@ class FilteredQuerySetManager(models.Manager):
                 .filter(*self.args, **self.kwargs)
 
 class SoftDeleteMixin(object):
-    
+
     def really_delete(self, *args, **kwargs):
         self.history.all().delete()
         self.visit_set.all().delete()
         super(SoftDeleteMixin, self).delete(*args, **kwargs)
-    
+
     def delete(self):
         """
         Implementing soft delete, this isn't possible with signals as far
@@ -106,27 +106,28 @@ class SoftDeleteMixin(object):
         if not self.deleted:
             self.deleted = True
             self.save()
-    
+
 
 
 class AuthProfile(models.Model):
     user = models.OneToOneField('auth.User')
     patient = models.OneToOneField('Patient')
-    
+
     def __unicode__(self):
         return u"AuthProfile for %s - %s" % (self.patient, self.user)
 
 
 class MessageType(models.Model):
     """A type of message sent to a patient"""
-    group = models.ForeignKey('auth.Group')
+    group = models.ForeignKey('auth.Group', null=True)
+    clinic = models.ForeignKey('core.Clinic', null=True)
     language = models.ForeignKey('core.Language')
     name = models.CharField(max_length=255)
     message = models.TextField()
 
     def __unicode__(self):
-        return u"MessageType: %s in %s for %s" % (self.name, self.language, 
-            self.group)
+        return u"MessageType: %s in %s for %s @ %s" % (self.name,
+            self.language, self.clinic, self.group)
 
 
 class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
@@ -137,83 +138,83 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         ('f>m', 'transgender f>m'),
         ('m>f', 'transgender m>f'),
     )
-    
+
     REGIMENT_CHOICES = (
         (28, 'Monthly'),
         (28*2, 'Bi-monthly'),
         (28*3, 'Tri-monthly'),
     )
-    
+
     owner = models.ForeignKey('auth.User')
     te_id = models.CharField('Patient ID', max_length=255, unique=True)
     name = models.CharField(blank=True, max_length=100)
     surname = models.CharField(blank=True, max_length=100)
     msisdns = models.ManyToManyField(MSISDN, related_name='contacts')
-    active_msisdn = models.ForeignKey(MSISDN, 
+    active_msisdn = models.ForeignKey(MSISDN,
                 verbose_name='Active phone number', null=True, blank=True)
-    
+
     age = models.IntegerField('Age', null=True, blank=True)
     regiment = models.IntegerField(blank=True, null=True, choices=REGIMENT_CHOICES)
     sex = models.CharField('Gender', max_length=3, choices=SEX_CHOICES, blank=True)
     opted_in = models.BooleanField('Opted In', default=True)
     disclosed = models.BooleanField('Disclosed', default=False)
     deceased = models.BooleanField('Deceased', default=False)
-    last_clinic = models.ForeignKey(Clinic, verbose_name='Clinic', 
+    last_clinic = models.ForeignKey(Clinic, verbose_name='Clinic',
                                         blank=True, null=True)
     risk_profile = models.FloatField('Risk Profile', blank=True, null=True)
     language = models.ForeignKey(Language, verbose_name='Language', default=1, null=True, blank=True)
-    
+
     # soft delete
     deleted = models.BooleanField(default=False)
-    
+
     # modification audit trail methods
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     # custom manager that excludes all deleted patients
     objects = FilteredQuerySetManager(deleted=False)
-    
+
     # normal custom manager, including deleted patients
     all_objects = models.Manager()
-    
+
     # history of all patients
     history = HistoricalRecords()
-    
+
     class Meta:
         ordering = ['created_at']
         verbose_name = 'Patient'
         verbose_name_plural = 'Patients'
-    
+
     def __unicode__(self):
         return self.te_id
-    
+
     def clinics(self):
         return set([visit.clinic for visit in \
                         Visit.objects.filter(patient=self).order_by('-date')])
-    
+
     def get_last_clinic(self):
         visit_qs = Visit.objects.filter(patient=self)
-        if visit_qs.exists(): 
+        if visit_qs.exists():
             return visit_qs.latest('id').clinic
         return None
-    
+
     def next_visit(self):
         if self.visit_set.upcoming().exists():
             return self.visit_set.filter(status__in=['s','r'], date__gte=date.today())\
                 .order_by('date')[0]
-    
+
     def last_visit(self):
         try:
             return self.visit_set.past().filter(status='a').order_by('-date')[0]
         except IndexError:
             return None
-    
+
     def get_display_name(self):
         if self.surname and self.name:
             return u'%s, %s' % (self.surname, self.name)
         else:
             return u'Anonymous'
-    
+
     def regiment_remaining(self):
         last_visit = self.last_visit()
         if last_visit:
@@ -222,7 +223,7 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
             return delta
         else:
             return None
-    
+
     def next_visit_dates(self, visit = None, span=7):
         last_visit = visit or self.last_visit()
         if last_visit:
@@ -234,83 +235,83 @@ class Patient(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
             return [next_visit + timedelta(days=i) for i in range(-span, span)]
         else:
             return [last_visit_date + timedelta(days=i) for i in range(-span,span)]
-        
+
 
 class VisitManager(FilteredQuerySetManager):
 
     def in_group_with(self, user):
         users_in_group = users_in_group_with(user)
         return self.get_query_set().filter(patient__owner__in=users_in_group)
-    
+
     def upcoming(self):
         return self.get_query_set().filter(date__gte=date.today())
-    
+
     def past(self):
         return self.get_query_set().filter(date__lt=date.today())
 
 class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
-    
+
     VISIT_TYPES = (
         ('arv', 'ARV'),
-        ('medical', 'Medical'), 
+        ('medical', 'Medical'),
         ('counselor', 'Counselor'),
         ('pediatric', 'Pediatric'),
         ('unknown', 'Unknown'),
     )
-    
+
     patient = models.ForeignKey(Patient)
-    te_visit_id = models.CharField('Visit id', max_length=20, unique=True,
+    te_visit_id = models.CharField('Visit id', max_length=255, unique=True,
                                     null=True)
     date = models.DateField('Date')
-    status = models.CharField('Status', max_length=1, 
+    status = models.CharField('Status', max_length=1,
                                 choices=VISIT_STATUS_CHOICES)
     comment = models.TextField('Reason', default='', blank=True)
     clinic = models.ForeignKey(Clinic)
-    visit_type = models.CharField('Visit Type', null=True, blank=True, max_length=80, 
+    visit_type = models.CharField('Visit Type', null=True, blank=True, max_length=80,
                                     choices=VISIT_TYPES)
-    
+
     # soft delete
     deleted = models.BooleanField(default=False)
-    
+
     # modification audit trail methods
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     # custom manager that excludes all deleted patients
     objects = VisitManager(deleted=False)
-    
+
     # normal custom manager, including deleted patients
     all_objects = models.Manager()
-    
+
     # keep track of Visit changes over time
     history = HistoricalRecords()
-    
+
     class Meta:
         verbose_name = 'Visit'
         verbose_name_plural = 'Visits'
         ordering = ['date']
         get_latest_by = 'id'
-    
+
     def reschedule_earlier(self):
         return self.changerequest_set.create(request='Patient has requested '
-            'the appointment to be rescheduled to an earlier date.', 
+            'the appointment to be rescheduled to an earlier date.',
             request_type='earlier_date', status='pending')
-    
+
     def reschedule_later(self):
         return self.changerequest_set.create(request='Patient has requested '
-            'the appointment to be rescheduled to a later date.', 
+            'the appointment to be rescheduled to a later date.',
             request_type='later_date', status='pending')
-    
+
     def __unicode__(self):
         try:
             return "Visit with status %s of type %s at %s for patient %s" % (
-                self.get_status_display(), self.get_visit_type_display() or 'unknown', self.date, 
+                self.get_status_display(), self.get_visit_type_display() or 'unknown', self.date,
                 self.patient)
         except Patient.DoesNotExist:
             return "Visit with status %s of type %s at %s" % (
                 self.get_status_display(), self.get_visit_type_display() or 'unknown', self.date)
-            
-    
+
+
 
 
 class PleaseCallMe(models.Model):
@@ -327,7 +328,7 @@ class PleaseCallMe(models.Model):
         ('vm', 'Voicemail'),
         ('ot', 'Other (fill in notes)'),
     )
-    
+
     user = models.ForeignKey(User)
     msisdn = models.ForeignKey(MSISDN, related_name='pcms', verbose_name='Mobile Number')
     timestamp = models.DateTimeField('Date & Time', auto_now_add=False)
@@ -342,7 +343,7 @@ class PleaseCallMe(models.Model):
 
     def __unicode__(self):
         return '%s - %s' % (self.msisdn, self.timestamp)
-    
+
 class Event(models.Model):
     """A description of an event; taxi strike, power failure etc..."""
     description = models.TextField("What happened?", blank=False)
@@ -366,10 +367,10 @@ class ChangeRequest(models.Model):
         ('approved', 'Approved'),
         ('denied', 'Denied'),
     ), default='pending')
-    
+
     class Meta:
         ordering = ['-created_at']
-    
+
     def __unicode__(self):
         return u"ChangeRequest for %s" % self.visit
 

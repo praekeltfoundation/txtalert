@@ -6,10 +6,10 @@ from django.http import HttpResponse
 from txtalert.apps.gateway.models import SendSMS
 
 class Gateway(object):
-    
+
     def __init__(self, username, password):
         self.client = Client(username, password)
-    
+
     def send_one_sms(self, user, msisdn, smstext):
         resp = self.client.send_sms(to_msisdn=msisdn, from_msisdn='0',
                     message=smstext).pop()
@@ -35,13 +35,8 @@ class Gateway(object):
 gateway = Gateway(settings.VUMI_USERNAME, settings.VUMI_PASSWORD)
 
 def sms_receipt_handler(request, *args, **kwargs):
-    try:
-        send_sms = SendSMS.objects.get(identifier=request.POST.get('id'))
-        send_sms.status = request.POST.get('transport_status')
-        send_sms.delivery_timestamp = request.POST.get('delivered_at')
-        send_sms.save()
-        return HttpResponse("ok", status=201)
-    except SendSMS.DoesNotExist, e:
-        print 'Cannot find SendSMS for id', request.POST.get('id')
-        print request.POST
-        return HttpResponse("accepted", status=202)
+    send_smss = SendSMS.objects.filter(identifier=request.POST.get('id'))
+    send_smss.update(status=request.POST.get('transport_status'),
+        delivery_timestamp=request.POST.get('delivered_at'))
+    return HttpResponse("ok", status=201)
+

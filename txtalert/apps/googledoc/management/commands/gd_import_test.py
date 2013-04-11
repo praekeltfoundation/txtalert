@@ -1,6 +1,6 @@
 from datetime import timedelta, date
 from django.core.management.base import BaseCommand
-from txtalert.apps.googledoc.importer import Importer
+from txtalert.apps.googledoc.testimporter import Importer
 from txtalert.apps.googledoc.models import SpreadSheet, GoogleAccount
 import logging
 
@@ -29,6 +29,7 @@ class Command(BaseCommand):
                     try:
                         importer.import_spread_sheet(spreadsheet.spreadsheet,
                                                      start, until)
+                        logging.debug("Import spreadsheet data using period.")
                     except:
                         logging.exception("Update error for: %s" % (
                             spreadsheet.spreadsheet,))

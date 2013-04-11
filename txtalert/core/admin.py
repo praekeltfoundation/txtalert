@@ -40,13 +40,20 @@ class PleaseCallMeAdmin(admin.ModelAdmin):
     list_display = ('timestamp', 'msisdn','reason','notes', 'message')
     list_filter = ('timestamp', 'clinic','reason',)
     readonly_fields = ('user',)
-    
+
     def queryset(self, request):
         qs = super(PleaseCallMeAdmin, self).queryset(request)
         if request.user.is_superuser:
             return qs
         else:
             return qs.filter(user__in=users_in_same_group_as(request.user))
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "clinic":
+            if not request.user.is_superuser:
+                kwargs['queryset'] = Clinic.objects.filter(user__in=users_in_same_group_as(request.user))
+        return super(PleaseCallMeAdmin, self).formfield_for_choice_field(db_field, request, **kwargs)
+
 
 class PatientForm(forms.ModelForm):
     active_msisdn = forms.ModelChoiceField(
@@ -59,7 +66,7 @@ class PatientAdmin(admin.ModelAdmin):
     list_filter = ('last_clinic',)
     search_fields = ['msisdns__msisdn', 'te_id', 'name', 'surname']
     readonly_fields = ('owner','last_clinic',)
-    
+
     def queryset(self, request):
         qs = super(PatientAdmin, self).queryset(request)
         if request.user.is_superuser:
@@ -67,7 +74,7 @@ class PatientAdmin(admin.ModelAdmin):
         else:
             qs = qs.filter(owner__in=users_in_same_group_as(request.user))
             return qs
-    
+
     def save_model(self, request, obj, form, change):
         if not request.user.is_superuser:
             obj.owner = request.user
@@ -77,7 +84,7 @@ class PatientAdmin(admin.ModelAdmin):
             except User.DoesNotExist:
                 obj.owner = request.user
         obj.save()
-    
+
 
 class VisitAdmin(admin.ModelAdmin):
     readonly_fields = ('patient','clinic', 'te_visit_id')
@@ -88,14 +95,14 @@ class VisitAdmin(admin.ModelAdmin):
             return qs
         else:
             return qs.filter(patient__owner__in=users_in_same_group_as(request.user))
-    
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "patient":
             if not request.user.is_superuser:
                 kwargs['queryset'] = Patient.objects.filter(owner=users_in_same_group_as(request.user))
         return super(VisitAdmin, self).formfield_for_choice_field(db_field, request, **kwargs)
-    
-    
+
+
 
 class MessageTypeAdmin(admin.ModelAdmin):
     list_filter = ('group', 'language', 'name')
