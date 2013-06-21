@@ -30,7 +30,7 @@ MESSAGE_VISIT_NOTFOUND = "Visit with the ID '%s' could not be found."
 class InvalidValueException(Exception): pass
 
 class Validator(object):
-    
+
     @classmethod
     def test(klass, method, error_message = 'invalid input'):
         def tester(value):
@@ -38,14 +38,14 @@ class Validator(object):
                 raise InvalidValueException, error_message
             return value
         return tester
-    
+
     @classmethod
     def regex(klass, pattern):
-        """Raises an InvalidValueException if the given input does not 
+        """Raises an InvalidValueException if the given input does not
         match the pattern"""
         regex = re.compile(pattern)
         return klass.test(regex.match, 'does not match pattern %s' % pattern)
-    
+
     @classmethod
     def lookup(klass, dictionary):
         def tester(value):
@@ -81,19 +81,19 @@ class VisitException(Exception): pass
 class Update(object):
     def __init__(self, klass):
         self.klass = klass
-    
+
     def get(self, *args, **kwargs):
         try:
             self.instance, self.created, self.updated = self.klass.objects.get(*args, **kwargs), False, False
         except self.klass.DoesNotExist, e:
             self.instance, self.created, self.updated = self.klass(*args, **kwargs), True, True
         return self
-    
+
     def update_attributes(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self.instance, key, value)
         return self
-    
+
     def save(self):
         if self.instance.is_dirty():
             self.updated = True
@@ -103,10 +103,10 @@ class Update(object):
         return self.instance, self.created, self.updated
 
 class Importer(object):
-        
+
     def __init__(self, uri=None, verbose=False):
         self.client = Client(uri, verbose)
-    
+
     def import_all_patients(self, clinic):
         # all_patients = self.client.get_all_patients(clinic.te_id)
         # return all_patients
@@ -115,7 +115,7 @@ class Importer(object):
         # return self.update_local_patients(all_patients)
         raise NotImplemented, 'all these are failing for me, without any '\
                                 'documentation I am unable to continue'
-    
+
     def import_updated_patients(self, user, clinic, since, until):
         updated_patients = self.client.get_updated_patients(clinic.te_id, since, until)
         logger.info('Receiving updated patients for %s between %s and %s' % (
@@ -124,14 +124,14 @@ class Importer(object):
             until
         ))
         return self.update_local_patients(user, updated_patients)
-    
+
     def update_local_patients(self, user, remote_patients):
         for remote_patient in remote_patients:
             try:
                 yield self.update_local_patient(user, remote_patient)
             except IntegrityError, e:
                 logger.exception('Failed to create Patient for: %s' % (remote_patient,))
-    
+
     def update_local_patient(self, owner, remote_patient):
         logger.debug('Processing: %s' % remote_patient._asdict())
         patient, created, updated = Update(Patient) \
@@ -144,9 +144,16 @@ class Importer(object):
             logger.debug('Patient created: %s' % patient)
         elif updated:
             logger.debug('Update for existing patient: %s' % patient)
-            
+
         # `celphone` typo is TherapyEdge's
-        for msisdn in remote_patient.celphone.split('/'):
+        # keeping it here because we might still run into it on
+        # older installations
+        if hasattr(remote_patient, 'celphone'):
+            msisdns = remote_patient.celphone
+        else:
+            msisdns = remote_patient.cellphone
+
+        for msisdn in msisdns.split('/'):
             # FIXME: this normalization seems sketchy at best
             match = MSISDN_RE.match(msisdn)
             if match:
@@ -154,10 +161,10 @@ class Importer(object):
                 msisdn, created = MSISDN.objects.get_or_create(msisdn=phone_number)
                 if msisdn not in patient.msisdns.all():
                     patient.msisdns.add(msisdn)
-        
+
         if created or updated:
             return patient
-    
+
     def import_coming_visits(self, user, clinic, since, until):
         coming_visits = self.client.get_coming_visits(clinic.te_id, since, until)
         logger.info('Receiving coming visits for %s between %s and %s' % (
@@ -166,7 +173,7 @@ class Importer(object):
             until
         ))
         return self.update_local_coming_visits(user, clinic, coming_visits)
-    
+
     def update_local_coming_visits(self, user, clinic, visits):
         for visit in visits:
             logger.debug('Processing coming Visit %s' % visit._asdict())
@@ -176,29 +183,29 @@ class Importer(object):
                 logger.exception('Failed to create upcoming Visit')
             except Patient.DoesNotExist, e:
                 logger.exception('Could not find Patient for Visit.te_id')
-    
+
     def update_local_coming_visit(self, owner, clinic, remote_visit):
         # I'm assuming we'll always have the patient being referenced
         # in the Visit object, if not - raise hell
         patient = Patient.objects.get(te_id=remote_visit.te_id, owner=owner)
         coming_date = iso8601.parse_date(remote_visit.scheduled_visit_date)
-        
+
         # FIXME:    a lot of duplication between update_local_coming_visit and
         #           update_local_missed_visits with regard to the status of
         #           of the messages.
-        
+
         try:
             visit = Visit.objects.get(te_visit_id=remote_visit.key_id)
             created = False
         except Visit.DoesNotExist:
             visit = Visit(te_visit_id=remote_visit.key_id)
             created = True
-        
+
         # check if something actually changed in the visit, if not, immediately
         # return the visit - no use continuing
         if coming_date.date() == visit.date:
             return
-        
+
         # it's a new visit
         if created:
             if coming_date.date() <= date.today():
@@ -213,19 +220,19 @@ class Importer(object):
             # overdue comming dates stored locally
             #else:
                 #visit.status = 'm'
-        
+
         visit.clinic = clinic
         visit.patient = patient
         visit.date = coming_date
         if visit.is_dirty():
             visit.save()
-        
+
         if created:
             logger.debug('Creating new Visit: %s' % visit.id)
         else:
             logger.debug('Updating existing Visit: %s / (%s vs %s)' % (visit.id, visit.get_dirty_fields(), visit._original_state))
         return visit
-    
+
     def import_missed_visits(self, user, clinic, since, until):
         missed_visits = self.client.get_missed_visits(clinic.te_id, since, until)
         logger.info('Receiving missed visits for %s between %s and %s' % (
@@ -234,7 +241,7 @@ class Importer(object):
             until
         ))
         return self.update_local_missed_visits(user, clinic, missed_visits)
-    
+
     def update_local_missed_visits(self, user, clinic, missed_visits):
         for visit in missed_visits:
             logger.debug('Processing missed Visit: %s' % visit._asdict())
@@ -246,24 +253,24 @@ class Importer(object):
                 logger.exception('Could not find Patient for Visit.te_id')
             except VisitException, e:
                 logger.exception('VisitException')
-    
+
     def update_local_missed_visit(self, owner, clinic, remote_visit):
         # get the patient or raise error
         patient = Patient.objects.get(te_id=remote_visit.te_id, owner=owner)
         missed_date = iso8601.parse_date(remote_visit.missed_date).date()
-        
+
         try:
             visit = Visit.objects.get(te_visit_id=remote_visit.key_id)
             created = False
         except Visit.DoesNotExist:
             visit = Visit(te_visit_id=remote_visit.key_id)
             created = True
-        
+
         # check if something actually changed in the visit, if not, immediately
         # return the visit - no use continuing
         if missed_date == visit.date and visit.status == 'm':
             return
-        
+
         # it's a new visit
         if created:
             if missed_date <= date.today():
@@ -276,13 +283,13 @@ class Importer(object):
                 visit.status = 'r'
             else:
                 visit.status = 'm'
-        
+
         visit.clinic = clinic
         visit.patient = patient
         visit.date = missed_date
         if visit.is_dirty():
             visit.save()
-        
+
         if created:
             logger.debug('Creating new Visit: %s' % visit.id)
         else:
@@ -291,9 +298,9 @@ class Importer(object):
                 missed_date,
                 visit.status
             ))
-        
+
         return visit
-    
+
     def import_done_visits(self, user, clinic, since, until):
         done_visits = self.client.get_done_visits(clinic.te_id, since, until)
         logger.info('Receiving done visits for %s between %s and %s' % (
@@ -302,7 +309,7 @@ class Importer(object):
             until
         ))
         return self.update_local_done_visits(user, clinic, done_visits)
-    
+
     def update_local_done_visits(self, user, clinic, remote_visits):
         for remote_visit in remote_visits:
             logger.debug('Processing done Visit: %s' % remote_visit._asdict())
@@ -312,13 +319,13 @@ class Importer(object):
                 logger.exception('Failed to create visit')
             except Patient.DoesNotExist, e:
                 logger.exception('Could not find Patient for Visit.te_id')
-        
-    
+
+
     def update_local_done_visit(self, owner, clinic, remote_visit):
         # get patient or raise error
         patient = Patient.objects.get(te_id=remote_visit.te_id, owner=owner)
         done_date = iso8601.parse_date(remote_visit.done_date).date()
-        
+
         visit, created, updated = Update(Visit) \
                             .get(te_visit_id=remote_visit.key_id) \
                             .update_attributes(
@@ -327,14 +334,14 @@ class Importer(object):
                                 date=done_date,
                                 status='a'
                             ).save()
-        
+
         # make sure we have a visit for the change we're getting
         if created:
             logger.debug('Creating new done Visit: %s' % visit.id)
             return visit
         elif updated:
             # done events we flag as a for 'attended', not sure why the orignal
-            # import script did a get_or_create here. Maybe an error or 
+            # import script did a get_or_create here. Maybe an error or
             # maybe the TherapyEdge data is *really* wonky
             logger.debug('Updating Visit: %s, date: %s, status: %s' % (
                 visit.id,
@@ -342,7 +349,7 @@ class Importer(object):
                 'a'
             ))
             return visit
-    
+
     def import_deleted_visits(self, user, clinic, since, until):
         deleted_visits = self.client.get_deleted_visits(clinic.te_id, since, until)
         logger.info('Receiving deleted visits between %s and %s' % (
@@ -350,7 +357,7 @@ class Importer(object):
             until
         ))
         return self.update_local_deleted_visits(user, deleted_visits)
-    
+
     def update_local_deleted_visits(self, user, remote_visits):
         for remote_visit in remote_visits:
             logger.debug('Processing deleted Visit: %s' % remote_visit._asdict())
@@ -358,13 +365,13 @@ class Importer(object):
                 yield self.update_local_deleted_visit(user, remote_visit)
             except Visit.DoesNotExist, e:
                 logger.exception('Could not find Visit to delete')
-    
+
     def update_local_deleted_visit(self, owner, remote_visit):
         visit = Visit.objects.get(te_visit_id=remote_visit.key_id, patient__owner=owner)
         visit.delete()
         logger.debug('Deleted Visit: %s' % visit.id)
         return visit
-    
+
     def import_all_changes(self, user, clinic, since, until):
         # I set these because they all are generators, listing them forces
         # them to be iterated over
@@ -376,5 +383,5 @@ class Importer(object):
             'done_visits': filter(None, self.import_done_visits(user, clinic, since, until)),
             'deleted_visits': filter(None, self.import_deleted_visits(user, clinic, since, until))
         }
-    
-    
+
+
