@@ -38,7 +38,7 @@ class Command(BaseCommand):
             username=Setting.objects.get(name='THERAPYEDGE_USERNAME').value,
             password=Setting.objects.get(name='THERAPYEDGE_PASSWORD').value)
 
-        importer = Importer(uri=url, verbose=settings.DEBUG)
+        importer = Importer(uri=url, verbose=options['verbose'])
 
         username = options.get('username')
         if not username:
