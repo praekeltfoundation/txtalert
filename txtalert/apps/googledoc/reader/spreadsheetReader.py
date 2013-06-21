@@ -23,6 +23,21 @@ import gdata.service
 import gdata.spreadsheet
 import datetime
 import logging
+from collections import defaultdict
+
+
+def try_remove_non_ascii(s):
+    return_value = s
+    try:
+        return_value = "".join(i for i in s if ord(i)<128)
+    except:
+        pass
+    return return_value
+
+
+def try_clean_dict(d):
+    for k, v in d.items():
+        d[k] = try_remove_non_ascii(v)
 
 
 def try_remove_non_ascii(s):
@@ -61,6 +76,9 @@ class SimpleCRUD:
         self.curr_key = ''
         self.wksht_id = ''
         self.list_feed = None
+        self.spreadsheet_cache = {}
+        self.worksheet_cache = defaultdict(dict)
+        self.listfeed_cache = {}
 
     def get_spreadsheet(self, doc_name):
         """
@@ -72,6 +90,12 @@ class SimpleCRUD:
         is used as a unique idenfier for the spreadsheet.
         """
         logging.info("Getting %s" % (doc_name,))
+
+        cached_value = self.spreadsheet_cache.get(doc_name)
+        if cached_value:
+            self.curr_key = cached_value
+            return True
+
         q = gdata.spreadsheet.service.DocumentQuery()
         q['title'] = doc_name
         q['title-exact'] = 'true'
@@ -79,10 +103,13 @@ class SimpleCRUD:
         try:
             self.curr_key = feed.entry[0].id.text.rsplit('/', 1)[1]
             found = True
+            # self.spreadsheet_cache[doc_name] = '%s' % (self.curr_key,)
             return found
         except IndexError:
             logging.exception("Spreadsheet name is invalid")
             found = False
+            # if doc_name in self.spreadsheet_cache:
+            #     del self.spreadsheet_cache[doc_name]
             return found
 
     def get_worksheet_data(self, worksheet_type, start, until):
@@ -174,6 +201,13 @@ class SimpleCRUD:
         app_worksheet: Stores the worksheet contents.
         """
 
+        cache_dict = self.worksheet_cache.get(self.curr_key, {})
+        cached_value = cache_dict.get(worksheet_name)
+        if cached_value:
+            wksht_id, app_worksheet = cached_value
+            self.wksht_id = wksht_id
+            return app_worksheet
+
         q = gdata.spreadsheet.service.DocumentQuery()
         q['title'] = worksheet_name
         q['title-exact'] = 'true'
@@ -183,6 +217,9 @@ class SimpleCRUD:
             #if worksheet is not enrollement sheet get data
             if worksheet_name != 'enrollment sheet':
                 app_worksheet = self.prompt_for_list_action()
+                cache_dict[worksheet_name] = ('%s' % (self.wksht_id,),
+                    app_worksheet)
+                # self.worksheet_cache[self.curr_key] = cache_dict
                 return app_worksheet
 
         except IndexError:
@@ -218,7 +255,6 @@ class SimpleCRUD:
                 try:
                     #check if the worksheet has a patient with this date
                     if worksheet[row]:
-                        print worksheet[row]
                         if worksheet[row]['appointmentdate1'] == curr_date:
                             #test if the current date is in month range
                             date_range = worksheet[row]['appointmentdate1']
@@ -234,38 +270,10 @@ class SimpleCRUD:
                                                          worksheet[row], row)
                         )
                 except KeyError, e:
-                     logging.error('Error reading row %s at %s in %s' % (
-                                               worksheet[row], row, period)
-                     )
-                     logging.error(e)
+                    logging.error('Error reading row %s at %s in %s' % (
+                                               worksheet[row], row, period))
+                    logging.error(e)
         return patients_worksheet
-
-    def enrol_query(self, file_no):
-        """
-        @arguments:
-        file_no: A patient file number.
-
-        Sends a query to a enrollment worksheet to
-        check if the patient has enrolled to use
-        appointment service. Check if the query returned
-        a patient row and if True then patient has
-        enrolled if False the patient needs to enrol.
-
-        @returns:
-        enrolled: Flag to indicate if the patient was
-                  found int the enrollment worksheet.
-        """
-        q = gdata.spreadsheet.service.ListQuery(text_query=str(file_no))
-        feed = self.gd_client.GetListFeed(self.curr_key,
-                                          self.wksht_id, query=q)
-        #patient was found in the enrollment worksheet
-        if feed.entry:
-            enrolled = True
-            return enrolled
-        #patient needs to enrol first
-        if not feed.entry is None:
-            enrolled = False
-            return enrolled
 
     def prompt_for_list_action(self):
         """Calls method that gets a list feed from the given worksheet."""
@@ -274,9 +282,17 @@ class SimpleCRUD:
 
     def list_get_action(self):
         """Gets the list feed for the worksheet and sends it to be processed"""
+        cache_key = ':'.join([self.curr_key, self.wksht_id])
+        cache_value = self.listfeed_cache.get(cache_key)
+        if cache_value:
+            return cache_value
+
         list_feed = self.gd_client.GetListFeed(self.curr_key, self.wksht_id)
         #get the enrollment worksheet
         sheet = self.process_file(feed=list_feed)
+
+        # self.listfeed_cache[cache_key] = sheet
+
         return sheet
 
     def process_file(self, feed):
@@ -450,18 +466,33 @@ class SimpleCRUD:
         else:
             return False
 
-    def run_enrollment_check(self, doc_name, file_no, start, until):
-        """
-        @arguments:
-        doc_name: the name of spreadsheet to import data from.
-        file_no: patient file number.
-        start: indicates the date to start import data from.
-        until: indicates the date import data function must stop at.
-        """
+    def get_enrollment_map(self, doc_name):
         #get the spread sheet to be worked on
         self.get_spreadsheet(doc_name)
-        #get the worksheets on the spreadsheet
-        self.get_worksheet_data('enrollment worksheet', start, until)
-        #query the patient enrollment status
-        exists = self.enrol_query(file_no)
-        return exists
+        #get the enrolment worksheet on the spreadsheet
+        self.get_worksheet_data('enrollment worksheet', None, None)
+        rows = self.gd_client.GetListFeed(self.curr_key, self.wksht_id).entry
+        # build up a list of Patient IDs keyed by each possible
+        # variant of the Patient File No
+        enrollment_map = {}
+        for row in rows:
+            row_dict = {}
+            for key in row.custom:
+                row_dict[key] = row.custom[key].text
+            #print row_dict
+            file_no = row_dict.get('patientfileno')
+            patient_id = row_dict.get('patientid')
+            if file_no:
+                if not patient_id:
+                    logging.exception(
+                            "Patient File No: %s in the Enrollment sheet " \
+                            "is missing a Patient ID." % file_no)
+                else:
+                    enrollment_map[file_no] = patient_id
+                    #print file_no, "--->", patient_id
+                    other_keys = [x.strip() for x in file_no.split('/')]
+                    if len(other_keys) > 1:
+                        for k in other_keys:
+                            enrollment_map[k] = row_dict['patientid']
+                            #print "\t", k, "--->", patient_id
+        return enrollment_map

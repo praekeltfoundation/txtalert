@@ -39,3 +39,4 @@ def sms_receipt_handler(request, *args, **kwargs):
     send_smss.update(status=request.POST.get('transport_status'),
         delivery_timestamp=request.POST.get('delivered_at'))
     return HttpResponse("ok", status=201)
+

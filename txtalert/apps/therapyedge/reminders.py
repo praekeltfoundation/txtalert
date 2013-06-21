@@ -214,3 +214,4 @@ def all(gateway, group_names, date=None, clinic_name=None):
             attended(gateway, clinic, user, visits, today)
             logger.debug('Sending reminders for %s: missed yesterday' % user)
             missed(gateway, clinic, user, visits, today)
+

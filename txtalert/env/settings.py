@@ -103,6 +103,13 @@ TEMPLATE_DIRS = (
 
 ROOT_URLCONF = 'txtalert.urls'
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
+
 INSTALLED_APPS = (
     'txtalert.core',
     'txtalert.apps.general.settings',
@@ -142,5 +149,5 @@ BOOKING_TOOL_RISK_LEVELS = {
     'low': lambda pc: pc < 50,
 }
 
-SOUTH_TESTS_MIGRATE = False 
+SOUTH_TESTS_MIGRATE = False
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'

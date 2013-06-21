@@ -10,11 +10,15 @@ import hashlib
 MSISDNS_RE = re.compile(r'^([+]?(0|27)[0-9]{9}/?)+$')
 PHONE_RE = re.compile(r'[0-9]{9}')
 MSISDN_RE = re.compile(r'^([+?0][0-9]{9}/?)+$')
-FILE_NO = re.compile(r'^[a-zA-Z0-9]+$')
+FILE_NO = re.compile(r'^[a-zA-Z0-9/ ]+$')
 STATUS_RE = re.compile(r'^[a-zA-Z]+$')
 
 #the amount of time to cache a enrollment status
 CACHE_TIMEOUT = 30
+
+def split_file_no(file_no):
+    file_nos = [x.strip() for x in file_no.split('/')]
+    return file_nos
 
 
 class Importer(object):
@@ -33,6 +37,22 @@ class Importer(object):
         self.email = email
         self.password = password
         self.reader = SimpleCRUD(self.email, self.password)
+        self.enrollment_cache_dict = {}
+
+    def is_enrolled_as(self, doc_name, file_no):
+        file_nos = split_file_no(file_no)
+        file_nos.append(file_no)
+        patient_id = None
+        for f in file_nos:
+            patient_id = patient_id or \
+                    self.enrollment_cache_dict[doc_name].get(f)
+        return patient_id
+
+    def is_enrolled(self, doc_name, file_no):
+        if self.is_enrolled_as(doc_name, file_no) is None:
+            return False
+        else:
+            return True
 
     def import_spread_sheet(self, doc_name, start, until):
         """
@@ -49,9 +69,13 @@ class Importer(object):
 
         self.month: stores the complete spreadsheet(has worksheets(s))
         """
+        logging.critical(" Importing:\n\n\t**** %s ****\n" % doc_name)
         self.start = start
         self.until = until
         self.doc_name = str(doc_name)
+
+        self.enrollment_cache_dict[doc_name] = self.reader.get_enrollment_map(doc_name)
+
         self.month = self.reader.run_appointment(self.doc_name, start, until)
         #counts how many enrolled patients where updated correctly
         correct_updates = 0
@@ -111,7 +135,7 @@ class Importer(object):
         for patient in month_worksheet:
             file_no = month_worksheet[patient]['fileno']
             #call method to get the cached enrollemnt status for the patient
-            enrolled = self.get_cache_enrollement_status(doc_name, file_no)
+            enrolled = self.is_enrolled(doc_name, file_no)
             #check if the cache has the patient's enrollment status
             if enrolled:
                 logging.debug("Patient's enrollment status cached")
@@ -137,64 +161,12 @@ class Importer(object):
                     'Patient: %s cannot update with cached enrollment status' %
                     file_no
                     )
-            #cache patient's appointment status if it was not cached.
             else:
-                #call method to set cache
-                cache_status = self.set_cache_enrollement_status(
-                                           doc_name, file_no, start, until
-                )
-                #check if the patient is enrolled
-                if cache_status == True:
-                    #add to the enrolled patient counter
-                    enrolled_counter = enrolled_counter + 1
-                    #update enrolled patient
-                    update_flag = self.update_patient(
-                                    month_worksheet[patient],
-                                    patient, doc_name, start, until
-                    )
-                    if update_flag == True:
-                        correct_updates = correct_updates + 1
-                        logging.debug("Updating the patient: %s" % file_no)
                 #else, patient not enrolled
-                else:
-                    logging.exception(
-                    'Patient: %s cannot update with False enrollment status' %
-                    file_no
-                    )
+                logging.exception('Cannot send reminder to Patient %s '
+                    'since she/he has not been enrolled' % (file_no,))
 
         return (enrolled_counter, correct_updates)
-
-    def cache_key(self, *args):
-        return hashlib.md5(''.join(args)).hexdigest()
-
-    def set_cache_enrollement_status(self, doc_name, file_no, start, until):
-         #check if the patient has enrolled
-        if self.reader.run_enrollment_check(doc_name, file_no,
-                                            start, until) is True:
-            #cache the enrollment check
-            cache.set(self.cache_key(doc_name, file_no), True, CACHE_TIMEOUT)
-            logging.debug("Caching True status for patient: %s" %
-                           file_no
-            )
-            #the patient is enrolled, cache true for enrollement status
-            enrolled_cache = True
-            return enrolled_cache
-        elif self.reader.run_enrollment_check(doc_name, file_no,
-                                              start, until) is False:
-            #cache the enrollment check
-            cache.set(self.cache_key(doc_name, file_no), False, CACHE_TIMEOUT)
-            logging.exception(
-                               "Caching False status for patient: %s" %
-                               file_no
-            )
-            #the patient is not enrolled, cache False for enrollement status
-            enrolled_cache = False
-            return enrolled_cache
-
-    def get_cache_enrollement_status(self, doc_name, file_no):
-        #check if the enrollment check was cached
-        enrolled = cache.get(self.cache_key(doc_name, file_no))
-        return enrolled
 
     def update_patient(self, patient_row, row, doc_name, start, until):
         '''
@@ -267,7 +239,19 @@ class Importer(object):
                     return  (patient_update)
         #if any of the format are incorrect dont update patient
         else:
-            logging.exception("Invalid data format for patient: %s" % file_no)
+            if not file_format:
+                logging.exception("Invalid File No. format (%s) for patient: %s" % (
+                    repr(file_no), file_no))
+            if not phone_format:
+                logging.exception("Invalid Phone No. format (%s) for patient: %s" % (
+                    str(phone), file_no))
+            if not status_format:
+                logging.exception("Invalid Status format (%s) for patient: %s" % (
+                    repr(app_status), file_no))
+            if not app_date:
+                logging.exception("Invalid Date format (%s) for patient: %s" % (
+                    repr(app_date), file_no))
+
             patient_update = False
             return patient_update
 
@@ -288,9 +272,11 @@ class Importer(object):
                     if valid_status == app_status:
                         status_format = True
             except AttributeError:
-                logging.exception("Appointment status invalid format")
+                pass
+                #logging.exception("Appointment status invalid format")
         except TypeError:
-            logging.exception("Appointment status is not characters")
+            pass
+            #logging.exception("Appointment status is not characters")
 
         return (status, status_format)
 
@@ -303,7 +289,7 @@ class Importer(object):
             match = FILE_NO.match(file_no)
             if match is None:
                 # No match, it isn't in the correct format.
-                logging.exception("%s is not in the correct format. "
+                logging.exception("Patient %s is not in the correct format. "
                     "Only letters and digits are allowed." % (file_no,))
                 return (file_number, False)
             try:
@@ -367,7 +353,8 @@ class Importer(object):
                 phone_update = False
                 return (phone, phone_update)
         else:
-            logging.exception("The phone number must be 9 to 11 digits")
+            logging.exception("The phone number must be 9 or 11 digits, (%s) is %s."
+                    % (phone, len(str(phone))))
             phone_update = False
             return (phone, phone_update)
 
@@ -410,11 +397,7 @@ class Importer(object):
                     new_patient.msisdns.add(msisdn)
                     #get or create a clinic
                     clinic = self.get_or_create_clinic(doc_name)
-                    enrolled = self.set_cache_enrollement_status(
-                                    doc_name, file_no, start, until
-                    )
-                    #check if the enrollment check was cached
-                    enrolled = cache.get(file_no)
+                    enrolled = self.is_enrolled(doc_name, file_no)
                     #convert string enroment to a choice key used in database
                     status = self.update_needed(app_status)
                     #if patient is enrolled create a visit instanceprint
