@@ -1,4 +1,4 @@
-Django>=1.3
+Django>=1.3,<1.4
 django-nose
 psycopg2
 gdata>=2.0.14
@@ -6,9 +6,10 @@ xlrd
 django-dirtyfields
 django-historicalrecords
 iso8601
-django-piston
+django-piston==0.2.2
 south
 gunicorn
 supervisor
 django-geckoboard
 -e git+git://github.com/smn/vumi-client.git#egg=vumi-client
+python-memcached
