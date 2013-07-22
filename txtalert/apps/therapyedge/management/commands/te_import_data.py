@@ -66,8 +66,8 @@ class Command(BaseCommand):
                 for key, value in importer.import_all_changes(
                         user,
                         clinic,
-                        since=since.date(),
-                        until=until.date(),
+                        since=since,
+                        until=until,
                         visit_type=visit_type
                     ).items():
                     print "\t%s: %s" % (key, len(value))

@@ -83,7 +83,9 @@ class Client(object):
         if since > until:
             raise IllegalDateRange(
                 'since (%s) is greater than until (%s)' % (since, until))
-        return self.call_method(request, 'date_range', since, until,
+        return self.call_method(request, 'date_range',
+                                since.strftime('%Y-%m-%d'),
+                                until.strftime('%Y-%m-%d'),
                                 visit_type)
 
     def get_coming_visits(self, since, until, visit_type):
