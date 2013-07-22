@@ -30,6 +30,8 @@ class Command(BaseCommand):
                     default=('https://{username}:{password}@41.0.13.99'
                              '/tools/ws/sms/patients/server.php')),
         make_option('--verbose', dest='verbose', action='store_true'),
+        make_option('--visit-type', dest='visit_type', default=3, type=int,
+                    help='The visit type to import, defaults to Medical Visit (3)'),
     )
 
     def handle(self, *args, **options):
@@ -49,6 +51,7 @@ class Command(BaseCommand):
             start_date = datetime.strptime(custom_start_date, '%Y-%m-%d')
         else:
             start_date = datetime.now()
+        visit_type = options['visit_type']
 
         user = User.objects.get(username=username)
         for clinic in Clinic.objects.filter(active=True, user=user):
@@ -64,7 +67,8 @@ class Command(BaseCommand):
                         user,
                         clinic,
                         since=since,
-                        until=until
+                        until=until,
+                        visit_type=visit_type
                     ).items():
                     print "\t%s: %s" % (key, len(value))
             except ExpatError, e:

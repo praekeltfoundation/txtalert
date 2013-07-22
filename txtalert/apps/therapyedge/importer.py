@@ -117,7 +117,7 @@ class Importer(object):
                                 'documentation I am unable to continue'
 
     def import_updated_patients(self, user, clinic, since, until):
-        updated_patients = self.client.get_updated_patients(clinic.te_id, since, until)
+        updated_patients = self.client.get_updated_patients(since)
         logger.info('Receiving updated patients for %s between %s and %s' % (
             clinic.name,
             since,
@@ -165,14 +165,15 @@ class Importer(object):
         if created or updated:
             return patient
 
-    def import_coming_visits(self, user, clinic, since, until):
-        coming_visits = self.client.get_coming_visits(clinic.te_id, since, until)
+    def import_coming_visits(self, user, clinic, since, until, visit_type):
+        coming_visits = self.client.get_coming_visits(since, until, visit_type)
         logger.info('Receiving coming visits for %s between %s and %s' % (
             clinic.name,
             since,
             until
         ))
-        return self.update_local_coming_visits(user, clinic, coming_visits)
+        return self.update_local_coming_visits(
+            user, clinic, coming_visits)
 
     def update_local_coming_visits(self, user, clinic, visits):
         for visit in visits:
@@ -233,12 +234,11 @@ class Importer(object):
             logger.debug('Updating existing Visit: %s / (%s vs %s)' % (visit.id, visit.get_dirty_fields(), visit._original_state))
         return visit
 
-    def import_missed_visits(self, user, clinic, since, until):
-        missed_visits = self.client.get_missed_visits(clinic.te_id, since, until)
-        logger.info('Receiving missed visits for %s between %s and %s' % (
+    def import_missed_visits(self, user, clinic, since, visit_type):
+        missed_visits = self.client.get_missed_visits(since, visit_type)
+        logger.info('Receiving missed visits for %s since %s' % (
             clinic.name,
             since,
-            until
         ))
         return self.update_local_missed_visits(user, clinic, missed_visits)
 
@@ -301,8 +301,8 @@ class Importer(object):
 
         return visit
 
-    def import_done_visits(self, user, clinic, since, until):
-        done_visits = self.client.get_done_visits(clinic.te_id, since, until)
+    def import_done_visits(self, user, clinic, since, until, visit_type):
+        done_visits = self.client.get_done_visits(since, until, visit_type)
         logger.info('Receiving done visits for %s between %s and %s' % (
             clinic.name,
             since,
@@ -350,8 +350,8 @@ class Importer(object):
             ))
             return visit
 
-    def import_deleted_visits(self, user, clinic, since, until):
-        deleted_visits = self.client.get_deleted_visits(clinic.te_id, since, until)
+    def import_deleted_visits(self, user, clinic, since, until, visit_type):
+        deleted_visits = self.client.get_deleted_visits(since, until, visit_type)
         logger.info('Receiving deleted visits between %s and %s' % (
             since,
             until
@@ -372,16 +372,16 @@ class Importer(object):
         logger.debug('Deleted Visit: %s' % visit.id)
         return visit
 
-    def import_all_changes(self, user, clinic, since, until):
+    def import_all_changes(self, user, clinic, since, until, visit_type):
         # I set these because they all are generators, listing them forces
         # them to be iterated over
         return {
             # 'all_patients': list(self.import_all_patients(clinic)),
             'updated_patients': filter(None, self.import_updated_patients(user, clinic, since, until)),
-            'coming_visits': filter(None, self.import_coming_visits(user, clinic, since, until)),
-            'missed_visits': filter(None, self.import_missed_visits(user, clinic, since, until)),
-            'done_visits': filter(None, self.import_done_visits(user, clinic, since, until)),
-            'deleted_visits': filter(None, self.import_deleted_visits(user, clinic, since, until))
+            'coming_visits': filter(None, self.import_coming_visits(user, clinic, since, until, visit_type)),
+            'missed_visits': filter(None, self.import_missed_visits(user, clinic, since, visit_type)),
+            'done_visits': filter(None, self.import_done_visits(user, clinic, since, until, visit_type)),
+            'deleted_visits': filter(None, self.import_deleted_visits(user, clinic, since, until, visit_type))
         }
 
 

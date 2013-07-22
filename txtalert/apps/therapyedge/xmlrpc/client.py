@@ -2,6 +2,11 @@ from xmlrpclib import ServerProxy, Error, ProtocolError
 from datetime import datetime, timedelta
 from collections import namedtuple
 
+
+class IllegalDateRange(Exception):
+    pass
+
+
 class Client(object):
     """A class abstracting the TherapyEdge XML-RPC away into something more
     approachable and less temperamental"""
@@ -35,22 +40,6 @@ class Client(object):
         """
         return self.CLASS_CACHE.setdefault(name, namedtuple(name, dict.keys()))
 
-    def rpc_call(self, request, clinic_id, since='', until=''):
-        """Call the XML-RPC service, returns a list of dicts"""
-        # check if the given since & untils are date values, if so check their
-        # sequence and manipulate them to the right format
-        if isinstance(since, datetime) and isinstance(until, datetime):
-            if since > until:
-                raise IllegaleDateRange, 'since (%s) is greater than until (%s)' \
-                                                                % (since, until)
-            since = since.strftime('%Y-%m-%d')
-            until = until.strftime('%Y-%m-%d')
-
-        return self.server.patients_data(request, 'date_range', since, until,
-                                         3,  # Medical Visit
-                                         clinic_id)
-
-
     def create_instances_of(self, klass, iterable):
         """This is sort of kludgy. We get a dict from TherapyEdge and in turn
         read the values from that dict to populate a class instance. We're
@@ -69,10 +58,10 @@ class Client(object):
             # instance of the named tuple
             yield instance._replace(**item)
 
-
     def call_method(self, request, *args, **kwargs):
         """Call a method on the XML-RPC service, returning them as named tuples"""
-        result_list = self.rpc_call(request, *args, **kwargs)
+        # result_list = self.rpc_range_call(request, *args, **kwargs)
+        result_list = self.server.patients_data(request, *args, **kwargs)
         if result_list:
             # convert 'patients_update' to 'PatientUpdate'
             klass_name = self.TYPE_MAP[request]
@@ -82,21 +71,25 @@ class Client(object):
             return self.create_instances_of(klass, result_list)
         return result_list
 
-    def get_all_patients(self, clinic_id, *args, **kwargs):
+    def get_all_patients(self):
         """Get a list of all patients available at the clinic"""
-        return self.call_method('patientlist', clinic_id, *args, **kwargs)
+        return self.call_method('patientlist')
 
-    def get_updated_patients(self, clinic_id, since, until=None):
-        """Get a list of all patients updated between the date values given
-        specified in `since` and `until`. If until is not specified it defaults
-        to `datetime.now()`"""
-        until = until or datetime.now()
-        return self.call_method('patients_update', clinic_id, since, until)
+    def get_updated_patients(self, since):
+        """Get a list of all patients updated since `since`. """
+        return self.call_method('patients_update', 'update_date', since)
 
-    def get_coming_visits(self, *args, **kwargs):
-        return self.call_method('comingvisits', *args, **kwargs)
+    def call_range_method(self, request, since, until, visit_type):
+        if since > until:
+            raise IllegalDateRange(
+                'since (%s) is greater than until (%s)' % (since, until))
+        return self.call_method(request, 'date_range', since, until,
+                                visit_type)
 
-    def get_missed_visits(self, *args, **kwargs):
+    def get_coming_visits(self, since, until, visit_type):
+        return self.call_range_method('comingvisits', since, until, visit_type)
+
+    def get_missed_visits(self, since, visit_type):
         # TherapyEdge will return scheduled but unattended future visits as missed
         # So we can't ask for missed visits after midnight last night
         # Therefore the 'until' parameter (args[2]), must be reset to midnight
@@ -106,13 +99,15 @@ class Client(object):
             second=0,
             microsecond=0
         )
-        return self.call_method('missedvisits', args[0], args[1], midnight, **kwargs)
+        return self.call_range_method('missedvisits', since, midnight,
+                                      visit_type)
 
-    def get_done_visits(self, *args, **kwargs):
-        return self.call_method('donevisits', *args, **kwargs)
+    def get_done_visits(self, since, until, visit_type):
+        return self.call_range_method('donevisits', since, until, visit_type)
 
-    def get_deleted_visits(self, *args, **kwargs):
-        return self.call_method('deletedvisits', *args, **kwargs)
+    def get_deleted_visits(self, since, until, visit_type):
+        return self.call_range_method('deletedvisits', since, until,
+                                      visit_type)
 
 
 
