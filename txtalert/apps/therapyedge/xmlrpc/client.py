@@ -77,7 +77,8 @@ class Client(object):
 
     def get_updated_patients(self, since):
         """Get a list of all patients updated since `since`. """
-        return self.call_method('patients_update', 'update_date', since)
+        return self.call_method('patients_update', 'update_date',
+                                since.strftime('%Y-%m-%d'))
 
     def call_range_method(self, request, since, until, visit_type):
         if since > until:
