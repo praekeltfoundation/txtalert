@@ -121,11 +121,11 @@ def send_messages(gateway, clinic, user, message_key, patients,
     for language, patients in group_by_language(patients).items():
         # We only can send messages to patients with an active msisdn
         patients = filter(lambda p:p.active_msisdn, patients)
-        print 'querying', {
-            'clinic': clinic,
-            'message_key': message_key,
-            'language': language,
-        }
+        # print 'querying', {
+        #     'clinic': clinic,
+        #     'message_key': message_key,
+        #     'language': language,
+        # }
         message_type = MessageType.objects.get(clinic=clinic, name=message_key,
             language=language)
         message = message_formatter(message_type.message)
