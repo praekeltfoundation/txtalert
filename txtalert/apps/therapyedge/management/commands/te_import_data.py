@@ -48,9 +48,9 @@ class Command(BaseCommand):
 
         custom_start_date = options.get('start_date')
         if custom_start_date:
-            start_date = datetime.strptime(custom_start_date, '%Y-%m-%d').date()
+            start_date = datetime.strptime(custom_start_date, '%Y-%m-%d')
         else:
-            start_date = datetime.now().date()
+            start_date = datetime.now()
         visit_type = options['visit_type']
 
         user = User.objects.get(username=username)
@@ -66,8 +66,8 @@ class Command(BaseCommand):
                 for key, value in importer.import_all_changes(
                         user,
                         clinic,
-                        since=since,
-                        until=until,
+                        since=since.date(),
+                        until=until.date(),
                         visit_type=visit_type
                     ).items():
                     print "\t%s: %s" % (key, len(value))
