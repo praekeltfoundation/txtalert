@@ -48,9 +48,9 @@ class Command(BaseCommand):
 
         custom_start_date = options.get('start_date')
         if custom_start_date:
-            start_date = datetime.strptime(custom_start_date, '%Y-%m-%d')
+            start_date = datetime.strptime(custom_start_date, '%Y-%m-%d').date()
         else:
-            start_date = datetime.now()
+            start_date = datetime.now().date()
         visit_type = options['visit_type']
 
         user = User.objects.get(username=username)
