@@ -39,7 +39,7 @@ class Gateway(object):
         send_sms.save()
         return send_sms
 
-    def send_smss(self, user, msisdns, smstexts):
+    def send_sms(self, user, msisdns, smstexts):
         responses = []
         for msisdn, smstext in zip(msisdns, smstexts):
             send_sms = self.send_one_sms(user, msisdn, smstext)
@@ -53,7 +53,7 @@ gateway = Gateway(settings.VUMIGO_ACCOUNT_KEY,
 
 def sms_receipt_handler(request, *args, **kwargs):
     data = json.loads(request.raw_post_data)
-    send_smss = SendSMS.objects.filter(identifier=data['user_message_id'])
+    send_smss = SendSMS.objects.filter(identifier=data['user_message_id'][:8])
     send_smss.update(status=data['delivery_status'],
                      delivery_timestamp=data['timestamp'])
     return HttpResponse("ok", status=201)
