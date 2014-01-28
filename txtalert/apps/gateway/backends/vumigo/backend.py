@@ -21,7 +21,6 @@ class Gateway(object):
 
     def send_one_sms(self, user, msisdn, smstext):
         url = self.api_url.format(conversation_key=self.conversation_key)
-        print 'sending to', url
         response = requests.put(url, data=json.dumps({
             "content": smstext,
             "to_addr": msisdn,
