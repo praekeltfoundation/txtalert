@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from txtalert.core.models import Visit, Patient, Clinic
 from txtalert.core.admin import users_in_same_group_as
 
-import logging
 
 site = AdminSite()
 
@@ -22,7 +21,7 @@ class VisitAdmin(ModelAdmin):
             if not request.user.is_superuser:
                 kwargs['queryset'] = Patient.objects.filter(
                     owner__in=users_in_same_group_as(request.user))
-        return super(VisitAdmin, self).formfield_for_choice_field(
+        return super(VisitAdmin, self).formfield_for_foreignkey(
             db_field, request, **kwargs)
 
     def queryset(self, request):
