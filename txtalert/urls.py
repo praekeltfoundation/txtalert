@@ -22,6 +22,8 @@ from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
 
+from txtalert.core import clinic_admin
+
 admin.autodiscover()
 
 def health(request):
@@ -40,6 +42,7 @@ urlpatterns = patterns('',
     (r'^geckoboard/', include('txtalert.apps.geckoboard.urls')),
     # (r'^sms/', include('opera.urls')),
     (r'^admin/', include(admin.site.urls)),
+    (r'^clinic/admin/', include(clinic_admin.site.urls)),
 )
 
 # web API
