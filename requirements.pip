@@ -13,3 +13,4 @@ supervisor
 django-geckoboard
 -e git+git://github.com/smn/vumi-client.git#egg=vumi-client
 python-memcached==1.48
+raven

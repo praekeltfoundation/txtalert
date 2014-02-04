@@ -136,6 +136,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.flatpages',
     'django.contrib.markup',
+    'raven.contrib.django.raven_compat',
 )
 
 SMS_GATEWAY_CLASS = 'txtalert.apps.gateway.backends.vumi'
