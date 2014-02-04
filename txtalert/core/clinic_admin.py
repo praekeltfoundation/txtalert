@@ -6,7 +6,7 @@ from txtalert.core.models import Visit, Patient, Clinic
 from txtalert.core.admin import users_in_same_group_as
 
 
-site = AdminSite()
+site = AdminSite(name="clinic-admin")
 
 
 class VisitAdmin(ModelAdmin):
