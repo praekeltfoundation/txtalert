@@ -1,4 +1,0 @@
-#!/bin/bash
-cd /var/praekelt/txtalert/production/current/txtalert && \
-    source ve/bin/activate && \
-    ./manage.py pcm_stats --settings=environments.production $1
