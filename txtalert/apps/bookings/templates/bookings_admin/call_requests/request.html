@@ -1,7 +1,7 @@
 {% extends "bookings_admin/base.html" %}
 
 {% block header %}
-    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; Call Request</span>    
+    <span><a href="{% url "bookings:admin:index" %}">Home</a> &raquo; Call Request</span>
 {% endblock %}
 
 {% block content %}
@@ -15,9 +15,9 @@
     <div class="widget border">
     <span class="black">{{change_request.request}}</span>
     </div>
-    
+
     <div class="widget">
-        <form method="post" action="">    
+        <form method="post" action="">
             {{form}}
             <input type="submit" value="Update">
             {% csrf_token %}
@@ -25,8 +25,8 @@
     </div>
 
     <div class="widget">
-        <a href="{% url bookings:admin:call_requests %}" class="green">More Call Requests &raquo;</a>
-        <a href="{% url bookings:admin:index %}" class="green">Main Menu</a>
+        <a href="{% url "bookings:admin:call_requests" %}" class="green">More Call Requests &raquo;</a>
+        <a href="{% url "bookings:admin:index" %}" class="green">Main Menu</a>
     </div>
 
     <div class="clear"></div>

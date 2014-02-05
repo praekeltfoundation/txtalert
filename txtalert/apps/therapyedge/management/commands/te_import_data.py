@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from django.utils import timezone
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -50,7 +51,7 @@ class Command(BaseCommand):
         if custom_start_date:
             start_date = datetime.strptime(custom_start_date, '%Y-%m-%d')
         else:
-            start_date = datetime.now()
+            start_date = timezone.now()
         visit_type = options['visit_type']
 
         user = User.objects.get(username=username)

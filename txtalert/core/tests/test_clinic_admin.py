@@ -1,5 +1,6 @@
 from uuid import uuid4
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Group
@@ -61,11 +62,11 @@ class ClinicAdminTestCase(TestCase):
     def create_visits(self, patient, clinic, count=10):
         visits = []
         for i in range(count):
-            visit_date = (datetime.now() - timedelta(days=count/2) +
+            visit_date = (timezone.now() - timedelta(days=count/2) +
                           timedelta(days=i))
             visit = Visit.objects.create(
                 patient=patient, te_visit_id=uuid4().hex, date=visit_date,
-                status=('a' if visit_date.date() < datetime.now().date()
+                status=('a' if visit_date.date() < timezone.now().date()
                         else 's'),
                 clinic=clinic)
             visits.append(visit)

@@ -3,8 +3,10 @@ from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.utils import simplejson
+from django.utils import simplejson, timezone
 from django.db.models.signals import post_save
+from django.conf import settings
+
 from txtalert.apps.gateway.backends.opera.utils import element_to_namedtuple, OPERA_TIMESTAMP_FORMAT
 from txtalert.apps.gateway.models import SendSMS, PleaseCallMe
 from txtalert.core.models import Visit, ChangeRequest, PleaseCallMe as CorePleaseCallMe
@@ -14,6 +16,8 @@ from datetime import datetime, timedelta
 import base64
 import iso8601
 import json
+import pytz
+
 from txtalert.apps import gateway
 backend, gateway, receipt_handler = gateway.load_backend('txtalert.apps.gateway.backends.dummy')
 
@@ -77,8 +81,6 @@ class OperaTestCase(TestCase):
 
 
     def test_good_receipt_processing(self):
-        """Test the receipt XML we get back from Opera when a message has been
-        sent successfully"""
         raw_xml_post = """
         <?xml version="1.0"?>
         <!DOCTYPE receipts>
@@ -141,20 +143,22 @@ class OperaTestCase(TestCase):
         self.assertEquals([r._asdict() for r in receipts], data['success'])
 
         # check database state
+        local_tz = pytz.timezone(settings.TIME_ZONE)
         for receipt in receipts:
             # FIXME: normalization please ...
+            timestamp = local_tz.localize(datetime.strptime(
+                receipt.timestamp, OPERA_TIMESTAMP_FORMAT))
             send_sms = SendSMS.objects.get(msisdn=receipt.msisdn.replace("+",""), identifier=receipt.reference)
-            self.assertEquals(send_sms.delivery_timestamp, datetime.strptime(receipt.timestamp, OPERA_TIMESTAMP_FORMAT))
+            self.assertEquals(send_sms.delivery_timestamp, timestamp)
             self.assertEquals(send_sms.status, 'D')
             self.assertEquals(send_sms.user, self.user)
 
     def test_receipt_msisdn_normalization(self):
-        send_sms = SendSMS.objects.create(user=self.user,
-                                            msisdn='27761234567',
-                                            identifier='abcdefg',
-                                            expiry=datetime.today() + timedelta(days=1),
-                                            delivery=datetime.today())
-        self.assertEquals(send_sms.status, 'v') # unknown
+        send_sms = SendSMS.objects.create(
+            user=self.user, msisdn='27761234567', identifier='abcdefg',
+            expiry=timezone.now() + timedelta(days=1),
+            delivery=timezone.now())
+        self.assertEquals(send_sms.status, 'v')  # unknown
 
         raw_xml_post = """
         <?xml version="1.0"?>
@@ -191,8 +195,8 @@ class OperaTestCase(TestCase):
         self.assertEquals(updated_send_sms.user, self.user)
         self.assertEquals(updated_send_sms.status, 'D') # delivered
 
-
     def test_bad_receipt_processing(self):
+
         """Test behaviour when we receive a receipt that doesn't match
         anything we know"""
         raw_xml_post = """
@@ -285,7 +289,7 @@ class SmsGatewayTestCase(TestCase):
         add_perms_to_user('user', 'can_view_sms_statistics')
 
         response = self.client.get(reverse('api-sms',kwargs={'emitter_format':'json'}), {
-            "since": datetime.now().strftime(SendSMS.TIMESTAMP_FORMAT)
+            "since": timezone.now().strftime(SendSMS.TIMESTAMP_FORMAT)
             },
             HTTP_AUTHORIZATION=basic_auth_string('user','password'))
 
@@ -326,8 +330,8 @@ class SmsGatewayTestCase(TestCase):
             user=self.user,
             identifier='a' * 8,
             msisdn='27123456789',
-            delivery=datetime.now(),
-            expiry=datetime.now(),
+            delivery=timezone.now(),
+            expiry=timezone.now(),
             smstext='',
             priority='Standard',
             receipt='Y',
@@ -388,9 +392,8 @@ class PcmAutomationTestCase(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(username='user',
-                                                email='user@domain.com',
-                                                password='password')
+        self.user = User.objects.create_user(
+            username='user', email='user@domain.com', password='password')
         self.user.save()
 
         # we don't want to be bogged down with signal receivers in this test
@@ -402,9 +405,9 @@ class PcmAutomationTestCase(TestCase):
         post_save.receivers = self.original_post_save_receivers
 
     def test_pcm_receiving(self):
-        """We're assuming that FrontlineSMS or some other SMS receiving app
-        is correctly programmed to receive SMSs and post them to our web end point.
-        We're only testing from that point on.
+        """We're assuming that FrontlineSMS or some other SMS receiving
+        app is correctly programmed to receive SMSs and post them to our
+        web end point. We're only testing from that point on.
         """
         add_perms_to_user('user', 'can_place_pcm')
 
@@ -412,14 +415,16 @@ class PcmAutomationTestCase(TestCase):
             'sender_msisdn': '27123456789',
             'recipient_msisdn': '27123456780',
             'sms_id': 'doesntmatteratm',
-            'message': 'Please Call: Test User at 27123456789' # not actual text
+            # not actual text
+            'message': 'Please Call: Test User at 27123456789'
         }
 
-        response = self.client.post(reverse('api-pcm',kwargs={'emitter_format':'json'}),
+        response = self.client.post(
+            reverse('api-pcm', kwargs={'emitter_format': 'json'}),
             parameters,
-            HTTP_AUTHORIZATION=basic_auth_string('user','password')
+            HTTP_AUTHORIZATION=basic_auth_string('user', 'password')
         )
-        self.assertEquals(response.status_code, 201) # Created
+        self.assertEquals(response.status_code, 201)  # Created
 
         pcm = PleaseCallMe.objects.latest('created_at')
 
@@ -535,7 +540,7 @@ class PcmAutomationTestCase(TestCase):
         )
 
         # fetch it via the API
-        yesterday = datetime.now() - timedelta(days=1)
+        yesterday = timezone.now() - timedelta(days=1)
         response = self.client.get(reverse('api-pcm',kwargs={'emitter_format':'json'}), {
             "since": yesterday.strftime(SendSMS.TIMESTAMP_FORMAT)
             },
@@ -605,9 +610,10 @@ class ChangeRequestTestCase(TestCase):
         self.assertEquals(cr.visit, visit)
         self.assertEquals(cr.request_type, 'later_date')
 
+
 class CallRequestTestCase(TestCase):
 
-    fixtures = ['contacts.json', 'patients.json', 'visits.json']
+    fixtures = ['patients.json', 'visits.json']
 
     def setUp(self):
         self.user = User.objects.create_user(username='user', \

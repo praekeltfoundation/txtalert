@@ -2,7 +2,7 @@
 {% load markup %}
 
 {% block header %}
-<span><a href="{% url bookings:admin:index %}">Home</a> &raquo; {{flatpage.title|title}}</span>
+<span><a href="{% url "bookings:admin:index" %}">Home</a> &raquo; {{flatpage.title|title}}</span>
 {% endblock %}
 
 {% block content %}

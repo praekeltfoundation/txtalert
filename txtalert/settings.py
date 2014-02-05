@@ -1,4 +1,4 @@
-# Django settings for _txtalert project.
+# Django settings for txtalert project.
 
 import os
 from os.path import join

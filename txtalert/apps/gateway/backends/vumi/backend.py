@@ -1,5 +1,6 @@
 from vumiclient.client import Client
 from datetime import datetime, timedelta
+from django.utils import timezone
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
@@ -17,8 +18,8 @@ class Gateway(object):
         send_sms.user = user
         send_sms.msisdn = msisdn
         send_sms.smstext = smstext
-        send_sms.delivery = datetime.now()
-        send_sms.expiry = datetime.now() + timedelta(days=1)
+        send_sms.delivery = timezone.now()
+        send_sms.expiry = timezone.now() + timedelta(days=1)
         send_sms.priority = 'standard'
         send_sms.receipt = 'Y'
         send_sms.identifier = str(resp.id)

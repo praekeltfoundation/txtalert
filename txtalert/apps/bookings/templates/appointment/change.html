@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block header %}
-    <span><a href="{% url bookings:index %}">Home</a> &raquo; Change Appointment</span>
+    <span><a href="{% url "bookings:index" %}">Home</a> &raquo; Change Appointment</span>
 {% endblock %}
 
 {% block content %}
@@ -9,7 +9,7 @@
         <span class="black"><strong>Next:</strong> {{visit.date|date:"j F Y"}}</span><br>
         {{visit.clinic.name}}
     </div>
-    
+
     {% if not change_requested %}
         <div class="widget">
             <form action="" method="post">
@@ -18,18 +18,18 @@
                 <input type="radio" name="when" value="later" checked="true" id="id_later"><label for="id_later">Later Date</label><br><br>
                 <span class="alert">
                     <strong>Please Note: </strong>
-                    Change request will be evaluated by a clinic administrator. 
+                    Change request will be evaluated by a clinic administrator.
                     Changes will not always be possible.
                 </span><br><br><br>
                 <input type="submit" class="request" value="Submit Request"><br>
             </form>
             <br/>
         </div>
-    
+
         <div class="clear"></div>
     {% endif %}
-    
+
     {% include "includes/menu.html" %}
-    
+
 {% endblock %}
 
