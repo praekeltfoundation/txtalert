@@ -14,6 +14,7 @@ setup(
     packages = find_packages(),
     install_requires=[
         'Django>=1.5,<1.6',
+        'django-nose',
         'gdata==2.0.18',
         'xlrd==0.7.1',
         'django-dirtyfields==0.1',
