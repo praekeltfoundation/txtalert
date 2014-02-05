@@ -13,7 +13,7 @@ setup(
     author_email = "dev@praekeltfoundation.org",
     packages = find_packages(),
     install_requires=[
-        'Django>=1.5,<1.6',
+        'Django>=1.3,<1.4',
         'django-nose==0.1.3',
         'gdata==2.0.18',
         'xlrd==0.7.1',
