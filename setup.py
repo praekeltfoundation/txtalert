@@ -13,7 +13,7 @@ setup(
     author_email = "dev@praekeltfoundation.org",
     packages = find_packages(),
     install_requires=[
-        'Django>=1.5,<1.6',
+        'Django>=1.6,<1.7',
         'django-nose',
         'gdata==2.0.18',
         'xlrd==0.7.1',
@@ -28,6 +28,7 @@ setup(
         'python-memcached==1.48',
         'raven',
         'pytz',
+        'django-markup-deprecated',
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable'

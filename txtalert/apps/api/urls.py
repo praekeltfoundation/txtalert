@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import patterns, url, include
 from django.http import HttpResponse
 from piston.resource import Resource
 from piston.authentication import HttpBasicAuthentication

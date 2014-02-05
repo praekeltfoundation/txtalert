@@ -388,8 +388,6 @@ class SmsGatewayTestCase(TestCase):
 
 class PcmAutomationTestCase(TestCase):
 
-    fixtures = ['contacts.json']
-
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(
@@ -574,7 +572,7 @@ class PcmAutomationTestCase(TestCase):
 
 class ChangeRequestTestCase(TestCase):
 
-    fixtures = ['contacts.json', 'patients.json', 'visits.json']
+    fixtures = ['patients.json', 'visits.json']
 
     def setUp(self):
         self.user = User.objects.create_user(username='user', \
