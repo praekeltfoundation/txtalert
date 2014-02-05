@@ -25,6 +25,7 @@ from txtalert.apps.general.settings.models import Setting
 from txtalert.apps.gateway.models import SendSMS
 from txtalert.core.models import Visit, MessageType
 import logging
+import pytz
 
 logger = logging.getLogger("reminders")
 
@@ -79,7 +80,12 @@ def send_stats_for_group(gateway, today, group):
     else: missed_percentage = missed_count * (100.0 / yesterday_count)
 
     # for every SMS sent we have an entry of SendSMS
-    total_count = SendSMS.objects.filter(delivery__gte=today, user__in=users).count()
+
+    total_count = SendSMS.objects.filter(
+        delivery__gte=datetime(
+            today.year, today.month, today.day,
+            tzinfo=pytz.timezone(settings.TIME_ZONE)
+        ), user__in=users).count()
 
     # send email with stats
     emails = group.setting_set.get(name='Stats Emails').value.split('\r\n')
