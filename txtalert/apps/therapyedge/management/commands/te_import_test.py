@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from django.utils import timezone
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -53,7 +54,7 @@ class Command(BaseCommand):
         for clinic in Clinic.objects.filter(active=True, user=user):
             print "Clinic name: %s" % clinic.name
             print "Clinic id: %s" % clinic.te_id
-            midnight = datetime.now().replace(
+            midnight = timezone.now().replace(
                 hour=0,
                 minute=0,
                 second=0,

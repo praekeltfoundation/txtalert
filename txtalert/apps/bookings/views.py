@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 import logging
+from django.utils import timezone
 from txtalert.core.models import Visit, PleaseCallMe, MSISDN, AuthProfile, Patient
 from txtalert.core.forms import RequestCallForm
 from txtalert.core.utils import normalize_msisdn
@@ -13,7 +14,7 @@ from datetime import date, datetime
 from functools import wraps
 
 def effective_page_range_for(page,paginator,delta=3):
-    return [p for p in range(page.number-delta,page.number+delta+1) 
+    return [p for p in range(page.number-delta,page.number+delta+1)
                 if (p > 0 and p <= paginator.num_pages)]
 
 def auth_profile_required(func):
@@ -42,15 +43,15 @@ def appointment_change(request, visit_id):
     change_requested = request.POST.get('when')
     if change_requested == 'later':
         visit.reschedule_later()
-        messages.add_message(request, messages.INFO, 
+        messages.add_message(request, messages.INFO,
             "Your request to change the appointment has been sent to " \
             "the clinic. You will be notified as soon as possible.")
     elif change_requested == 'earlier':
         visit.reschedule_earlier()
-        messages.add_message(request, messages.INFO, 
+        messages.add_message(request, messages.INFO,
             "Your request to change the appointment has been sent to " \
             "the clinic. You will be notified as soon as possible.")
-    
+
     return render_to_response("appointment/change.html", {
         'profile': profile,
         'patient': profile.patient,
@@ -85,7 +86,7 @@ def appointment_history(request):
         'page': page,
         'effective_page_range': effective_page_range_for(page, paginator)
     }, context_instance=RequestContext(request))
-    
+
 @login_required
 def attendance_barometer(request):
     profile = request.user.get_profile()
@@ -116,11 +117,11 @@ def request_call(request):
             msisdn = normalize_msisdn(form.cleaned_data['msisdn'])
             # orm object
             msisdn_record, _ = MSISDN.objects.get_or_create(msisdn=msisdn)
-            pcm = PleaseCallMe(user=clinic.user, clinic=clinic, 
-                msisdn=msisdn_record, timestamp=datetime.now(), 
+            pcm = PleaseCallMe(user=clinic.user, clinic=clinic,
+                msisdn=msisdn_record, timestamp=timezone.now(),
                 message='Please call me!', notes='Call request issued via txtAlert Bookings')
             pcm.save()
-            messages.add_message(request, messages.INFO, 
+            messages.add_message(request, messages.INFO,
                         'Your call request has been registered. '\
                         'The clinic will call you back as soon as possible.')
             return HttpResponseRedirect(reverse('bookings:request_call'))
@@ -128,13 +129,13 @@ def request_call(request):
         form = RequestCallForm(initial={
             'msisdn': '' if request.user.is_anonymous() else request.user.username
         })
-    
+
     if request.user.is_anonymous():
         profile = patient = None
     else:
         profile = request.user.get_profile()
         patient = profile.patient
-    
+
     return render_to_response('request_call.html', {
         'profile': profile,
         'patient': patient,
@@ -144,7 +145,7 @@ def request_call(request):
 def widget_landing(request):
     if 'patient_id' in request.GET \
         and 'msisdn' in request.GET:
-        
+
         try:
             msisdn = normalize_msisdn(request.GET.get('msisdn'))
             patient_id = request.GET.get('patient_id')
@@ -154,9 +155,9 @@ def widget_landing(request):
                 visit = patient.next_visit()
             except Visit.DoesNotExist:
                 visit = None
-            
+
             visits = patient.visit_set.all()
-            
+
             context = {
                 'msisdn': msisdn,
                 'patient_id': patient_id,
@@ -183,7 +184,7 @@ def widget_landing(request):
             'msisdn': request.GET.get('msisdn', ''),
         }
     print context
-    return render_to_response('widget_landing.html', context, 
+    return render_to_response('widget_landing.html', context,
         context_instance=RequestContext(request))
 
 def todo(request):

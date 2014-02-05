@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.utils import timezone
 from django.contrib.auth.models import User
 from txtalert.apps.therapyedge.importer import Importer, SEX_MAP
 from txtalert.apps.therapyedge.xmlrpc import client
@@ -408,24 +409,24 @@ class ImporterXmlRpcClientTestCase(TestCase):
                     'dr_site_name': '',
                     'dr_site_id': '',
                     'dr_status': '',
-                    'scheduled_visit_date': str(datetime.now() + timedelta(days=2)),
+                    'scheduled_visit_date': str(timezone.now() + timedelta(days=2)),
                     'key_id': '02-1234%s' % i,
                     'te_id': patient.te_id,
                 } for i, patient in enumerate(Patient.objects.all())],
             missedvisits=[{
                     'dr_site_name': '',
                     'dr_site_id': '',
-                    'missed_date': str(datetime.now() - timedelta(days=2)),
+                    'missed_date': str(timezone.now() - timedelta(days=2)),
                     'dr_status': '',
                     'key_id': '03-1234%s' % i,
                     'te_id': patient.te_id
                 } for i, patient in enumerate(Patient.objects.all())],
             donevisits=[{
-                    'done_date': str(datetime.now() - timedelta(days=2)),
+                    'done_date': str(timezone.now() - timedelta(days=2)),
                     'dr_site_id': '',
                     'dr_status': '',
                     'dr_site_name': '',
-                    'scheduled_date': str(datetime.now() - timedelta(days=2)),
+                    'scheduled_date': str(timezone.now() - timedelta(days=2)),
                     'key_id': '04-1234%s' % i,
                     'te_id': patient.te_id
                 } for i, patient in enumerate(Patient.objects.all())],
@@ -455,8 +456,8 @@ class ImporterXmlRpcClientTestCase(TestCase):
         updated_patients = self.importer.import_updated_patients(
             user=self.user,
             clinic=self.clinic,
-            since=(datetime.now() - timedelta(days=1)),
-            until=datetime.now()
+            since=(timezone.now() - timedelta(days=1)),
+            until=timezone.now()
         )
         updated_patients = list(updated_patients)
         self.assertTrue(len(updated_patients), Patient.objects.count())
@@ -466,8 +467,8 @@ class ImporterXmlRpcClientTestCase(TestCase):
         coming_visits = self.importer.import_coming_visits(
             user=self.user,
             clinic=self.clinic,
-            since=(datetime.now() - timedelta(days=1)),
-            until=datetime.now(),
+            since=(timezone.now() - timedelta(days=1)),
+            until=timezone.now(),
             visit_type=3  # Medical Visit
         )
         coming_visits = list(coming_visits)
@@ -478,7 +479,7 @@ class ImporterXmlRpcClientTestCase(TestCase):
         missed_visits = self.importer.import_missed_visits(
             user=self.user,
             clinic=self.clinic,
-            since=(datetime.now() - timedelta(days=1)),
+            since=(timezone.now() - timedelta(days=1)),
             visit_type=3  # Medical Visit
         )
         missed_visits = list(missed_visits)
@@ -489,8 +490,8 @@ class ImporterXmlRpcClientTestCase(TestCase):
         done_visits = self.importer.import_done_visits(
             user=self.user,
             clinic=self.clinic,
-            since=(datetime.now() - timedelta(days=1)),
-            until=datetime.now(),
+            since=(timezone.now() - timedelta(days=1)),
+            until=timezone.now(),
             visit_type=3  # Medical Visit
         )
         done_visits = list(done_visits)
@@ -502,8 +503,8 @@ class ImporterXmlRpcClientTestCase(TestCase):
         coming_visits = list(self.importer.import_coming_visits(
             user=self.user,
             clinic=self.clinic,
-            since=(datetime.now() - timedelta(days=1)),
-            until=datetime.now(),
+            since=(timezone.now() - timedelta(days=1)),
+            until=timezone.now(),
             visit_type=3  # Medical Visit
         ))
         # then mark them as deleted, they're matched because they
@@ -511,8 +512,8 @@ class ImporterXmlRpcClientTestCase(TestCase):
         deleted_visits = list(self.importer.import_deleted_visits(
             user=self.user,
             clinic=self.clinic,
-            since=(datetime.now() - timedelta(days=1)),
-            until=datetime.now(),
+            since=(timezone.now() - timedelta(days=1)),
+            until=timezone.now(),
             visit_type=3  # Medical Visit
         ))
         self.assertEquals(len(deleted_visits), Patient.objects.count())

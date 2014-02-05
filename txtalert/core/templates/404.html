@@ -11,23 +11,23 @@
 <body>
 	<div class="header">
 		<div class="logo"><img src="/static/images/logo.jpg" alt="" /></div>
-		<span><a href="{% url bookings:index %}">Home</a> &raquo; Page Not Found</span>
+		<span><a href="{% url "bookings:index" %}">Home</a> &raquo; Page Not Found</span>
 		<div class="clear"></div>
 	</div>
-	
+
 	<div class="clear"></div>
 
 	<div class="widget">
 		Oops! The page you are looking for doesn't seem to exist.<br>
-		Please start over at the <a href="{% url bookings:index %}">home page</a>
+		Please start over at the <a href="{% url "bookings:index" %}">home page</a>
 	</div>
-	
+
 	<div class="clear"></div>
-	
+
 	<div class="footer">
 		<div class="footer_text">
 			 <span>&copy; 2011 Praekelt Foundation</span>
-		</div>	 
+		</div>
 		<div class="clear"></div>
 	</div>
 

@@ -3,7 +3,7 @@
 {% block header %}
     <span class="profile">Hello {{patient.name}} {{patient.surname}}</span>
 {% endblock %}
-    
+
 {% block content %}
     {% if patient.next_visit %}
     <div class="widget appointment">
@@ -12,16 +12,16 @@
         <span class="record">Your next appointment is:</span><br>
         <span class="large">{{patient.next_visit.date|date:"j F Y"}}</span><br>
         {{patient.next_visit.clinic.name}}<br>
-        <a href="{% url bookings:appointment_change visit_id=patient.next_visit.pk %}">Do you need to change this?</a>
+        <a href="{% url "bookings:appointment_change" visit_id=patient.next_visit.pk %}">Do you need to change this?</a>
     </div>
     {% else %}
     <div class="widget appointment">
             <span class="record">
                 You have no visits scheduled at the moment.
             </span><br>
-            <a href="{% url bookings:request_call %}">Request a call if you believe this is an error.</a>
+            <a href="{% url "bookings:request_call" %}">Request a call if you believe this is an error.</a>
     </div>
-    
+
     {% endif %}
 
     <div class="clear"></div>
@@ -29,7 +29,7 @@
     {% include "includes/menu.html" %}
 
 {% endblock %}
-    
+
 {% block post_content %}
 {% include "includes/young_africa_live.html" %}
 {% endblock %}

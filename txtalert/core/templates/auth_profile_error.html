@@ -6,8 +6,8 @@
 
 {% block content %}
     <div class="widget">
-        It seems you are trying to sign into <a href="{% url bookings:index %}">txtAlert bookings</a> while being signed-on
-        in as an <a href="{% url bookings:admin:index %}">administrator</a>. Please <a href="{% url bookings:admin:signout %}?next={% url bookings:index %}">sign-out</a> as an administrator
+        It seems you are trying to sign into <a href="{% url "bookings:index" %}">txtAlert bookings</a> while being signed-on
+        in as an <a href="{% url "bookings:admin:index" %}">administrator</a>. Please <a href="{% url "bookings:admin:signout" %}?next={% url "bookings:index" %}">sign-out</a> as an administrator
         before signing in as a patient.
     </div>
 {% endblock %}

@@ -1,8 +1,10 @@
 from django.http import HttpResponseBadRequest
+from django.conf import settings
 
 from collections import namedtuple
 from datetime import datetime
 import xml.etree.ElementTree as ET
+import pytz
 
 from txtalert.apps.gateway.models import SendSMS
 import iso8601
@@ -14,14 +16,17 @@ def process_receipts_xml(receipt_xml_data):
     tree = ET.fromstring(receipt_xml_data)
     receipts = map(element_to_namedtuple, tree.findall('receipt'))
     return process_receipts(receipts)
-    
+
 
 def process_receipts(receipts):
-    """Deal with the list of receipt objects, find & updated associated SendSMSs 
+    """Deal with the list of receipt objects, find & updated associated SendSMSs
     or mark them as failed.
-    
+
     Returns a tuple of two lists, successful receipts & failed receipts.
     """
+
+    local_tz = pytz.timezone(settings.TIME_ZONE)
+
     success, fail = [], []
     for receipt in receipts:
         try:
@@ -30,8 +35,10 @@ def process_receipts(receipts):
             sms_sent = SendSMS.objects.get(identifier=receipt.reference, \
                                         msisdn=receipt.msisdn.replace("+",""))
             sms_sent.status = receipt.status
-            sms_sent.delivery_timestamp = datetime.strptime(receipt.timestamp, \
-                                                        OPERA_TIMESTAMP_FORMAT)
+
+            timestamp = local_tz.localize(
+                datetime.strptime(receipt.timestamp, OPERA_TIMESTAMP_FORMAT))
+            sms_sent.delivery_timestamp = timestamp
             sms_sent.save()
             success.append(receipt)
         except SendSMS.DoesNotExist, error:
@@ -43,23 +50,23 @@ def process_receipts(receipts):
 def element_to_dict(element):
     """
     Turn an ElementTree element '<data><el>1</el></data>' into {el: 1}. Not recursive!
-    
+
     >>> data = ET.fromstring("<data><el>1</el></data>")
     >>> element_to_dict(data)
     {'el': '1'}
     >>>
-    
+
     """
-    return dict([(child.tag, child.text) for child in element.getchildren()])
+    return dict([(child.tag, child.text) for child in list(element)])
 
 def element_to_namedtuple(element):
     """
     Turn an ElementTree element into an object with named params. Not recursive!
-    
+
     >>> data = ET.fromstring("<data><el>1</el></data>")
     >>> element_to_namedtuple(data)
     data(el='1')
-    
+
     """
     d = element_to_dict(element)
     klass = namedtuple(element.tag, d.keys())

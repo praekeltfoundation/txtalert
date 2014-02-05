@@ -5,4 +5,4 @@ python:
 install:
     - "pip install -e ."
 script:
-    - ./manage.py test
+    - ./manage.py test --where=txtalert

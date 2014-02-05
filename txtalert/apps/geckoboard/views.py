@@ -1,14 +1,15 @@
 from django_geckoboard.decorators import number_widget, line_chart, pie_chart, funnel
 from django.contrib.auth.models import User
 from django.db.models import Count
+from django.utils import timezone
 from datetime import datetime, timedelta, date
 from txtalert.core.models import Patient, PleaseCallMe, Visit
 from txtalert.apps.gateway.models import SendSMS
 
 @number_widget
 def patient_count(request):
-    last_week_start = datetime.now() - timedelta(weeks=2)
-    last_week_end = datetime.now() - timedelta(weeks=1)
+    last_week_start = timezone.now() - timedelta(weeks=2)
+    last_week_end = timezone.now() - timedelta(weeks=1)
     patients = Patient.objects
     last_week_patients = patients.filter(
                             created_at__gte=last_week_start,
@@ -20,7 +21,7 @@ def patient_count(request):
 
 @number_widget
 def total_patient_count(request):
-    last_week_end = datetime.now() - timedelta(weeks=1)
+    last_week_end = timezone.now() - timedelta(weeks=1)
     patients = Patient.objects
     last_week_patients = patients.filter(
                             created_at__lt=last_week_end)
@@ -47,8 +48,8 @@ def total_patient_distribution(request):
 
 @number_widget
 def smss_sent(request):
-    last_week_start = datetime.now() - timedelta(weeks=2)
-    last_week_end = datetime.now() - timedelta(weeks=1)
+    last_week_start = timezone.now() - timedelta(weeks=2)
+    last_week_end = timezone.now() - timedelta(weeks=1)
     smss = SendSMS.objects
     last_week_sms = smss.filter(
                             delivery__gte=last_week_start,
@@ -60,8 +61,8 @@ def smss_sent(request):
 
 @number_widget
 def pcms_received(request):
-    last_week_start = datetime.now() - timedelta(weeks=2)
-    last_week_end = datetime.now() - timedelta(weeks=1)
+    last_week_start = timezone.now() - timedelta(weeks=2)
+    last_week_end = timezone.now() - timedelta(weeks=1)
     pcms = PleaseCallMe.objects
     last_week_pcms = pcms.filter(
                             timestamp__gte=last_week_start,
@@ -73,7 +74,7 @@ def pcms_received(request):
 
 @pie_chart
 def visit_status(request):
-    week_ago = datetime.now() - timedelta(weeks=1)
+    week_ago = timezone.now() - timedelta(weeks=1)
     visits = Visit.objects.filter(date__gte=week_ago, date__lt=date.today())
     return [
         [visits.filter(status='a').count(), 'Attended', '1D6099'],
@@ -84,16 +85,16 @@ def visit_status(request):
 
 @number_widget
 def visit_attendance(request, status):
-    last_month = datetime.now() - timedelta(days=60)
-    this_month = datetime.now() - timedelta(days=30)
+    last_month = timezone.now() - timedelta(days=60)
+    this_month = timezone.now() - timedelta(days=30)
     visits = Visit.objects.filter(status=status)
     last_months_visits = visits.filter(date__gte=last_month, date__lt=this_month).count()
-    this_months_visits = visits.filter(date__gte=this_month, date__lt=datetime.now()).count()
+    this_months_visits = visits.filter(date__gte=this_month, date__lt=timezone.now()).count()
     return (this_months_visits, last_months_visits)
 
 @funnel
 def smss_sent_breakdown(request):
-    last_month = datetime.now() - timedelta(days=30)
+    last_month = timezone.now() - timedelta(days=30)
     messages = SendSMS.objects.filter(delivery__gte=last_month)
     return {
         "type": "standard",

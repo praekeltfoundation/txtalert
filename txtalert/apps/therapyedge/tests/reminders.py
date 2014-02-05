@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User, Group
+from django.utils import timezone
 from datetime import datetime, date, timedelta
 from txtalert.apps.therapyedge import reminders
 from txtalert.core.models import *
@@ -45,12 +46,12 @@ class RemindersI18NTestCase(TestCase):
         return map(update_attributes, visits)
 
     def calculate_date(self,**kwargs):
-        return datetime.now().date() + timedelta(**kwargs)
+        return timezone.now().date() + timedelta(**kwargs)
 
     def send_reminders(self, _type):
         fn = getattr(reminders, _type)
         return fn(gateway.gateway, self.clinic, self.user, Visit.objects.all(),
-            datetime.now().date())
+            timezone.now().date())
 
     def test_tomorrow(self):
         tomorrow = self.calculate_date(days=1)
@@ -91,7 +92,7 @@ class RemindersI18NTestCase(TestCase):
         self.assertTrue(self.patient.active_msisdn.msisdn in [sms.msisdn for sms in sms_set])
 
     def test_send_stats(self):
-        today = datetime.now()
+        today = timezone.now()
         one_day = timedelta(days=1)
         one_week = timedelta(weeks=1)
         yesterday = today - one_day
