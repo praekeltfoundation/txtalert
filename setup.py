@@ -28,6 +28,7 @@ setup(
         'python-memcached==1.48',
         'raven',
         'pytz',
+        'django-autocomplete-light',
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable'
