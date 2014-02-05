@@ -16,6 +16,7 @@
 
 from datetime import datetime, timedelta
 
+from django.utils import timezone
 from django.conf import settings
 from django.core import mail
 from django.contrib.auth.models import Group, User
@@ -205,7 +206,7 @@ def all(gateway, group_names, date=None, clinic_name=None):
             if clinic_name:
                 visits = visits.filter(clinic__name=clinic_name)
 
-            today = date or datetime.now().date()
+            today = date or timezone.now().date()
             logger.debug('Sending reminders for %s: tomorrow' % user)
             tomorrow(gateway, clinic, user, visits, today)
             logger.debug('Sending reminders for %s: two weeks' % user)

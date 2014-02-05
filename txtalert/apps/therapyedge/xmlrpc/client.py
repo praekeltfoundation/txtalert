@@ -1,6 +1,7 @@
 from xmlrpclib import ServerProxy, Error, ProtocolError
 from datetime import datetime, timedelta
 from collections import namedtuple
+from django.utils import timezone
 
 
 class IllegalDateRange(Exception):
@@ -96,7 +97,7 @@ class Client(object):
         # TherapyEdge will return scheduled but unattended future visits as missed
         # So we can't ask for missed visits after midnight last night
         # Therefore the 'until' parameter (args[2]), must be reset to midnight
-        midnight = datetime.now().replace(
+        midnight = timezone.now().replace(
             hour=0,
             minute=0,
             second=0,
@@ -145,8 +146,8 @@ class Client(object):
 #
 #     kwargs = {
 #         'clinic_id': '02',  # magical I know, i think this is the Themba Lethu Clinic
-#         'since': datetime.now() - timedelta(days=2),
-#         'until': datetime.now() + timedelta(days=2)
+#         'since': timezone.now() - timedelta(days=2),
+#         'until': timezone.now() + timedelta(days=2)
 #     }
 #
 #     print "Introspecting with uri: %s" % uri

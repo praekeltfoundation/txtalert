@@ -5,6 +5,7 @@ import logging
 from txtalert.apps.gateway.models import SendSMS
 
 from txtalert.core.utils import random_string
+from django.utils import timezone
 from datetime import datetime, timedelta
 
 class Gateway(object):
@@ -16,8 +17,8 @@ class Gateway(object):
 
     def send_one_sms(self, user, msisdn, smstext, delivery=None, expiry=None,
                         priority='standard', receipt='Y'):
-        delivery = delivery or datetime.now()
-        expiry = expiry or (datetime.now() + timedelta(days=1))
+        delivery = delivery or timezone.now()
+        expiry = expiry or (timezone.now() + timedelta(days=1))
         sms = SendSMS.objects.create(
                                         user=user,
                                         msisdn=msisdn,

@@ -1,4 +1,4 @@
-# Django settings for _txtalert project.
+# Django settings for txtalert project.
 
 import os
 from os.path import join
@@ -151,7 +151,6 @@ INSTALLED_APPS = (
     'history',
     'south',
     'gunicorn',
-    'django_nose',
     'raven.contrib.django.raven_compat',
 )
 
@@ -195,7 +194,6 @@ BOOKING_TOOL_RISK_LEVELS = {
 }
 
 SOUTH_TESTS_MIGRATE = False
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 try:
     from production_settings import *

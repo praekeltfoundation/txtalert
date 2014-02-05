@@ -11,11 +11,13 @@ from txtalert.core.models import PleaseCallMe as CorePleaseCallMe
 from txtalert.core.utils import normalize_msisdn
 from txtalert.core.forms import RequestCallForm
 
+from django.utils import timezone
 from datetime import datetime, timedelta, date
 import logging
 import iso8601
 import json
 import re
+import pytz
 
 def handle_voicemail_message(message):
     msisdn = r'(?P<msisdn>[0-9]+)'
@@ -111,8 +113,10 @@ class PCMHandler(BaseHandler):
         if 'since' in request.GET:
             # remove timezone info since MySQL is not able to handle that
             # assume input it UTC
-            since = iso8601.parse_date(request.GET['since']).replace(tzinfo=None)
-            return PleaseCallMe.objects.filter(user=request.user, created_at__gte=since)
+            since = iso8601.parse_date(request.GET['since']).replace(
+                tzinfo=pytz.UTC)
+            return PleaseCallMe.objects.filter(
+                user=request.user, created_at__gte=since)
         else:
             return rc.BAD_REQUEST
 
@@ -130,16 +134,15 @@ class PCMHandler(BaseHandler):
         if PleaseCallMe.objects.filter(
             sender_msisdn=sender_msisdn,
             message=message,
-            created_at__gt=datetime.now() - timedelta(hours=2)).exists():
+            created_at__gt=timezone.now() - timedelta(hours=2)).exists():
             resp = rc.DUPLICATE_ENTRY
             resp.content = ''
             resp['Content-Length'] = 0
             return resp
 
-        pcm = PleaseCallMe.objects.create(user=user, sms_id=sms_id,
-                                        sender_msisdn=sender_msisdn,
-                                        recipient_msisdn=recipient_msisdn,
-                                        message=message)
+        pcm = PleaseCallMe.objects.create(
+            user=user, sms_id=sms_id, sender_msisdn=sender_msisdn,
+            recipient_msisdn=recipient_msisdn, message=message)
         resp = rc.CREATED
         resp.content = 'Please Call Me registered'
         resp['Content-Length'] = len(resp.content)
@@ -182,7 +185,7 @@ class PCMHandler(BaseHandler):
                                     recipient_msisdn, message)
         else:
             try:
-                msg = json.loads(request.raw_post_data)
+                msg = json.loads(request.body)
                 return self.write_sms(request.user, msg['message_id'],
                         msg['from_addr'], msg['to_addr'], msg['content'])
             except Exception, e:
@@ -259,7 +262,7 @@ class CallRequestHandler(BaseHandler):
         msisdn = normalize_msisdn(request.POST.get('msisdn'))
         msisdn_record, _ = MSISDN.objects.get_or_create(msisdn=msisdn)
         pcm = CorePleaseCallMe(user=request.user, msisdn=msisdn_record,
-                timestamp=datetime.now(), message='Please call me!',
+                timestamp=timezone.now(), message='Please call me!',
                 notes='Call request issued via txtAlert Bookings USSD')
         pcm.save()
         return pcm
