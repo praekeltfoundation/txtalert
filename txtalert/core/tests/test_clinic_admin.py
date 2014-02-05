@@ -5,8 +5,9 @@ from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Group
 from django.test import TestCase, RequestFactory
 
-from txtalert.core.models import Visit, Clinic, Patient, MSISDN
+from txtalert.core.admin import users_in_same_group_as
 from txtalert.core.clinic_admin import VisitAdmin, PatientAdmin
+from txtalert.core.models import Visit, Clinic, Patient, MSISDN
 
 
 class ClinicAdminTestCase(TestCase):
@@ -107,7 +108,7 @@ class VisitAdminTestCase(ClinicAdminTestCase):
             all_patients,
             set([v.patient.te_id for v in self.model_admin.queryset(request)]))
 
-    def test_clinic_user_form_listing(self):
+    def test_clinic_form_listing_for_clinic_user(self):
         request_factory = RequestFactory()
         request = request_factory.get('/')
         request.user = self.clinic1_user
@@ -116,6 +117,22 @@ class VisitAdminTestCase(ClinicAdminTestCase):
         form = self.model_admin.get_form(request)()
         self.assertTrue("Clinic 1" in str(form['clinic']))
         self.assertFalse("Clinic 2" in str(form['clinic']))
+
+    def test_patient_form_listing_for_clinic_user(self):
+
+        clinic1_patients = self.create_patients(self.clinic1, count=2)
+        clinic2_patients = self.create_patients(self.clinic2, count=2)
+
+        request_factory = RequestFactory()
+        request = request_factory.get('/')
+        request.user = self.clinic1_user
+        request.session = {}
+
+        form = self.model_admin.get_form(request)()
+        self.assertTrue(all([p.te_id in str(form['patient'])
+                             for p in clinic1_patients]))
+        self.assertFalse(any([p.te_id in str(form['patient'])
+                             for p in clinic2_patients]))
 
 
 class PatientAdminTestCase(ClinicAdminTestCase):
