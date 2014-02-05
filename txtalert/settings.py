@@ -121,6 +121,7 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     'templates',
+    join(APP_ROOT, 'txtalert', 'core', 'templates'),
 )
 
 INSTALLED_APPS = (
@@ -133,7 +134,7 @@ INSTALLED_APPS = (
     'django.contrib.flatpages',
     'django.contrib.markup',
     # Uncomment the next line to enable the admin:
-    # 'django.contrib.admin',
+    'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'txtalert.core',
@@ -153,9 +154,11 @@ INSTALLED_APPS = (
     'gunicorn',
     'django_nose',
     'raven.contrib.django.raven_compat',
+    'autocomplete_light',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 AUTH_PROFILE_MODULE = 'core.AuthProfile'
 LOGIN_URL = '/bookings/sign-in/'

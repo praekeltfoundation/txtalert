@@ -2,7 +2,9 @@ from django.contrib.admin import ModelAdmin
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 
-from txtalert.core.models import Visit, Patient, Clinic
+import autocomplete_light
+
+from txtalert.core.models import Visit, Patient, Clinic, MSISDN
 from txtalert.core.admin import users_in_same_group_as
 
 
@@ -11,6 +13,7 @@ site = AdminSite(name="clinic-admin")
 
 class VisitAdmin(ModelAdmin):
     date_hierarchy = 'date'
+    form = autocomplete_light.modelform_factory(Visit)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "clinic":
@@ -34,6 +37,7 @@ class VisitAdmin(ModelAdmin):
 
 class PatientAdmin(ModelAdmin):
     date_hierarchy = 'created_at'
+    form = autocomplete_light.modelform_factory(Patient)
 
     def queryset(self, request):
         qs = super(PatientAdmin, self).queryset(request)
@@ -56,3 +60,4 @@ class PatientAdmin(ModelAdmin):
 
 site.register(Visit, VisitAdmin)
 site.register(Patient, PatientAdmin)
+site.register(MSISDN)
