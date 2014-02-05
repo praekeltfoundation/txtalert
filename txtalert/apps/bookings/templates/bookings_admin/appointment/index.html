@@ -1,7 +1,7 @@
 {% extends "bookings_admin/base.html" %}
 
 {% block header %}
-    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; Appointments</span>    
+    <span><a href="{% url "bookings:admin:index" %}">Home</a> &raquo; Appointments</span>
 {% endblock %}
 
 {% block content %}
@@ -29,19 +29,19 @@
         <div class="widget border">
         <span class="black">{{visit.date|date:"j F Y"}}<br>{{visit.patient.te_id}}</span><br>
         {{visit.patient.get_display_name}}<br>
-        {{visit.clinic.name}}.<a href="{% url bookings:admin:change_appointment visit_id=visit.pk %}">More</a>
+        {{visit.clinic.name}}.<a href="{% url "bookings:admin:change_appointment" visit_id=visit.pk %}">More</a>
         </div>
     {% empty %}
         <div class="widget">
             {% if next_visit %}
-                No visits today, next visit is scheduled for the 
-                <a href="{% url bookings:admin:appointments %}?date_day={{next_visit.date.day}}&amp;date_month={{next_visit.date.month}}&amp;date_year={{next_visit.date.year}}">{{next_visit.date|date:"j F Y"}}</a>
+                No visits today, next visit is scheduled for the
+                <a href="{% url "bookings:admin:appointments" %}?date_day={{next_visit.date.day}}&amp;date_month={{next_visit.date.month}}&amp;date_year={{next_visit.date.year}}">{{next_visit.date|date:"j F Y"}}</a>
             {% else %}
                 No visits today.
             {% endif %}
         </div>
     {% endfor %}
-    
+
     {% if page.has_other_pages %}
     <div class="pagination">
 

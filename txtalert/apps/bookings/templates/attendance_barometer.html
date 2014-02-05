@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 
 {% block header %}
-    <span><a href="{% url bookings:index %}">Home</a> &raquo; Attendance Barometer</span>
+    <span><a href="{% url "bookings:index" %}">Home</a> &raquo; Attendance Barometer</span>
 {% endblock %}
-	
+
 
 {% block content %}
     <div class="widget appointment">
-		<span class="large">{{attendance}}%</span><br> 
+		<span class="large">{{attendance}}%</span><br>
 		<span class="medium">Attendance Record</span><br>
 		<span class="record">{{attended}}/{{total}} Appointments Attended</span>
 	</div>
-	
+
 	<div class="clear"></div>
-	
+
 	<div class="widget missed">{{missed}} Appointments Missed</div>
-	
+
 	<div class="clear"></div>
-	
+
     {# <div class="widget incentive"> #}
     {#     INCENTIVE PROBABILITY BLOCK #}
     {#         <p> #}
@@ -25,8 +25,8 @@
     {#             to stay on treatment #}
     {#         </p> #}
     {#     </div> #}
-	
+
 	<div class="clear"></div>
-	
+
     {% include "includes/menu.html" %}
 {% endblock %}

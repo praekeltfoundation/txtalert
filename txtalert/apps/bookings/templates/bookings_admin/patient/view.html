@@ -1,7 +1,7 @@
 {% extends "bookings_admin/base.html" %}
 
 {% block header %}
-    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; Patients</span>
+    <span><a href="{% url "bookings:admin:index" %}">Home</a> &raquo; Patients</span>
 {% endblock %}
 
 {% block content %}
@@ -44,9 +44,9 @@
         </div>
 
         <div class="widget">
-            <a href="{% url bookings:admin:new_appointment %}?patient_id={{patient.pk}}" class="green">Create Appointment</a>
-            <a href="{% url bookings:admin:index %}" class="green">Main Menu</a>
+            <a href="{% url "bookings:admin:new_appointment" %}?patient_id={{patient.pk}}" class="green">Create Appointment</a>
+            <a href="{% url "bookings:admin:index" %}" class="green">Main Menu</a>
         </div>
 
-    
+
 {% endblock %}
