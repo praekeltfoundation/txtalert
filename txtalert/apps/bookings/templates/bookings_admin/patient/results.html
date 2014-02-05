@@ -1,7 +1,7 @@
 {% extends "bookings_admin/base.html" %}
 
 {% block header %}
-    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; New Appointment</span>
+    <span><a href="{% url "bookings:admin:index" %}">Home</a> &raquo; New Appointment</span>
 {% endblock %}
 
 {% block content %}
@@ -18,9 +18,9 @@
             {% else %}
                 <p>No patients found matching your search criteria</p>
             {% endif %}
-        <a href="{% url bookings:admin:new_appointment %}" class="cancel">Cancel</a>
+        <a href="{% url "bookings:admin:new_appointment" %}" class="cancel">Cancel</a>
     </div>
 
     <div class="clear"></div>
-    
+
 {% endblock %}

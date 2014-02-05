@@ -1,4 +1,5 @@
 from txtalert.core.models import PleaseCallMe, MSISDN, Visit, Patient
+from django.utils import timezone
 from datetime import datetime
 from django.db.models import Q
 import logging
@@ -13,11 +14,11 @@ def sloppy_get_or_create_possible_msisdn(sloppy_formatted_msisdn):
     if len(sloppy_formatted_msisdn) < 9:
         msisdn, created = MSISDN.objects.get_or_create(msisdn=sloppy_formatted_msisdn)
         return msisdn
-    
+
     # Assume the MSISDNs are always formatted as +27761234567, normalize
     # to 761234567
     end_of_msisdn = sloppy_formatted_msisdn[-9:]
-    
+
     # it could be formatted as 27761234567,+27761234567 or 0761234567
     possible_msisdns = MSISDN.objects.filter(msisdn__endswith=end_of_msisdn)
     if possible_msisdns.exists():
@@ -25,12 +26,12 @@ def sloppy_get_or_create_possible_msisdn(sloppy_formatted_msisdn):
         for msisdn in possible_msisdns:
             if msisdn.patient_set.exists():
                 return msisdn # just so you know what's going on
-        # otherwise we'll settle for a patient that has used this MSISDN 
+        # otherwise we'll settle for a patient that has used this MSISDN
         # previously
         for msisdn in possible_msisdns:
             if msisdn.contacts.exists():
                 return msisdn
-        
+
         # all possible MSISDNs have no patients linked to them
         # if that's the case then just default to the most recent
         # MSISDN registered for that given number.
@@ -43,7 +44,7 @@ def sloppy_get_or_create_possible_msisdn(sloppy_formatted_msisdn):
 
 def track_please_call_me(opera_pcm):
     """Track a MSISDN we receive from a PCM back to a specific contact. This is
-    tricky because MSISDNs in txtAlert are involved in all sorts of ManyToMany 
+    tricky because MSISDNs in txtAlert are involved in all sorts of ManyToMany
     relationships."""
     msisdn = sloppy_get_or_create_possible_msisdn(opera_pcm.sender_msisdn)
     patients = Patient.objects.filter(active_msisdn=msisdn) or \
@@ -51,9 +52,9 @@ def track_please_call_me(opera_pcm):
     if patients.count() == 1:
         patient = patients[0]
         clinic = patient.last_clinic or patient.get_last_clinic()
-    
+
         pcm = PleaseCallMe.objects.create(msisdn=msisdn,
-                                            timestamp=datetime.now(),
+                                            timestamp=timezone.now(),
                                             clinic=clinic,
                                             user=opera_pcm.user,
                                             message=opera_pcm.message)
@@ -72,15 +73,15 @@ def track_please_call_me(opera_pcm):
         # not sure what to do in this situation yet, lets minimally store the PCM
         # so we don't loose track of any.
         pcm = PleaseCallMe.objects.create(msisdn=msisdn,
-                                            timestamp=datetime.now(),
-                                            user=opera_pcm.user, 
+                                            timestamp=timezone.now(),
+                                            user=opera_pcm.user,
                                             message=opera_pcm.message)
         logging.info('track_please_call_me: No contacts found for MSISDN: %s, registering without clinic.' % msisdn)
     else:
         # not sure what to do in this situation yet, lets minimally store the PCM
         # so we don't loose track of any.
         pcm = PleaseCallMe.objects.create(msisdn=msisdn,
-                                            timestamp=datetime.now(),
+                                            timestamp=timezone.now(),
                                             user=opera_pcm.user,
                                             message=opera_pcm.message)
         logging.info("track_please_call_me: More than one contact found for MSISDN: %s" % msisdn)
@@ -91,7 +92,7 @@ def calculate_risk_profile_handler(sender, **kwargs):
 
 def calculate_risk_profile(visit):
     """Calculate the risk profile of the patient after the latest visit has been
-    saved to the database. This MUST be a post_save signal handler otherwise 
+    saved to the database. This MUST be a post_save signal handler otherwise
     the calculation will always be one visit short."""
     patient = visit.patient
     patient.last_clinic = patient.get_last_clinic()
@@ -109,14 +110,14 @@ def check_for_opt_in_changes_handler(sender, **kwargs):
     return check_for_opt_in_changes(kwargs['instance'])
 
 def check_for_opt_in_changes(patient):
-    """Check the dirty state of a patient, has the opt-in status changed 
+    """Check the dirty state of a patient, has the opt-in status changed
     compared to the state as known in the DB. This MUST be called as a pre_save
     signal otherwise the dirty state tells us nothing."""
     if 'opted_in' in patient.get_dirty_fields():
-        # here we should notify api client of the change in opt-in status 
+        # here we should notify api client of the change in opt-in status
         # mb via an HTTP push
         logging.debug('I should push changes somewhere')
-    
+
 
 
 def find_clinic_for_please_call_me_handler(sender, **kwargs):
@@ -144,4 +145,4 @@ def update_active_msisdn(patient):
             # there is no ordering, depend on the database to specify
             # auto incrementing primary keys
             patient.active_msisdn = patient.msisdns.latest('id')
-        
+

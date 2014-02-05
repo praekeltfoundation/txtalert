@@ -1,7 +1,7 @@
 {% extends "bookings_admin/base.html" %}
 
 {% block header %}
-    <span><a href="{% url bookings:admin:index %}">Home</a> &raquo; Find Patient</span>
+    <span><a href="{% url "bookings:admin:index" %}">Home</a> &raquo; Find Patient</span>
 {% endblock %}
 
 {% block content %}
@@ -16,7 +16,7 @@
             <input type="submit" class="submit" value="Next &raquo;">
             <input type="hidden" name="next" value="{{next}}" id="next">
         </form>
-        <a href="{% url bookings:admin:index %}" class="cancel">Cancel</a>
+        <a href="{% url "bookings:admin:index" %}" class="cancel">Cancel</a>
     </div>
     <div class="clear"></div>
 {% endblock %}

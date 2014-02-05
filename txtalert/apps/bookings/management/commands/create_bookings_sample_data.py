@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from txtalert.core.models import (Patient, Clinic, MSISDN, 
+from txtalert.core.models import (Patient, Clinic, MSISDN,
                                     VISIT_STATUS_CHOICES, Visit)
 from optparse import make_option
+from django.utils import timezone
 from datetime import datetime, timedelta
 import random
 import sys
@@ -11,11 +12,11 @@ from uuid import uuid1
 def sample(items):
     return random.sample(items, 1).pop()
 
-NAMES = ['Aaliyah', 'Abayomi', 'Abebe', 'Abebi', 'Abena', 'Abeo', 'Ada', 
-            'Adah', 'Adana', 'Adanna', 'Adanya', 'Akili', 'Alika', 'Ama', 
-            'Amadi', 'Amai', 'Amare', 'Amari', 'Abayomi', 'Abiola', 'Abu', 
-            'Ade', 'Adeben', 'Adiel', 'Amarey', 'Amari', 'Aren', 'Azibo', 
-            'Bobo', 'Chiamaka', 'Chibale', 'Chidi', 'Chike', 'Dakarai', 
+NAMES = ['Aaliyah', 'Abayomi', 'Abebe', 'Abebi', 'Abena', 'Abeo', 'Ada',
+            'Adah', 'Adana', 'Adanna', 'Adanya', 'Akili', 'Alika', 'Ama',
+            'Amadi', 'Amai', 'Amare', 'Amari', 'Abayomi', 'Abiola', 'Abu',
+            'Ade', 'Adeben', 'Adiel', 'Amarey', 'Amari', 'Aren', 'Azibo',
+            'Bobo', 'Chiamaka', 'Chibale', 'Chidi', 'Chike', 'Dakarai',
             'Davu', 'Deion', 'Dembe', 'Diallo']
 SURNAMES = ['Azikiwe','Awolowo','Bello','Balewa','Akintola','Okotie-Eboh',
             'Nzeogwu','Onwuatuegwu','Okafor','Okereke','Okeke','Okonkwo',
@@ -46,19 +47,19 @@ class Command(BaseCommand):
         make_option('--change-requests', default=1, dest='change_requests',
             help='How many change requests to create per visit')
     )
-    
+
     def handle(self, *args, **options):
         if options.get('owner'):
             self.owner = User.objects.get(username=options['owner'])
         else:
             print 'Please provide --owner=<username>'
             sys.exit(1)
-        
+
         self.clinics = Clinic.objects.all()
         for patient in self.create_patients(int(options['patients'])):
             visits = list(self.create_visits(patient, int(options['visits'])))
             list(self.create_change_requests(visits, int(options['change_requests'])))
-    
+
     def create_patients(self, limit):
         for i in range(limit):
             msisdn, _ = MSISDN.objects.get_or_create(msisdn=(27761000000 + i))
@@ -74,15 +75,15 @@ class Command(BaseCommand):
                 age = i,
                 last_clinic = sample(self.clinics),
             )
-    
+
     def create_visits(self, patient, limit):
         for i in range(limit):
-            date = datetime.now() + timedelta(days=((-1 * i)+10))
-            if date < datetime.now():
+            date = timezone.now() + timedelta(days=((-1 * i)+10))
+            if date < timezone.now():
                 status = sample(VISIT_STATUS_CHOICES)[0]
             else:
                 status = 's'
-            
+
             yield patient.visit_set.create(
                 te_visit_id = 'visit-%s' % Visit.objects.count(),
                 date = date,
@@ -90,7 +91,7 @@ class Command(BaseCommand):
                 visit_type = sample(Visit.VISIT_TYPES)[0],
                 clinic = patient.last_clinic
             )
-    
+
     def create_change_requests(self, visits, limit):
         visits = list(visits)
         for i in range(limit):

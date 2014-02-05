@@ -7,7 +7,7 @@ from utils import process_receipts_xml
 
 # @permission_required('gateway.can_place_sms_receipt')
 def sms_receipt_handler(request):
-    success, fail = process_receipts_xml(request.raw_post_data)
+    success, fail = process_receipts_xml(request.body)
     return HttpResponse(simplejson.dumps({
         'success': map(lambda rcpt: rcpt._asdict(), success),
         'fail': map(lambda rcpt: rcpt._asdict(), fail)

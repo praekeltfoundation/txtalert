@@ -22,7 +22,7 @@
             {{form.password}}<br>
             <input type="submit" value="Sign In" class="submit">
             <input type="hidden" name="next" value="{{next}}">
-            <a href="{% url bookings:request_call %}">I forgot my Patient ID</a><br>
+            <a href="{% url "bookings:request_call" %}">I forgot my Patient ID</a><br>
             {% csrf_token %}
         </form>
     </div>
@@ -31,7 +31,7 @@
 {% block post_content %}
 <div class="widget">
     <span class="black">Need help?</span><br>
-    <a href="{% url bookings:request_call %}">You can request a call from us.</a>
+    <a href="{% url "bookings:request_call" %}">You can request a call from us.</a>
 </div>
 {% include "includes/young_africa_live.html" %}
 

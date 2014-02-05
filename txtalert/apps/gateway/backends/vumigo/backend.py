@@ -5,6 +5,7 @@ import requests
 
 from django.http import HttpResponse
 from django.conf import settings
+from django.utils import timezone
 
 from txtalert.apps.gateway.models import SendSMS
 
@@ -31,8 +32,8 @@ class Gateway(object):
         send_sms.user = user
         send_sms.msisdn = msisdn
         send_sms.smstext = smstext
-        send_sms.delivery = datetime.now()
-        send_sms.expiry = datetime.now() + timedelta(days=1)
+        send_sms.delivery = timezone.now()
+        send_sms.expiry = timezone.now() + timedelta(days=1)
         send_sms.priority = 'standard'
         send_sms.receipt = 'Y'
         send_sms.identifier = reply['message_id']
@@ -52,7 +53,7 @@ gateway = Gateway(settings.VUMIGO_ACCOUNT_KEY,
 
 
 def sms_receipt_handler(request, *args, **kwargs):
-    data = json.loads(request.raw_post_data)
+    data = json.loads(request.body)
     send_smss = SendSMS.objects.filter(identifier=data['user_message_id'][:8])
     send_smss.update(status=data['delivery_status'],
                      delivery_timestamp=data['timestamp'])

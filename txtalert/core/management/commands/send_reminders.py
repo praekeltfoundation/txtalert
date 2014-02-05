@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.utils import timezone
 from txtalert.apps.therapyedge import reminders
 from datetime import datetime
 from optparse import make_option
@@ -30,7 +31,7 @@ class Command(BaseCommand):
         if date_string:
             today = datetime.strptime(date_string, '%d/%m/%Y').date()
         else:
-            today = datetime.now().date()
+            today = timezone.now().date()
 
         clinic_name = options.get('clinic_name')
 
