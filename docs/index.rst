@@ -10,8 +10,7 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   
-   installation.rst
+
    api.rst
 
 Indices and tables
