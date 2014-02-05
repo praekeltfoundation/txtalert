@@ -62,7 +62,8 @@ class SMSHandler(BaseHandler):
         if 'since' in request.GET:
             # remove timezone info since MySQL is not able to handle that
             # assume input it UTC
-            since = iso8601.parse_date(request.GET['since']).replace(tzinfo=None)
+            since = iso8601.parse_date(request.GET['since']).replace(
+                tzinfo=pytz.UTC)
             return SendSMS.objects.filter(delivery__gte=since, user=request.user)
         else:
             return rc.BAD_REQUEST
