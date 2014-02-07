@@ -20,7 +20,7 @@ setup(
         'django-dirtyfields==0.1',
         'django-historicalrecords==1.1',
         'iso8601',
-        'django-piston==0.2.2',
+        'django-piston==0.2.3',
         'south==0.7.3',
         'gunicorn==0.12.1',
         'supervisor',
