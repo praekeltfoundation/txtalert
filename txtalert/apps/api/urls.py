@@ -12,12 +12,19 @@ Mimer.register(lambda *a: None, ('text/xml; charset=utf-8',))
 
 http_basic_authentication = HttpBasicAuthentication()
 
-sms_receipt_handler = Resource(SMSReceiptHandler, http_basic_authentication)
-sms_handler = Resource(SMSHandler, http_basic_authentication)
-pcm_handler = Resource(PCMHandler, http_basic_authentication)
-patient_handler = Resource(PatientHandler)
-change_request_handler = Resource(ChangeRequestHandler, http_basic_authentication)
-call_request_handler = Resource(CallRequestHandler, http_basic_authentication)
+
+# FIXME: Fix for newer djangos, piston needs to go away.
+class CSRFExemptResource(Resource):
+    csrf_exempt = False
+
+
+
+sms_receipt_handler = CSRFExemptResource(SMSReceiptHandler, http_basic_authentication)
+sms_handler = CSRFExemptResource(SMSHandler, http_basic_authentication)
+pcm_handler = CSRFExemptResource(PCMHandler, http_basic_authentication)
+patient_handler = CSRFExemptResource(PatientHandler)
+change_request_handler = CSRFExemptResource(ChangeRequestHandler, http_basic_authentication)
+call_request_handler = CSRFExemptResource(CallRequestHandler, http_basic_authentication)
 
 # SMS api
 urlpatterns = patterns('',
