@@ -15,7 +15,7 @@ http_basic_authentication = HttpBasicAuthentication()
 
 # FIXME: Fix for newer djangos, piston needs to go away.
 class CSRFExemptResource(Resource):
-    csrf_exempt = False
+    csrf_exempt = True
 
 
 
