@@ -2,14 +2,14 @@ Documentation for txtAlert API
 ==============================
 
 Authentication
-**************
+--------------
 
 All clients should authenticate via `HTTP Basic Authentication <http://en.wikipedia.org/wiki/Basic_access_authentication>`_.
 Since this isn't a very secure authentication mechanism it is advised
 that all API traffic be done exclusively over HTTPS.
 
 Please Call Me API documentation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 
 A "Please Call Me" is a text message that is sent from one subscriber to
 another where asking the latter to call the sender of the message back.
@@ -30,7 +30,7 @@ The clinic is notified of the PCM and will call the patient back to
 schedule a new appointment.
 
 Registering PCMs
-~~~~~~~~~~~~~~~~
+----------------
 
 URI
     /api/v1/pcm.json
@@ -38,7 +38,7 @@ HTTP Method
     POST
 
 Parameters
-----------
+~~~~~~~~~~
 
 :sender_msisdn: The MSISDN sending the PCM
 :sms_id: Unique ID from the SMSC
@@ -51,7 +51,7 @@ Using HTTP to post the JSON of `Vumi <https://github.com/praekelt/vumi/>`_
 message to the URL.
 
 Example
--------
+~~~~~~~
 
 An example of HTTP POSTing with parameters with cURL::
 
