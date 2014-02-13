@@ -30,8 +30,6 @@ def add_perms_to_user(username, permission):
 
 class PcmAutomationTestCase(TestCase):
 
-    fixtures = ['contacts.json']
-
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(

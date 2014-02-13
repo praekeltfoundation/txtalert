@@ -18,7 +18,7 @@
 
 
 from os import path
-from django.conf.urls.defaults import *
+from django.conf.urls import patterns
 from views import autocomplete
 
 current_path =  path.abspath(path.dirname(__file__))
