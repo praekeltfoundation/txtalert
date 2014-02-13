@@ -1,5 +1,7 @@
+import json
+
 from django.http import HttpResponse
-from django.utils import simplejson
+
 from django.contrib.auth.decorators import permission_required
 import logging
 from txtalert.apps.gateway.models import SendSMS
