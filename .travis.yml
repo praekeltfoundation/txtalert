@@ -3,6 +3,9 @@ python:
   - "2.6"
   - "2.7"
 install:
-    - "pip install -e ."
+  - "pip install coveralls --use-wheel"
+  - "pip install -e ."
 script:
-    - ./manage.py test --where=txtalert
+  - coverage run --source=txtalert ./manage.py test --where=txtalert
+after_success:
+  - coveralls
