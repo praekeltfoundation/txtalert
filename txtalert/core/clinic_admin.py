@@ -81,6 +81,8 @@ class PatientAdmin(ModelAdmin):
     date_hierarchy = 'created_at'
     form = autocomplete_light.modelform_factory(Patient)
 
+    search_fields = ['te_id', 'active_msisdn__msisdn', 'msisdns__msisdn']
+
     list_display = [
         'te_id',
         'get_display_name',
@@ -99,12 +101,11 @@ class PatientAdmin(ModelAdmin):
 
     list_filter = [
         'opted_in',
-        'disclosed',
-        'deceased',
-        'last_clinic',
-        'language',
         'created_at',
         'updated_at',
+        'language',
+        'disclosed',
+        'deceased',
     ]
 
     list_editable = [
