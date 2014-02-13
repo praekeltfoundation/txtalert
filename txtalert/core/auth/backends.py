@@ -1,7 +1,9 @@
+from base64 import b64decode
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import User
 from txtalert.core.models import Patient, AuthProfile
 from txtalert.core.utils import normalize_msisdn
+
 
 class PatientBackend(ModelBackend):
     def authenticate(self, username, password):
@@ -24,3 +26,12 @@ class PatientBackend(ModelBackend):
             # normalize_msisdn raised an error, probably a regular string
             # was passed in which it tried to convert to an integer
             pass
+
+
+class HttpBasicAuthBackend(ModelBackend):
+
+    def authenticate(self, remote_user):
+        b64str = remote_user[6:]
+        username, password = b64decode(b64str).split(':')
+        return super(HttpBasicAuthBackend, self).authenticate(
+            username=username, password=password)
