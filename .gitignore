@@ -19,4 +19,5 @@ tmp/coverage/*
 ve/
 webroot/media/upload/*
 widget.wgt
+txtalert_dev.db
 txtalert.db

@@ -13,14 +13,13 @@ setup(
     author_email = "dev@praekeltfoundation.org",
     packages = find_packages(),
     install_requires=[
-        'Django>=1.5,<1.6',
+        'Django>=1.6,<1.7',
         'django-nose',
         'gdata==2.0.18',
         'xlrd==0.7.1',
         'django-dirtyfields==0.1',
         'django-historicalrecords==1.1',
         'iso8601',
-        'django-piston==0.2.2',
         'south==0.7.3',
         'gunicorn==0.12.1',
         'supervisor',
@@ -28,6 +27,7 @@ setup(
         'python-memcached==1.48',
         'raven',
         'pytz',
+        'django-markup-deprecated',
         'django-autocomplete-light',
     ],
     classifiers=[

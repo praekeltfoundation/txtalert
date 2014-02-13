@@ -14,7 +14,7 @@
 #  along with TxtAlert.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from django.conf.urls.defaults import *
+from django.conf.urls import patterns, url, include
 
 urlpatterns = patterns('txtalert.apps.therapyedge.views',
 )

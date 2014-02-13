@@ -107,6 +107,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+    'txtalert.core.auth.middleware.HttpBasicAuthMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -132,7 +133,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.flatpages',
-    'django.contrib.markup',
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
@@ -147,13 +147,13 @@ INSTALLED_APPS = (
     'txtalert.apps.api',
     'txtalert.apps.cd4',
     'txtalert.apps.googledoc',
-    'piston',
     'dirtyfields',
     'history',
     'south',
     'gunicorn',
     'django_nose',
     'raven.contrib.django.raven_compat',
+    'markup_deprecated',
     'autocomplete_light',
 )
 
@@ -178,7 +178,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'txtalert.core.auth.backends.PatientBackend'
+    'txtalert.core.auth.backends.PatientBackend',
+    'txtalert.core.auth.backends.HttpBasicAuthBackend',
 )
 
 CACHES = {
