@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import patterns, url, include
 from django.contrib.flatpages.views import flatpage
 from txtalert.apps.bookings import views
 
@@ -14,8 +14,8 @@ urlpatterns = patterns('',
     (r'^request-call/$', views.request_call, {}, 'request_call'),
     (r'^404/$', views.not_found, {}, 'not_found'),
     (r'^500/$', views.server_error, {}, 'server_error'),
-    (r'^sign-in/$', 'django.contrib.auth.views.login', { 
-            'template_name': 'signin.html' 
+    (r'^sign-in/$', 'django.contrib.auth.views.login', {
+            'template_name': 'signin.html'
         }, 'signin'),
     (r'^sign-out/$', 'django.contrib.auth.views.logout', {
             'template_name': 'signout.html'
