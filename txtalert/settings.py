@@ -28,7 +28,7 @@ DATABASES = {
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -107,6 +107,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+    'txtalert.core.auth.middleware.HttpBasicAuthMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -132,7 +133,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.flatpages',
     # Uncomment the next line to enable the admin:
-    # 'django.contrib.admin',
+    'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'txtalert.core',
@@ -145,7 +146,6 @@ INSTALLED_APPS = (
     'txtalert.apps.api',
     'txtalert.apps.cd4',
     'txtalert.apps.googledoc',
-    'piston',
     'dirtyfields',
     'history',
     'south',
@@ -175,7 +175,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'txtalert.core.auth.backends.PatientBackend'
+    'txtalert.core.auth.backends.PatientBackend',
+    'txtalert.core.auth.backends.HttpBasicAuthBackend',
 )
 
 CACHES = {
