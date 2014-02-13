@@ -14,44 +14,58 @@
 #  along with TxtAlert.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from os import path
-from django.conf.urls import patterns, url, include
+import autocomplete_light
+autocomplete_light.autodiscover()
+
 from django.contrib import admin
-from django.conf import settings
-from django.conf import settings
+admin.autodiscover()
+
+from django.conf.urls import patterns, url, include
+from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
 
 from txtalert.core import clinic_admin
 
-admin.autodiscover()
 
 def health(request):
     return HttpResponse('')
 
 # web site
-urlpatterns = patterns('',
-    # Uncomment this for admin docs:
-    #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
+urlpatterns = patterns(
+    '',
     (r'', include('txtalert.apps.general.jquery.urls')),
     (r'', include('txtalert.core.urls')),
     (r'^therapyedge/', include('txtalert.apps.therapyedge.urls')),
-    (r'^bookings/', include('txtalert.apps.bookings.urls', namespace='bookings')),
+    (r'^bookings/',
+        include('txtalert.apps.bookings.urls', namespace='bookings')),
     (r'^widget/', include('txtalert.apps.widget.urls')),
     (r'^geckoboard/', include('txtalert.apps.geckoboard.urls')),
-    # (r'^sms/', include('opera.urls')),
     (r'^admin/', include(admin.site.urls)),
     (r'^clinic/admin/', include(clinic_admin.site.urls)),
 )
 
+# auto complete, done here manually because I need to add the
+# login_required decorator.
+urlpatterns += patterns(
+    '',
+    url(r'^(?P<autocomplete>[-\w]+)/$',
+        login_required(autocomplete_light.views.AutocompleteView.as_view()),
+        name='autocomplete_light_autocomplete'),
+    url(r'^$',
+        login_required(autocomplete_light.views.RegistryView.as_view()),
+        name='autocomplete_light_registry'),
+)
+
 # web API
-urlpatterns += patterns('',
+urlpatterns += patterns(
+    '',
     (r'^api/v1/', include('txtalert.apps.api.urls')),
 )
 
 # HAProxy health check
-urlpatterns += patterns('',
+urlpatterns += patterns(
+    '',
     url(r'^health/$', health, name="health")
 )
 
