@@ -180,17 +180,3 @@ class PleaseCallMeTestCase(TestCase):
             sloppy_get_or_create_possible_msisdn('+27123456121').msisdn,
             '27123456121'
         )
-
-    def test_voicemail_notification_handling(self):
-        from txtalert.apps.api.handlers import handle_voicemail_message
-        sample_messages = [
-            "Missed call: 07123456789, 16:17 11/04/2011;",
-            "You have 1 new message. The last message from 07123456788 was left at 11/04/2010 15:17. Please dial 121.",
-        ]
-        msisdn, date = handle_voicemail_message(sample_messages[0])
-        self.assertEquals(msisdn, '07123456789')
-        self.assertEquals(date, datetime(2011,4,11,16,17))
-
-        msisdn, date = handle_voicemail_message(sample_messages[1])
-        self.assertEquals(msisdn, '07123456788')
-        self.assertEquals(date, datetime(2010,4,11,15,17))

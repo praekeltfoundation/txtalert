@@ -107,6 +107,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+    'txtalert.core.auth.middleware.HttpBasicAuthMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -146,7 +147,6 @@ INSTALLED_APPS = (
     'txtalert.apps.api',
     'txtalert.apps.cd4',
     'txtalert.apps.googledoc',
-    'piston',
     'dirtyfields',
     'history',
     'south',
@@ -175,7 +175,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'txtalert.core.auth.backends.PatientBackend'
+    'txtalert.core.auth.backends.PatientBackend',
+    'txtalert.core.auth.backends.HttpBasicAuthBackend',
 )
 
 CACHES = {
