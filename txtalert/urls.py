@@ -21,6 +21,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 from django.conf.urls import patterns, url, include
+from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
 
@@ -40,10 +41,20 @@ urlpatterns = patterns(
         include('txtalert.apps.bookings.urls', namespace='bookings')),
     (r'^widget/', include('txtalert.apps.widget.urls')),
     (r'^geckoboard/', include('txtalert.apps.geckoboard.urls')),
-    # (r'^sms/', include('opera.urls')),
     (r'^admin/', include(admin.site.urls)),
     (r'^clinic/admin/', include(clinic_admin.site.urls)),
-    url(r'^autocomplete/', include('autocomplete_light.urls')),
+)
+
+# auto complete, done here manually because I need to add the
+# login_required decorator.
+urlpatterns += patterns(
+    '',
+    url(r'^(?P<autocomplete>[-\w]+)/$',
+        login_required(autocomplete_light.views.AutocompleteView.as_view()),
+        name='autocomplete_light_autocomplete'),
+    url(r'^$',
+        login_required(autocomplete_light.views.RegistryView.as_view()),
+        name='autocomplete_light_registry'),
 )
 
 # web API
