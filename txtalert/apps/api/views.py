@@ -5,6 +5,7 @@ import json
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
 from txtalert.apps.gateway.models import PleaseCallMe
 
@@ -22,6 +23,7 @@ def expect_json(func):
 
 
 # @login_required
+@csrf_exempt
 @expect_json
 def pcm(request):
     msg = request.json
