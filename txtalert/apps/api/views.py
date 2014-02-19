@@ -21,7 +21,7 @@ def expect_json(func):
     return wrapper
 
 
-@login_required
+# @login_required
 @expect_json
 def pcm(request):
     msg = request.json
