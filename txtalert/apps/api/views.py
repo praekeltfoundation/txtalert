@@ -3,6 +3,7 @@ from functools import wraps
 import json
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -26,6 +27,9 @@ def expect_json(func):
 @csrf_exempt
 @expect_json
 def pcm(request):
+
+    user = User.objects.get(username=request.GET['username'])
+
     msg = request.json
     if msg is not None:
         message_id = msg.get('message_id')
@@ -38,7 +42,7 @@ def pcm(request):
         to_addr = request.POST.get('recipient_msisdn')
         content = request.POST.get('message')
 
-    if not all([message_id, from_addr, to_addr, content]):
+    if not all([message_id, from_addr, content]):
         return HttpResponse(status=400)
 
     if PleaseCallMe.objects.filter(
@@ -49,7 +53,7 @@ def pcm(request):
         return HttpResponse(status=409)
 
     PleaseCallMe.objects.create(
-        user=request.user, sms_id=message_id, sender_msisdn=from_addr,
-        recipient_msisdn=to_addr, message=content)
+        user=user, sms_id=message_id, sender_msisdn=from_addr,
+        recipient_msisdn=to_addr or 'default', message=content)
 
     return HttpResponse(status=201, content='Please Call Me registered')
