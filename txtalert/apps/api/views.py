@@ -14,7 +14,7 @@ from txtalert.apps.gateway.models import PleaseCallMe
 def expect_json(func):
     @wraps(func)
     def wrapper(request, *args, **kwargs):
-        if request.META.get('CONTENT_TYPE') == 'application/json':
+        if 'application/json' in request.META.get('CONTENT_TYPE', ''):
             request.json = json.load(request)
         else:
             request.json = None
