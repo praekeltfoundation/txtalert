@@ -60,6 +60,6 @@ class CD4DocumentAdmin(admin.ModelAdmin):
         if request.POST.has_key('_send_cd4_messages'):
             return self.send_cd4_messages(request, object_id)
         return super(CD4DocumentAdmin, self).change_view(request, object_id,
-            extra_context)
+            extra_context=extra_context)
 
 admin.site.register(CD4Document, CD4DocumentAdmin)
