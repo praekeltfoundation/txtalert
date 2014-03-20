@@ -28,6 +28,7 @@ setup(
         'raven',
         'pytz',
         'django-markup-deprecated',
+        'django-autocomplete-light',
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable'

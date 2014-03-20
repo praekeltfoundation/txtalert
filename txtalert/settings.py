@@ -122,6 +122,7 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     'templates',
+    join(APP_ROOT, 'txtalert', 'core', 'templates'),
 )
 
 INSTALLED_APPS = (
@@ -153,9 +154,11 @@ INSTALLED_APPS = (
     'django_nose',
     'raven.contrib.django.raven_compat',
     'markup_deprecated',
+    'autocomplete_light',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 AUTH_PROFILE_MODULE = 'core.AuthProfile'
 LOGIN_URL = '/bookings/sign-in/'
