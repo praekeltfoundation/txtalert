@@ -25,7 +25,6 @@ class VisitAdmin(ModelAdmin):
         'clinic',
         'status',
         'te_visit_id',
-        'visit_type',
         'comment',
     ]
 
@@ -87,11 +86,11 @@ class PatientAdmin(ModelAdmin):
         'te_id',
         'get_display_name',
         'active_msisdn',
-        'age',
-        'regiment',
-        'sex',
+        # 'age',
+        # 'regiment',
+        # 'sex',
         'opted_in',
-        'disclosed',
+        # 'disclosed',
         'last_clinic',
         'next_visit',
         'last_visit',
@@ -110,11 +109,11 @@ class PatientAdmin(ModelAdmin):
 
     list_editable = [
         'opted_in',
-        'disclosed',
-        'active_msisdn',
+        # 'disclosed',
+        # 'active_msisdn',
         'language',
-        'sex',
-        'regiment',
+        # 'sex',
+        # 'regiment',
     ]
 
     def get_display_name(self, obj):
@@ -125,14 +124,14 @@ class PatientAdmin(ModelAdmin):
         try:
             visit = obj.next_visit()
             return '%s @ %s' % (visit.get_status_display(), visit.date)
-        except (IndexError, ValueError):
+        except (IndexError, ValueError, AttributeError):
             return None
 
     def last_visit(self, obj):
         try:
             visit = obj.last_visit()
             return '%s @ %s' % (visit.get_status_display(), visit.date)
-        except (IndexError, ValueError):
+        except (IndexError, ValueError, AttributeError):
             return None
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
