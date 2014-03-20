@@ -33,19 +33,19 @@ class VisitAdmin(ModelAdmin):
         'clinic',
         'date',
         'status',
-        'visit_type',
+        # 'visit_type',
     ]
 
     list_filter = [
         'date',
         'status',
-        'visit_type',
+        # 'visit_type',
     ]
 
     list_editable = [
         'date',
         'status',
-        'visit_type',
+        # 'visit_type',
     ]
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
