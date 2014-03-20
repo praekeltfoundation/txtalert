@@ -81,7 +81,8 @@ class PatientAdmin(ModelAdmin):
     form = autocomplete_light.modelform_factory(Patient)
 
     search_fields = ['te_id', 'active_msisdn__msisdn', 'msisdns__msisdn']
-    exclude = ['age', 'regiment', 'sex', 'disclosed', 'risk_profile']
+    exclude = ['age', 'regiment', 'sex', 'disclosed', 'risk_profile',
+               'deceased', 'deleted']
 
     list_display = [
         'te_id',
@@ -104,8 +105,8 @@ class PatientAdmin(ModelAdmin):
         'created_at',
         'updated_at',
         'language',
-        'disclosed',
-        'deceased',
+        # 'disclosed',
+        # 'deceased',
     ]
 
     list_editable = [
