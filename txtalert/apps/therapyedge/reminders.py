@@ -84,7 +84,7 @@ def send_stats_for_group(gateway, today, group):
     total_count = SendSMS.objects.filter(
         delivery__gte=datetime(
             today.year, today.month, today.day,
-            tzinfo=(pytz.timezone(settings.TIME_ZONE
+            tzinfo=(pytz.timezone(settings.TIME_ZONE)
                     if settings.USE_TZ else None)
         ), user__in=users).count()
 
