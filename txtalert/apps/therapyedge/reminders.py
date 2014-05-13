@@ -84,7 +84,8 @@ def send_stats_for_group(gateway, today, group):
     total_count = SendSMS.objects.filter(
         delivery__gte=datetime(
             today.year, today.month, today.day,
-            tzinfo=pytz.timezone(settings.TIME_ZONE)
+            tzinfo=(pytz.timezone(settings.TIME_ZONE
+                    if settings.USE_TZ else None)
         ), user__in=users).count()
 
     # send email with stats
@@ -221,4 +222,3 @@ def all(gateway, group_names, date=None, clinic_name=None):
             attended(gateway, clinic, user, visits, today)
             logger.debug('Sending reminders for %s: missed yesterday' % user)
             missed(gateway, clinic, user, visits, today)
-
