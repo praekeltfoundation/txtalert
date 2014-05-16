@@ -36,7 +36,7 @@ class Gateway(object):
         send_sms.expiry = timezone.now() + timedelta(days=1)
         send_sms.priority = 'standard'
         send_sms.receipt = 'Y'
-        send_sms.identifier = reply['message_id']
+        send_sms.identifier = reply['message_id'][:8]
         send_sms.save()
         return send_sms
 
