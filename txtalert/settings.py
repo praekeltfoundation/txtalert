@@ -51,7 +51,7 @@ USE_I18N = True
 USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = False
+USE_TZ = True
 
 # FIXME: txtAlert CD4 uses this
 UPLOAD_ROOT = "upload"

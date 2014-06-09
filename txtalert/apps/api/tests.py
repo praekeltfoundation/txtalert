@@ -61,7 +61,7 @@ class PcmAutomationTestCase(TestCase):
         }
 
         response = self.client.post(
-            reverse('api-pcm'),
+            '%s?username=%s' % (reverse('api-pcm'), self.user.username),
             parameters,
             HTTP_AUTHORIZATION=basic_auth_string('user', 'password')
         )
@@ -80,7 +80,7 @@ class PcmAutomationTestCase(TestCase):
         }
 
         response = self.client.post(
-            reverse('api-pcm'),
+            '%s?username=%s' % (reverse('api-pcm'), self.user.username),
             parameters,
             HTTP_AUTHORIZATION=basic_auth_string('user','password')
         )
@@ -89,7 +89,8 @@ class PcmAutomationTestCase(TestCase):
 
     def test_vumi_message_submissions(self):
         add_perms_to_user('user', 'can_place_pcm')
-        response = self.client.post(reverse('api-pcm'),
+        response = self.client.post(
+            '%s?username=%s' % (reverse('api-pcm'), self.user.username),
             json.dumps({
                 "message_id": "1",
                 "to_addr": "271234560",
