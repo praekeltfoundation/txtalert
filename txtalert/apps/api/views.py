@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from txtalert.apps.gateway.models import PleaseCallMe
+from txtalert.apps.gateway.models import PleaseCallMe, SendSMS
 
 
 def expect_json(func):
@@ -56,3 +56,23 @@ def pcm(request):
         recipient_msisdn=to_addr or 'default', message=content)
 
     return HttpResponse(status=201, content='Please Call Me registered')
+
+
+@csrf_exempt
+@expect_json
+def events(request):
+    event = request.json
+    identifier = event['user_message_id'][:8]
+    sms = SendSMS.objects.get(identifier=identifier)
+    if event['event_type'] == 'ack':
+        sms.status = 'd'  # sent
+    elif event['event_type'] == 'nack':
+        sms.status = 'F'  # failed
+    elif event['event_type'] == 'delivery_report':
+        sms.status = {
+            'pending': 'd',  # sent
+            'failed': 'F',  # failed
+            'delivered': 'D'  # delivered
+        }.get(event['delivery_status'], 'v')  # unknown
+    sms.save()
+    return HttpResponse(status=201, content='Event registered.')
