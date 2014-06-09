@@ -10,7 +10,6 @@ class PatientAutoComplete(autocomplete_light.AutocompleteModelBase):
 
     def choices_for_request(self):
         if not self.request.user.is_superuser:
-            print 'limiting'
             self.choices = self.choices.filter(
                 owner__in=users_in_same_group_as(self.request.user))
         return super(PatientAutoComplete, self).choices_for_request()
