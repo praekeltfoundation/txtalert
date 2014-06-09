@@ -3,8 +3,9 @@ from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User, Permission
 from django.db.models.signals import post_save
+from django.utils import timezone
 
-from txtalert.apps.gateway.models import PleaseCallMe
+from txtalert.apps.gateway.models import PleaseCallMe, SendSMS
 
 import base64
 import json
@@ -107,3 +108,108 @@ class PcmAutomationTestCase(TestCase):
         self.assertEqual(pcm.sender_msisdn, "271234570")
         self.assertEqual(pcm.recipient_msisdn, "271234560")
         self.assertEqual(pcm.message, "Please Call: Test User at 27123456789")
+
+
+class TestEventHandling(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='user', email='user@domain.com', password='password')
+        self.sms = SendSMS.objects.create(
+            msisdn='27123456789',
+            smstext='smstext',
+            delivery=timezone.now(),
+            expiry=timezone.now(),
+            priority='Standard',
+            receipt='Y',
+            identifier='12345678',
+            user=self.user,
+        )
+
+    def test_ack(self):
+        ack = {
+            "event_type": "ack",
+            "user_message_id": self.sms.identifier,
+        }
+        resp = self.client.post(
+            reverse('api-events'),
+            data=json.dumps(ack),
+            content_type='application/json')
+        self.assertEqual(resp.status_code, 201)
+        sms = SendSMS.objects.get(pk=self.sms.pk)
+        self.assertEqual(sms.status, 'd')
+
+    def test_nack(self):
+        ack = {
+            "event_type": "nack",
+            "user_message_id": self.sms.identifier,
+        }
+
+        resp = self.client.post(
+            reverse('api-events'),
+            data=json.dumps(ack),
+            content_type='application/json')
+        self.assertEqual(resp.status_code, 201)
+        sms = SendSMS.objects.get(pk=self.sms.pk)
+        self.assertEqual(sms.status, 'F')
+
+    def test_dr_delivered(self):
+        ack = {
+            "event_type": "delivery_report",
+            "delivery_status": "delivered",
+            "user_message_id": self.sms.identifier,
+        }
+
+        resp = self.client.post(
+            reverse('api-events'),
+            data=json.dumps(ack),
+            content_type='application/json')
+        self.assertEqual(resp.status_code, 201)
+        sms = SendSMS.objects.get(pk=self.sms.pk)
+        self.assertEqual(sms.status, 'D')
+
+    def test_dr_pending(self):
+        ack = {
+            "event_type": "delivery_report",
+            "delivery_status": "pending",
+            "user_message_id": self.sms.identifier,
+        }
+
+        resp = self.client.post(
+            reverse('api-events'),
+            data=json.dumps(ack),
+            content_type='application/json')
+        self.assertEqual(resp.status_code, 201)
+        sms = SendSMS.objects.get(pk=self.sms.pk)
+        self.assertEqual(sms.status, 'd')
+
+    def test_dr_failed(self):
+        ack = {
+            "event_type": "delivery_report",
+            "delivery_status": "failed",
+            "user_message_id": self.sms.identifier,
+        }
+
+        resp = self.client.post(
+            reverse('api-events'),
+            data=json.dumps(ack),
+            content_type='application/json')
+        self.assertEqual(resp.status_code, 201)
+        sms = SendSMS.objects.get(pk=self.sms.pk)
+        self.assertEqual(sms.status, 'F')
+
+    def test_dr_unkown(self):
+        ack = {
+            "event_type": "delivery_report",
+            "delivery_status": "foo",
+            "user_message_id": self.sms.identifier,
+        }
+
+        resp = self.client.post(
+            reverse('api-events'),
+            data=json.dumps(ack),
+            content_type='application/json')
+        self.assertEqual(resp.status_code, 201)
+        sms = SendSMS.objects.get(pk=self.sms.pk)
+        self.assertEqual(sms.status, 'v')
