@@ -87,21 +87,24 @@ class PatientAdmin(admin.ModelAdmin):
 
 
 class VisitAdmin(admin.ModelAdmin):
-    readonly_fields = ('patient','clinic', 'te_visit_id')
+    readonly_fields = ('patient', 'clinic', 'te_visit_id')
     exclude = ('deleted',)
+
     def queryset(self, request):
         qs = super(VisitAdmin, self).queryset(request)
         if request.user.is_superuser:
             return qs
         else:
-            return qs.filter(patient__owner__in=users_in_same_group_as(request.user))
+            return qs.filter(
+                patient__owner__in=users_in_same_group_as(request.user))
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "patient":
             if not request.user.is_superuser:
-                kwargs['queryset'] = Patient.objects.filter(owner=users_in_same_group_as(request.user))
-        return super(VisitAdmin, self).formfield_for_choice_field(db_field, request, **kwargs)
-
+                kwargs['queryset'] = Patient.objects.filter(
+                    owner=users_in_same_group_as(request.user))
+        return super(VisitAdmin, self).formfield_for_choice_field(
+            db_field, request, **kwargs)
 
 
 class MessageTypeAdmin(admin.ModelAdmin):

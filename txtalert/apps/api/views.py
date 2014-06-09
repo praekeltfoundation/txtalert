@@ -23,7 +23,6 @@ def expect_json(func):
     return wrapper
 
 
-# @login_required
 @csrf_exempt
 @expect_json
 def pcm(request):
