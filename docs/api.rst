@@ -1,13 +1,6 @@
 Documentation for txtAlert API
 ==============================
 
-Authentication
---------------
-
-All clients should authenticate via `HTTP Basic Authentication <http://en.wikipedia.org/wiki/Basic_access_authentication>`_.
-Since this isn't a very secure authentication mechanism it is advised
-that all API traffic be done exclusively over HTTPS.
-
 Please Call Me API documentation
 --------------------------------
 
@@ -77,3 +70,21 @@ Both API calls:
 2. return an ``HTTP 409 Conflict`` if an exact same SMS was received
    in the last 2 hours.
 3. return an ``HTTP 400 Bad Request`` if not all parameters are present.
+
+Sending SMSs
+------------
+
+SMSs are sent via Vumi Go's HTTP API. txtAlert should have an account
+configured and appropriate token set to allow for outbound messaging.
+
+Receiving Delivery Reports
+--------------------------
+
+The path for receiving network acknowledgements & delivery reports is::
+
+    /api/v1/events.json
+
+This URL endpoint expects a Vumi event message. Event messages of type ``ack``
+and ``delivery_report`` are supported. These update the original outbound
+message with the appropriate txtAlert status matching pending, failed
+or delivered.
