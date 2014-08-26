@@ -7,13 +7,17 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
         # Removing unique constraint on 'Setting', fields ['name']
-        db.delete_unique('settings_setting', ['name'])
-
+        # It's completely unclear where this comes from and the migration
+        # fails on a fresh install with MySQL.
+        try:
+            db.delete_unique('settings_setting', ['name'])
+        except ValueError, e:
+            print ('Failed to remove a unique constraint that should not'
+                   'have existed anyway.')
+            print e
 
     def backwards(self, orm):
-        
         # Adding unique constraint on 'Setting', fields ['name']
         db.create_unique('settings_setting', ['name'])
 
