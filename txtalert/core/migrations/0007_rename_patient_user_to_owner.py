@@ -7,20 +7,20 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        db.drop_foreign_key('core_patient', 'user_id')
+        db.delete_foreign_key('core_patient', 'user_id')
         db.rename_column('core_patient','user_id', 'owner_id')
         db.alter_column('core_patient', 'owner_id', models.ForeignKey(to=orm['auth.User']))
 
-        db.drop_foreign_key('core_historicalpatient', 'user_id')
+        db.delete_foreign_key('core_historicalpatient', 'user_id')
         db.rename_column('core_historicalpatient', 'user_id', 'owner_id')
         db.alter_column('core_historicalpatient', 'owner_id', models.ForeignKey(to=orm['auth.User']))
 
     def backwards(self, orm):
-        db.drop_foreign_key('core_patient', 'owner_id')
+        db.delete_foreign_key('core_patient', 'owner_id')
         db.rename_column('core_patient','owner_id', 'user_id')
         db.alter_column('core_patient', 'user_id', models.ForeignKey(to=orm['auth.User']))
 
-        db.drop_foreign_key('core_historicalpatient', 'owner_id')
+        db.delete_foreign_key('core_historicalpatient', 'owner_id')
         db.rename_column('core_historicalpatient', 'owner_id', 'user_id')
         db.alter_column('core_historicalpatient', 'user_id', models.ForeignKey(to=orm['auth.User']))
 
