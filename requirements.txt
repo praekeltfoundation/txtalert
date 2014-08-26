@@ -17,3 +17,5 @@ raven
 pytz
 django-markup-deprecated
 django-autocomplete-light
+requests
+
