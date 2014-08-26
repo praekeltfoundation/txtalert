@@ -6,3 +6,6 @@ dependencies:
  - nginx
  - build-essential
  - python-dev
+ - postgresql-server-dev-all
+ - libpq-dev
+ - postgresql
