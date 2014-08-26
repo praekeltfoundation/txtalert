@@ -2,10 +2,7 @@ buildscript: scripts/build.sh
 postinstall: scripts/postinstall.sh
 pip:
  - gunicorn
- - MySQL-python
 dependencies:
  - nginx
- - mysql-server
  - build-essential
  - python-dev
- - libmysqlclient-dev

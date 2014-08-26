@@ -7,22 +7,12 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        db.delete_foreign_key('core_patient', 'user_id')
         db.rename_column('core_patient','user_id', 'owner_id')
-        db.alter_column('core_patient', 'owner', models.ForeignKey(to=orm['auth.User']), explicit_name=False)
-
-        db.delete_foreign_key('core_historicalpatient', 'user_id')
         db.rename_column('core_historicalpatient', 'user_id', 'owner_id')
-        db.alter_column('core_historicalpatient', 'owner', models.ForeignKey(to=orm['auth.User']), explicit_name=False)
 
     def backwards(self, orm):
-        db.delete_foreign_key('core_patient', 'owner_id')
         db.rename_column('core_patient','owner_id', 'user_id')
-        db.alter_column('core_patient', 'user', models.ForeignKey(to=orm['auth.User']), explicit_name=False)
-
-        db.delete_foreign_key('core_historicalpatient', 'owner_id')
         db.rename_column('core_historicalpatient', 'owner_id', 'user_id')
-        db.alter_column('core_historicalpatient', 'user', models.ForeignKey(to=orm['auth.User']), explicit_name=False)
 
     models = {
         'auth.group': {

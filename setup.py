@@ -29,6 +29,7 @@ setup(
         'pytz',
         'django-markup-deprecated',
         'django-autocomplete-light',
+        'psycopg2',
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable'
