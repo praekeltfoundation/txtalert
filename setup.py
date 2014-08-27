@@ -30,6 +30,7 @@ setup(
         'django-markup-deprecated',
         'django-autocomplete-light',
         'psycopg2',
+        'redis',
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable'
