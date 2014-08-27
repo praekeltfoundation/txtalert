@@ -9,4 +9,4 @@ dependencies:
  - postgresql-server-dev-all
  - libpq-dev
  - postgresql
- - rabbitmq-server
+ - redis-server
