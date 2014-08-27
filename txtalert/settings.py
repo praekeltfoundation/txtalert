@@ -1,6 +1,10 @@
 # Django settings for txtalert project.
 
 import os
+import djcelery
+
+djcelery.setup_loader()
+
 from os.path import join
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -158,7 +162,21 @@ INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
     'markup_deprecated',
     'autocomplete_light',
+    'djcelery',
+    'djcelery_email',
 )
+
+BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "database"
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+CELERY_IMPORTS = ('txtalert.tasks',)
+
+# Defer email sending to Celery, except if we're in debug mode,
+# then just print the emails to stdout for debugging.
+EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
