@@ -1,0 +1,12 @@
+buildscript: scripts/build.sh
+postinstall: scripts/postinstall.sh
+pip:
+ - gunicorn
+dependencies:
+ - nginx
+ - build-essential
+ - python-dev
+ - postgresql-server-dev-all
+ - libpq-dev
+ - postgresql
+ - redis-server

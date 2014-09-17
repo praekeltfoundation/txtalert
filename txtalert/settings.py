@@ -1,9 +1,14 @@
 # Django settings for txtalert project.
 
 import os
+import djcelery
+
+djcelery.setup_loader()
+
 from os.path import join
 
-APP_ROOT = os.getcwd()
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -51,14 +56,16 @@ USE_I18N = True
 USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = True
+# We've set this to false because we're using MySQL & legacy data that is
+# not time zone aware.
+USE_TZ = False
 
 # FIXME: txtAlert CD4 uses this
 UPLOAD_ROOT = "upload"
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
-MEDIA_ROOT = join(APP_ROOT, 'webroot', 'media')
+MEDIA_ROOT = join(BASE_DIR, 'webroot', 'media')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -69,7 +76,7 @@ MEDIA_URL = '/media/'
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/var/www/example.com/static/"
-STATIC_ROOT = join(APP_ROOT, 'webroot', 'static')
+STATIC_ROOT = join(BASE_DIR, 'webroot', 'static')
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
@@ -122,7 +129,7 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     'templates',
-    join(APP_ROOT, 'txtalert', 'core', 'templates'),
+    join(BASE_DIR, 'txtalert', 'core', 'templates'),
 )
 
 INSTALLED_APPS = (
@@ -155,7 +162,21 @@ INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
     'markup_deprecated',
     'autocomplete_light',
+    'djcelery',
+    'djcelery_email',
 )
+
+BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "database"
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+CELERY_IMPORTS = ('txtalert.tasks',)
+
+# Defer email sending to Celery, except if we're in debug mode,
+# then just print the emails to stdout for debugging.
+EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
