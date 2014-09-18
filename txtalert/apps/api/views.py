@@ -61,7 +61,12 @@ def pcm(request):
 @csrf_exempt
 @expect_json
 def events(request):
+
     event = request.json
+
+    if 'user_message_id' not in event.keys():
+        return HttpResponse(status=400, content='No user_message_id provided')
+
     identifier = event['user_message_id'][:8]
     sms = SendSMS.objects.get(identifier=identifier)
     if event['event_type'] == 'ack':
