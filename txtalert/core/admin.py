@@ -22,10 +22,12 @@ from txtalert.apps.general.jquery import AutoCompleteWidget, FilteredSelectWidge
 
 from models import *
 
+
 def users_in_same_group_as(user):
     groups = user.groups.all()
     groups_users = User.objects.distinct().filter(groups__in=groups)
     return groups_users
+
 
 class PleaseCallMeForm(forms.ModelForm):
     msisdn = forms.ModelChoiceField(MSISDN.objects)
@@ -51,8 +53,12 @@ class PleaseCallMeAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "clinic":
             if not request.user.is_superuser:
-                kwargs['queryset'] = Clinic.objects.filter(user__in=users_in_same_group_as(request.user))
-        return super(PleaseCallMeAdmin, self).formfield_for_choice_field(db_field, request, **kwargs)
+                kwargs['queryset'] = Clinic.objects.filter(
+                    user__in=users_in_same_group_as(request.user)
+                )
+        return super(PleaseCallMeAdmin, self).formfield_for_choice_field(
+            db_field, request, **kwargs
+        )
 
 
 class PatientForm(forms.ModelForm):
@@ -60,12 +66,13 @@ class PatientForm(forms.ModelForm):
         MSISDN.objects, widget=FilteredSelectWidget('msisdns')
     )
 
+
 class PatientAdmin(admin.ModelAdmin):
     form = PatientForm
     list_display = ('te_id', 'sex', 'age', 'last_clinic', 'active_msisdn')
     list_filter = ('last_clinic',)
     search_fields = ['msisdns__msisdn', 'te_id', 'name', 'surname']
-    readonly_fields = ('owner','last_clinic',)
+    readonly_fields = ('owner', 'last_clinic',)
 
     def queryset(self, request):
         qs = super(PatientAdmin, self).queryset(request)
@@ -88,6 +95,7 @@ class PatientAdmin(admin.ModelAdmin):
 
 class VisitAdmin(admin.ModelAdmin):
     readonly_fields = ('patient', 'clinic', 'te_visit_id')
+    list_filter = ('clinic',)
     exclude = ('deleted',)
 
     def queryset(self, request):
