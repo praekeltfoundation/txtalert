@@ -200,7 +200,7 @@ class TestEventHandling(TestCase):
         sms = SendSMS.objects.get(pk=self.sms.pk)
         self.assertEqual(sms.status, 'F')
 
-    def test_dr_unkown(self):
+    def test_dr_unknown(self):
         ack = {
             "event_type": "delivery_report",
             "delivery_status": "foo",
@@ -214,3 +214,15 @@ class TestEventHandling(TestCase):
         self.assertEqual(resp.status_code, 201)
         sms = SendSMS.objects.get(pk=self.sms.pk)
         self.assertEqual(sms.status, 'v')
+
+    def test_unknown_user_message_id(self):
+        ack = {
+            "event_type": "delivery_report",
+            "delivery_status": "foo",
+        }
+
+        resp = self.client.post(
+            reverse('api-events'),
+            data=json.dumps(ack),
+            content_type='application/json')
+        self.assertEqual(resp.status_code, 400)
