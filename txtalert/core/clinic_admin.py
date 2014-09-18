@@ -39,7 +39,7 @@ class VisitAdmin(ModelAdmin):
     list_filter = [
         'date',
         'status',
-        # 'visit_type',
+        'clinic',
     ]
 
     list_editable = [
