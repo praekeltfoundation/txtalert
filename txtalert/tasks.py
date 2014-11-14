@@ -9,7 +9,6 @@ def qa_schedule():
 
 @task
 def production_schedule():
-    management.call_command('te_import_data', user='kumbu')
+    management.call_command('te_import_data', username='kumbu')
     management.call_command('send_reminders', group='Temba Lethu')
     management.call_command('send_reminders', group='wrhi group')
-
