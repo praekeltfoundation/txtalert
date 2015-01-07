@@ -1,17 +1,15 @@
 from uuid import uuid4
-from datetime import datetime, timedelta
-from django.utils import timezone
 
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Group
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory
 
-from txtalert.core.admin import users_in_same_group_as
 from txtalert.core.clinic_admin import VisitAdmin, PatientAdmin
-from txtalert.core.models import Visit, Clinic, Patient, MSISDN
+from txtalert.core.models import Visit, Clinic, Patient
+from txtalert.core.tests.base import BaseTxtAlertTestCase
 
 
-class ClinicAdminTestCase(TestCase):
+class ClinicAdminTestCase(BaseTxtAlertTestCase):
 
     model_class = None
     model_admin_class = None
@@ -40,37 +38,6 @@ class ClinicAdminTestCase(TestCase):
 
         self.site = AdminSite()
         self.model_admin = self.model_admin_class(self.model_class, self.site)
-
-    def create_patients(self, clinic, count=10):
-        patients = []
-        for i in range(count):
-            patient_id = uuid4().hex
-            msisdn = '27%09d' % (MSISDN.objects.count(),)
-            patient = self.create_patient(patient_id, msisdn, clinic.user)
-            self.create_visits(patient, clinic)
-            patients.append(patient)
-        return patients
-
-    def create_patient(self, patient_id, msisdn, owner):
-        msisdn, _ = MSISDN.objects.get_or_create(msisdn=msisdn)
-        patient = Patient.objects.create(
-            te_id=patient_id, active_msisdn=msisdn, owner=owner)
-        patient.msisdns = [msisdn]
-        patient.save()
-        return patient
-
-    def create_visits(self, patient, clinic, count=10):
-        visits = []
-        for i in range(count):
-            visit_date = (timezone.now() - timedelta(days=count/2) +
-                          timedelta(days=i))
-            visit = Visit.objects.create(
-                patient=patient, te_visit_id=uuid4().hex, date=visit_date,
-                status=('a' if visit_date.date() < timezone.now().date()
-                        else 's'),
-                clinic=clinic)
-            visits.append(visit)
-        return visits
 
 
 class VisitAdminTestCase(ClinicAdminTestCase):
