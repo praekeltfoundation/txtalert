@@ -1,0 +1,54 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+	<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+	&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">Core</a>
+	&rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ module_name }}</a>
+	&rsaquo; <a href="{% url opts|admin_urlname:'change' object.pk|admin_urlquote %}">{{ object|truncatewords:"18" }}</a>
+	&rsaquo; {% trans 'Schedule' %}
+</div>
+{% endblock %}
+
+
+{% block content %}
+<table id="change-history">
+	<thead>
+		<tr>
+			<th scope="col">{% trans 'Date' %}</th>
+			<th scope="col">{% trans 'Status' %}</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for visit in object.visit_set.all %}
+		<tr>
+			<th scope="row">{{ visit.date|date:"DATE_FORMAT" }}</th>
+			<td>{{visit.get_status_display}}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+<br class="clear" />
+    </div>
+<div id="content" class="colM">
+<h1> SMSs sent</h1>
+
+<table id="change-history">
+	<thead>
+		<tr>
+			<th scope="col">Date</th>
+			<th scope="col">Text</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for sms in smss %}
+		<tr>
+			<th scope="row">{{sms.delivery}}</th>
+			<td>{{sms.smstext}}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}

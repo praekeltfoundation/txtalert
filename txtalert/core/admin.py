@@ -17,8 +17,12 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.models import Group
+from django.http import HttpResponse
+from django.conf.urls import patterns, url
+from django.shortcuts import render
 
 from txtalert.apps.general.jquery import AutoCompleteWidget, FilteredSelectWidget
+from txtalert.apps.gateway.models import SendSMS
 
 from models import *
 
@@ -73,6 +77,29 @@ class PatientAdmin(admin.ModelAdmin):
     list_filter = ('last_clinic',)
     search_fields = ['msisdns__msisdn', 'te_id', 'name', 'surname']
     readonly_fields = ('owner', 'last_clinic',)
+
+    def get_urls(self):
+        urls = super(PatientAdmin, self).get_urls()
+        my_urls = patterns(
+            '',
+            url(r'^(?P<pk>\d+)/schedule/$', self.schedule_view,
+                name='core_patient_schedule'),
+        )
+        return my_urls + urls
+
+    def schedule_view(self, request, pk):
+        patient = Patient.objects.get(pk=pk)
+        smss = SendSMS.objects.filter(
+            msisdn__endswith=patient.active_msisdn.msisdn[-9:])
+        opts = patient._meta
+        return render(request, 'admin/core/patient/schedule.html', {
+            'title': 'Patient schedule',
+            'module_name': opts.verbose_name_plural,
+            'object': patient,
+            'app_label': opts.app_label,
+            'opts': opts,
+            'smss': smss,
+        })
 
     def queryset(self, request):
         qs = super(PatientAdmin, self).queryset(request)

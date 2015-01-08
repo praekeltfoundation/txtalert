@@ -22,3 +22,4 @@ widget.wgt
 txtalert_dev.db
 txtalert.db
 /_build/
+.ropeproject/
