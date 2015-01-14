@@ -120,7 +120,7 @@ class AuthProfile(models.Model):
 class MessageType(models.Model):
     """A type of message sent to a patient"""
     group = models.ForeignKey('auth.Group', null=True)
-    clinic = models.ForeignKey('core.Clinic', null=True)
+    clinic = models.ForeignKey('core.Clinic', default=None, null=True, blank=True)
     language = models.ForeignKey('core.Language')
     name = models.CharField(max_length=255)
     message = models.TextField()
