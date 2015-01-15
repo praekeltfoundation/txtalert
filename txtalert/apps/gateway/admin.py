@@ -17,10 +17,16 @@
 from django.contrib import admin
 from models import SendSMS, PleaseCallMe
 
+
 class PleaseCallMeAdmin(admin.ModelAdmin):
     list_display = ('sender_msisdn', 'recipient_msisdn','message','created_at')
     list_filter = ('created_at',)
 
 
-admin.site.register(SendSMS)
+class SendSMSAdmin(admin.ModelAdmin):
+    list_display = ('msisdn', 'user','smstext', 'delivery', 'status', 'delivery_timestamp', 'identifier')
+    list_filter = ('msisdn',)
+
+
+admin.site.register(SendSMS, SendSMSAdmin)
 admin.site.register(PleaseCallMe, PleaseCallMeAdmin)
