@@ -207,7 +207,6 @@ def all(gateway, group_names, date=None, clinic_name=None):
     for user in users:
         for clinic in user.clinic.all():
             visits = Visit.objects.filter(patient__opted_in=True,
-                                            patient__owner=user,
                                             clinic=clinic)
             # If given a clinic name limit the filter to that clinic only
             if clinic_name:
