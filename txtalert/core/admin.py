@@ -16,8 +16,6 @@
 
 from django import forms
 from django.contrib import admin
-from django.contrib.auth.models import Group
-from django.http import HttpResponse
 from django.conf.urls import patterns, url
 from django.shortcuts import render
 
@@ -37,14 +35,14 @@ class PleaseCallMeForm(forms.ModelForm):
     msisdn = forms.ModelChoiceField(MSISDN.objects)
     msisdn.widget = AutoCompleteWidget(
         MSISDN, 'msisdn',
-        options={'minlength':5},
+        options={'minlength': 5},
     )
 
 
 class PleaseCallMeAdmin(admin.ModelAdmin):
     form = PleaseCallMeForm
-    list_display = ('timestamp', 'msisdn','reason','notes', 'message')
-    list_filter = ('timestamp', 'clinic','reason',)
+    list_display = ('timestamp', 'msisdn', 'reason', 'notes', 'message')
+    list_filter = ('timestamp', 'clinic', 'reason',)
     readonly_fields = ('user',)
 
     def queryset(self, request):
@@ -54,7 +52,7 @@ class PleaseCallMeAdmin(admin.ModelAdmin):
         else:
             return qs.filter(user__in=users_in_same_group_as(request.user))
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == "clinic":
             if not request.user.is_superuser:
                 kwargs['queryset'] = Clinic.objects.filter(
@@ -122,7 +120,7 @@ class PatientAdmin(admin.ModelAdmin):
 
 class VisitAdmin(admin.ModelAdmin):
     readonly_fields = ('patient', 'clinic', 'te_visit_id')
-    list_filter = ('clinic',)
+    list_filter = ('clinic', 'patient')
     exclude = ('deleted',)
 
     def queryset(self, request):
@@ -133,7 +131,7 @@ class VisitAdmin(admin.ModelAdmin):
             return qs.filter(
                 patient__owner__in=users_in_same_group_as(request.user))
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == "patient":
             if not request.user.is_superuser:
                 kwargs['queryset'] = Patient.objects.filter(
@@ -145,6 +143,11 @@ class VisitAdmin(admin.ModelAdmin):
 class MessageTypeAdmin(admin.ModelAdmin):
     list_filter = ('group', 'language', 'name')
 
+
+class ClinicNameMappingAdmin(admin.ModelAdmin):
+    list_display = ('wrhi_clinic_name', 'clinic')
+
+
 admin.site.register(PleaseCallMe, PleaseCallMeAdmin)
 admin.site.register(Patient, PatientAdmin)
 
@@ -154,3 +157,4 @@ admin.site.register(Clinic)
 admin.site.register(Visit, VisitAdmin)
 admin.site.register(Event)
 admin.site.register(MessageType, MessageTypeAdmin)
+admin.site.register(ClinicNameMapping, ClinicNameMappingAdmin)
