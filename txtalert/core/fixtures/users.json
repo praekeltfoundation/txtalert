@@ -1,0 +1,9 @@
+[{
+    "pk": 2,
+    "model": "auth.user",
+    "fields": {
+        "username": "admin",
+        "is_active": "True",
+        "is_staff": "True"
+    }
+}]
