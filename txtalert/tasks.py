@@ -16,9 +16,9 @@ def production_schedule():
 
 @task
 def wrhi_qa_schedule():
-    management.call_command('import_wrhi_data', endpoint='qa_txtalert_api')
+    management.call_command('import_wrhi_data', endpoint='qa')
 
 
 @task
 def wrhi_prod_schedule():
-    management.call_command('import_wrhi_data', endpoint='prod_txtalert_api')
+    management.call_command('import_wrhi_data', endpoint='prod')
