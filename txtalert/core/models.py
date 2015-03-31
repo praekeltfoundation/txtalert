@@ -266,6 +266,7 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
     clinic = models.ForeignKey(Clinic)
     visit_type = models.CharField('Visit Type', null=True, blank=True, max_length=80,
                                   choices=VISIT_TYPES)
+    wrhi_visit_number = models.IntegerField(default=0)
 
     # soft delete
     deleted = models.BooleanField(default=False)
