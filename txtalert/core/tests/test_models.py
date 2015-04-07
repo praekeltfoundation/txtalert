@@ -1,8 +1,9 @@
 from django.test import TestCase
-from txtalert.core.models import *
 from django.contrib.auth.models import Group
 from django.utils import timezone
 from datetime import datetime
+from txtalert.core.models import *
+from mock import patch
 
 
 class PermissionsTestCase(TestCase):
@@ -297,3 +298,404 @@ class ImportPatientsTestCase(TestCase):
             MSISDN.objects.get(msisdn='794046171')
             MSISDN.objects.get(msisdn='714946377')
             MSISDN.objects.get(msisdn='820644417')
+
+
+class ImportVisitsTestCase(TestCase):
+    fixtures = ['clinics', 'users']
+
+    def test_coming_visit_import(self):
+        clinic = Clinic.objects.get(name='Test Clinic')
+        ClinicNameMapping.objects.create(
+            wrhi_clinic_name='Test_Clinic_External',
+            clinic=clinic
+        )
+        p = Patient.objects.create(
+            owner=User.objects.get(username='admin'),
+            te_id='ES00044'
+        )
+
+        with patch('txtalert.core.wrhi_automation.fetch_visit_data') as mock_fetch_visit_data:
+            from txtalert.core.wrhi_automation import import_visits
+
+            payload = [
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Return_date": "2014-08-12T00:00:00",
+                        "Visit_date": "2014-08-12T00:00:00",
+                        "File_No": "2018",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                [],
+                []
+            ]
+
+            # import_visits calls fetch_visit_data 3 times, once for every type of data
+            # payload contains a payload for every call
+            mock_fetch_visit_data.side_effect = payload
+            import_visits('test')
+
+            v = Visit.objects.get(patient__te_id='ES00044')
+            self.assertEquals(v.date,date(2014, 8, 12))
+
+            payload = [
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Return_date": "2014-08-12T00:00:00",
+                        "Visit_date": "2014-08-12T00:00:00",
+                        "Next_tcb": "2014-09-12T00:00:00",
+                        "File_No": "2018",
+                        "Status": "A",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                [],
+                []
+            ]
+
+            mock_fetch_visit_data.side_effect = payload
+            import_visits('test')
+
+            v = Visit.objects.get(patient__te_id='ES00044', date=date(2014,9,12))
+            self.assertEquals(v.date,date(2014, 9, 12))
+
+            payload = [
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Return_date": "2014-08-13T00:00:00",
+                        "Visit_date": "2014-08-13T00:00:00",
+                        "File_No": "2018",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                [],
+                []
+            ]
+
+            mock_fetch_visit_data.side_effect = payload
+            import_visits('test')
+
+            v = Visit.objects.get(patient__te_id='ES00044', date=date(2014,8,13))
+            self.assertEquals(v.date,date(2014, 8, 13))
+
+            Visit.objects.create(
+                patient=p,
+                date=date(2014, 12, 1),
+                clinic=clinic,
+                status='s'
+            )
+
+            payload = [
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 3.0,
+                        "Return_date": "2014-12-01T00:00:00",
+                        "File_No": "2018",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                [],
+                []
+            ]
+
+            mock_fetch_visit_data.side_effect = payload
+            before_cnt = Visit.objects.filter(patient__te_id='ES00044').count()
+            import_visits('test')
+            after_cnt = Visit.objects.filter(patient__te_id='ES00044').count()
+
+            # The visit should be skipped and now new one should be added
+            self.assertEquals(before_cnt, after_cnt)
+
+            payload = [
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 3.0,
+                        "Return_date": "2014-12-01T00:00:00",
+                        "Visit_date": "2014-12-01T00:00:00",
+                        "File_No": "2018",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                [],
+                []
+            ]
+
+            mock_fetch_visit_data.side_effect = payload
+            import_visits('test')
+
+            v = Visit.objects.get(patient__te_id='ES00044', date=date(2014, 12, 1))
+            self.assertEquals(v.date,date(2014, 12, 1))
+
+
+    def test_missed_visit_import(self):
+        clinic = Clinic.objects.get(name='Test Clinic')
+        ClinicNameMapping.objects.create(
+            wrhi_clinic_name='Test_Clinic_External',
+            clinic=clinic
+        )
+        p = Patient.objects.create(
+            owner=User.objects.get(username='admin'),
+            te_id='ES00044'
+        )
+
+        with patch('txtalert.core.wrhi_automation.fetch_visit_data') as mock_fetch_visit_data:
+            from txtalert.core.wrhi_automation import import_visits
+
+            payload = [
+                [],
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Return_date": "2014-08-12T00:00:00",
+                        "Visit_date": "2014-08-12T00:00:00",
+                        "Next_tcb": "2014-09-11T00:00:00",
+                        "File_No": "2018",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                []
+            ]
+
+            mock_fetch_visit_data.side_effect = payload
+            import_visits('test')
+
+            v = Visit.objects.get(patient__te_id='ES00044')
+            self.assertEquals(v.date,date(2014, 8, 12))
+            self.assertEquals(v.status, 'm')
+
+            # create a visit and then miss it
+            payload = [
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Visit_date": "2014-08-13T00:00:00",
+                        "File_No": "2018",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Return_date": "2014-08-13T00:00:00",
+                        "Visit_date": "2014-08-13T00:00:00",
+                        "Next_tcb": "2014-09-11T00:00:00",
+                        "File_No": "2018",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                []
+            ]
+
+            mock_fetch_visit_data.side_effect = payload
+            import_visits('test')
+
+            # make sure the visit is missed
+            v = Visit.objects.get(patient__te_id='ES00044', date=date(2014, 8, 13))
+            self.assertEquals(v.date,date(2014, 8, 13))
+            self.assertEquals(v.status, 'm')
+
+            # make sure the next_tcb is used to make a new visit
+            v = Visit.objects.get(patient__te_id='ES00044', date=date(2014, 9, 11))
+            self.assertEquals(v.date,date(2014, 9, 11))
+            self.assertEquals(v.status, 's')
+
+            # create a visit and then miss it
+            payload = [
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Visit_date": "2014-08-17T00:00:00",
+                        "File_No": "2018",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Return_date": "2014-08-17T00:00:00",
+                        "Visit_date": "2014-08-17T00:00:00",
+                        "Next_tcb": "2014-09-11T00:00:00",
+                        "File_No": "2018",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                []
+            ]
+
+            mock_fetch_visit_data.side_effect = payload
+            before_cnt = Visit.objects.filter(patient__te_id='ES00044').count()
+            import_visits('test')
+
+            # make sure the visit is missed
+            v = Visit.objects.get(patient__te_id='ES00044', date=date(2014, 8, 17))
+            self.assertEquals(v.date,date(2014, 8, 17))
+            self.assertEquals(v.status, 'm')
+
+            # make sure the next_tcb is not used to make a new visit
+            after_cnt = Visit.objects.filter(patient__te_id='ES00044').count()
+            # +1 for the visit that got missed
+            self.assertEquals(before_cnt + 1, after_cnt)
+
+
+    def test_done_visit_import(self):
+        clinic = Clinic.objects.get(name='Test Clinic')
+        ClinicNameMapping.objects.create(
+            wrhi_clinic_name='Test_Clinic_External',
+            clinic=clinic
+        )
+        p = Patient.objects.create(
+            owner=User.objects.get(username='admin'),
+            te_id='ES00044'
+        )
+
+        with patch('txtalert.core.wrhi_automation.fetch_visit_data') as mock_fetch_visit_data:
+            from txtalert.core.wrhi_automation import import_visits
+
+            # create a not found visit
+
+            payload = [
+                [],
+                [],
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Return_date": "2014-04-12T00:00:00",
+                        "Visit_date": "2014-04-12T00:00:00",
+                        "Next_tcb": "2014-05-11T00:00:00",
+                        "Status": "A",
+                        "File_No": "2018",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ]
+            ]
+
+            mock_fetch_visit_data.side_effect = payload
+            import_visits('test')
+
+            v = Visit.objects.get(patient__te_id='ES00044')
+            self.assertEquals(v.date,date(2014, 4, 12))
+            self.assertEquals(v.status, 'a')
+
+            # create a visit and then done it
+            payload = [
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Visit_date": "2014-08-13T00:00:00",
+                        "File_No": "2018",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                [],
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Return_date": "2014-08-13T00:00:00",
+                        "Visit_date": "2014-08-13T00:00:00",
+                        "Next_tcb": "2014-09-11T00:00:00",
+                        "File_No": "2018",
+                        "Status": "A",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                []
+            ]
+
+            mock_fetch_visit_data.side_effect = payload
+            import_visits('test')
+
+            # make sure the visit is done
+            v = Visit.objects.get(patient__te_id='ES00044', date=date(2014, 8, 13))
+            self.assertEquals(v.date,date(2014, 8, 13))
+            self.assertEquals(v.status, 'a')
+
+            # make sure the next_tcb is used to make a new visit
+            v = Visit.objects.get(patient__te_id='ES00044', date=date(2014, 9, 11))
+            self.assertEquals(v.date,date(2014, 9, 11))
+            self.assertEquals(v.status, 's')
+
+            # create a visit and then done it
+            payload = [
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Visit_date": "2014-10-13T00:00:00",
+                        "File_No": "2018",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                [],
+                [
+                    {
+                        "Ptd_No": "ES00044",
+                        "Visit": 1.0,
+                        "Return_date": "2014-10-01T00:00:00",
+                        "Visit_date": "2014-10-13T00:00:00",
+                        "Next_tcb": "2014-12-11T00:00:00",
+                        "File_No": "2018",
+                        "Status": "AE",
+                        "Cellphone_number": "785539718",
+                        "Facility_name": "Test_Clinic_External"
+                    }
+                ],
+                []
+            ]
+
+            mock_fetch_visit_data.side_effect = payload
+            import_visits('test')
+
+            # make sure the visit is done
+            v = Visit.objects.get(patient__te_id='ES00044', date=date(2014, 10, 1))
+            self.assertEquals(v.date,date(2014, 10, 1))
+            self.assertEquals(v.status, 'a')
+
+            # make sure the next_tcb is used to make a new visit
+            v = Visit.objects.get(patient__te_id='ES00044', date=date(2014, 12, 11))
+            self.assertEquals(v.date,date(2014, 12, 11))
+            self.assertEquals(v.status, 's')
+
+
+    def test_fetch_visit_data(self):
+        with patch('requests.get') as mock_get:
+            from txtalert.core.wrhi_automation import fetch_visit_data
+            from requests.models import Response
+            r = Response()
+            r.status_code = 200
+            r._content = '{}'
+
+            mock_get.return_value = r
+
+            self.assertEquals(fetch_visit_data('test',1), {})
+            self.assertEquals(fetch_visit_data('test',2), {})
+            self.assertEquals(fetch_visit_data('test',3), {})
