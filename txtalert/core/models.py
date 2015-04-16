@@ -256,16 +256,17 @@ class Visit(DirtyFieldsMixin, SoftDeleteMixin, models.Model):
         ('unknown', 'Unknown'),
     )
 
-    patient = models.ForeignKey(Patient)
+    patient = models.ForeignKey(Patient, db_index=True)
     te_visit_id = models.CharField('Visit id', max_length=255, unique=True,
                                    null=True, blank=True)
-    date = models.DateField('Date')
+    date = models.DateField('Date', db_index=True)
     status = models.CharField('Status', max_length=1,
                               choices=VISIT_STATUS_CHOICES)
     comment = models.TextField('Reason', default='', blank=True)
-    clinic = models.ForeignKey(Clinic)
+    clinic = models.ForeignKey(Clinic, db_index=True)
     visit_type = models.CharField('Visit Type', null=True, blank=True, max_length=80,
                                   choices=VISIT_TYPES)
+    wrhi_orig_date = models.DateField('Date', null=True, db_index=True)
 
     # soft delete
     deleted = models.BooleanField(default=False)

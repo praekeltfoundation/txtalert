@@ -79,7 +79,7 @@ class VisitInc:
         d = self._get_date(self.next_tcb)
 
         if d:
-            self.visit_date = d
+            self.next_tcb = d
 
         return d
 
@@ -87,7 +87,7 @@ class VisitInc:
         d = self._get_date(self.return_date)
 
         if d:
-            self.visit_date = d
+            self.return_date = d
 
         return d
 
@@ -117,6 +117,8 @@ def fetch_visit_data(endpoint, visit_type):
     date_from = date_now - three_weeks
     date_to = date_now + three_weeks
 
+    logger.info('Fetch %s data for %s - %s' % (func, date_from, date_to))
+
     url = endpoint + '/' + func + \
         '?dateFrom=' + date_from.strftime('%Y_%m_%d') + \
         '&dateTo=' + date_to.strftime('%Y_%m_%d')
@@ -129,6 +131,19 @@ def fetch_visit_data(endpoint, visit_type):
         result.raise_for_status()
 
 
+def check_orig_date(patient, clinic, date):
+    # Check to see if the new
+    visits = Visit.objects.filter(
+        patient=patient,
+        clinic=clinic,
+        wrhi_orig_date=date)
+
+    if visits is not None and visits.count() == 0:
+        return True
+    else:
+        return False
+
+
 def create_visit(patient, clinic, date=None, status=None):
     kwargs = {
         'patient': patient,
@@ -138,16 +153,19 @@ def create_visit(patient, clinic, date=None, status=None):
     if date:
         kwargs['date'] = date
 
+    visits = Visit.objects.filter(**kwargs)
+
     if status:
         kwargs['status'] = status
 
-    visits = Visit.objects.filter(**kwargs)
+    kwargs['wrhi_orig_date'] = date
 
-    if visits is not None and visits.count() == 0:
-        v = Visit.objects.create(
-            **kwargs
-        )
-        return v
+    if check_orig_date(patient, clinic, date):
+        if visits is not None and visits.count() == 0:
+            v = Visit.objects.create(
+                **kwargs
+            )
+            return v
 
     return visits
 
@@ -191,27 +209,16 @@ def process_visit(v, visit_type):
                                % v.facility_name)
                 return
 
-            if v.get_visit_date() is None:
-                logger.warning('wrhi_automation::process_visit: Visit_date is'
-                               ' empty for Ptd_no %s - skipping visit'
-                               % v.ptd_no)
-                return
-
             # get the current visits for this patient at the specified clinic
-            visits = Visit.objects.filter(patient=db_patient, clinic=db_clinic)
+            visits = Visit.objects.filter(patient=db_patient, clinic=db_clinic.clinic)
             found_visit = False
 
             if visits:
-                print 'Visits'
                 if visit_type == COMING_VISIT:
-                    print 'vs - %s' % v.status
-                    if v.status is None:
-                        search_date = v.get_visit_date()
-                    else:
-                        search_date = v.get_next_tcb()
+                    search_date = v.get_visit_date()
 
-                        if search_date is None:
-                            search_date = v.get_visit_date()
+                    if search_date is None:
+                        search_date = v.get_next_tcb()
                 else:
                     search_date = v.get_visit_date()
 
@@ -224,28 +231,29 @@ def process_visit(v, visit_type):
 
                 search_date = search_date.date()
 
-                print 'sd - %s' % search_date
-
                 for visit in visits:
-                    print 'vd - %s' % visit.date
                     if visit.date == search_date:
                         found_visit = True
-                        print 'visit found'
 
                         if visit_type == COMING_VISIT:
-                            # nothing to do
-                            pass
+                            # check if the next_tcb visit has been created already
+                            next_visit_date = v.get_next_tcb()
+
+                            if next_visit_date:
+                                create_visit(
+                                    patient=db_patient,
+                                    date=next_visit_date,
+                                    clinic=db_clinic.clinic,
+                                    status='s'
+                                )
                         elif visit_type == MISSED_VISIT:
-                            print 'visit status - %s' % visit.status
                             # only update it once
                             if visit.status != 'm':
                                 # update the visit status
                                 visit.status = 'm'
                                 visit.save()
 
-                                print v
                                 res_date = v.get_next_tcb()
-                                print 'resdate - %s' % res_date
 
                                 # create a new visit for the reschedule
                                 if res_date:
@@ -281,12 +289,14 @@ def process_visit(v, visit_type):
                                         status='s'
                                     )
 
-
-
             if not found_visit:
-                print 'No Visist'
-                if visit_type == COMING_VISIT and v.status:
-                    visit_date = v.get_next_tcb()
+                if visit_type == COMING_VISIT:
+                    visit_date = v.get_visit_date()
+                    visit_date2 = v.get_next_tcb()
+
+                    if visit_date is None:
+                        visit_date = visit_date2
+
                 else:
                     visit_date = v.get_visit_date()
 
@@ -306,6 +316,16 @@ def process_visit(v, visit_type):
                     status=vt
                 )
 
+                if visit_type == COMING_VISIT and visit_date2:
+                    # because the query in COMING_VISITS looks at visit_date
+                    # and next_tcb we might have two none existing visits
+                    create_visit(
+                        patient=db_patient,
+                        date=visit_date2,
+                        clinic=db_clinic.clinic,
+                        status=vt
+                    )
+
     except Exception:
         logger.warning('wrhi_automation::process_visit: Failed to process '
                        'visit of type %s for Ptd_No %s Clinic %s. '
@@ -314,6 +334,7 @@ def process_visit(v, visit_type):
 
 
 def import_visits(endpoint):
+    logger.info('wrhi_automation::import_visits: Started')
     owner = User.objects.filter(username=settings.WRHI_IMPORT_USER).first()
 
     if owner is None:
@@ -352,6 +373,8 @@ def import_visits(endpoint):
         for row in data:
             process_visit(VisitInc(row), DONE_VISIT)
 
+    logger.info('wrhi_automation::import_visits: Completed')
+
 
 def fetch_patient_data(endpoint):
     url = endpoint + '/patientlist'
@@ -385,7 +408,7 @@ def update_patient(clinic, patient, owner_user):
                     return
 
                 if db_patient is None:
-                    db_patient = Patient.objects.create(te_id=ptd_no, owner=owner_user)
+                    db_patient = Patient.objects.create(te_id=ptd_no, owner=owner_user, last_clinic=clinic.clinic)
 
                 count = 0
 
@@ -411,6 +434,7 @@ def update_patient(clinic, patient, owner_user):
 
 
 def import_patients(endpoint):
+    logger.info('wrhi_automation::import_patients: Started')
     try:
         data = fetch_patient_data(endpoint)
     except Exception as ex:
@@ -447,3 +471,5 @@ def import_patients(endpoint):
 
         else:
             logger.warning('import_patients clinic found without a Facility_name')
+
+    logger.info('wrhi_automation::import_patients: Completed')

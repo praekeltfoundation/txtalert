@@ -22,5 +22,9 @@ class PleaseCallMeAdmin(admin.ModelAdmin):
     list_filter = ('created_at',)
 
 
-admin.site.register(SendSMS)
+class SendSMSAdmin(admin.ModelAdmin):
+    search_fields = ['msisdn', 'delivery']
+
+
+admin.site.register(SendSMS, SendSMSAdmin)
 admin.site.register(PleaseCallMe, PleaseCallMeAdmin)

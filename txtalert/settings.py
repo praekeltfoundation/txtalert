@@ -216,8 +216,8 @@ SOUTH_TESTS_MIGRATE = False
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 WRHI_IMPORT_USER = 'admin'
-WRHI_QA_END_POINT = 'http://10.0.0.4:62489/api/appad'
-WRHI_PROD_END_POINT = 'http://10.0.0.4:62489/api/appad'
+WRHI_QA_END_POINT = 'http://197.96.6.66/txtalertapi/api/appad'
+WRHI_PROD_END_POINT = 'http://197.96.6.66/txtalertapi/api/appad'
 
 try:
     from production_settings import *
