@@ -15,7 +15,7 @@ class RemindersI18NTestCase(TestCase):
 
     def setUp(self):
         self.patient = Patient.objects.all()[0]
-        self.patient.save()
+        self.patient2 = Patient.objects.all()[1]
         self.language = self.patient.language
         self.clinic = Clinic.objects.all()[0]
         self.group = Group.objects.get(name='Temba Lethu')
@@ -133,8 +133,91 @@ class RemindersI18NTestCase(TestCase):
         visit_two_weeks_rescheduled = create_visit('r', two_weeks)
 
         # send the SMSs over the dummy gateway
-        # FIXME: rename `all` method to something more explicit
-        group_names = [group.name for group in Group.objects.all()]
+        group_names = ['Temba Lethu']
+        reminders.all(gateway.gateway, group_names)
+        # send the stats
+        reminders.send_stats(gateway.gateway, group_names, today.date())
+
+        # test the emails being sent out
+        from django.core import mail
+        self.assertEquals(len(mail.outbox), 1)
+        # our stats message is the only one in the outbox
+        message = mail.outbox[0]
+        # we're expecting it to have the following body, based on the visits
+        # created earlier
+        expecting_mail_body = reminders.REMINDERS_EMAIL_TEXT % {
+            'total': 4, # because the scheduleds & rescheduleds are on the same they
+                        # we'll only be sending them 1 sms instead of 2, resulting in
+                        # a total of 4 instead of 6 messages being sent.
+            'date': today.date(),
+            'attended': 1,
+            'missed': 1,
+            'missed_percentage': (1.0/2.0 * 100), # 1 out of 2 visits was missed
+            'tomorrow': 2,
+            'two_weeks': 2,
+            'group': self.group.name.title(),
+        }
+        # check if this is so
+        self.assertEquals(message.body, expecting_mail_body)
+        self.assertTrue('simon@soocial.com' in message.to)
+
+        # the latest SMS sent should be the stats SMS
+        stat_sms = SendSMS.objects.latest()
+        expecting_sms_text = reminders.REMINDERS_SMS_TEXT % {
+            'total': 4,
+            'attended': 1,
+            'missed': 1,
+            'missed_percentage': (1.0/2.0 * 100),
+            'tomorrow': 2,
+            'two_weeks': 2,
+            'group': self.group.name.title(),
+        }
+        self.assertEquals(stat_sms.smstext, expecting_sms_text)
+        self.assertEquals(stat_sms.msisdn, '27123456789')
+
+    def test_send_stats_patient_user_not_in_group(self):
+        today = timezone.now()
+        one_day = timedelta(days=1)
+        one_week = timedelta(weeks=1)
+        yesterday = today - one_day
+        tomorrow = today + one_day
+        two_weeks = today + (one_week * 2)
+
+        # These settings are needed by the reminder script
+        from txtalert.apps.general.settings.models import Setting
+        Setting.objects.create(
+            name='Stats Emails',
+            type='t',
+            text_value='simon@soocial.com',
+            group=self.group,
+        )
+
+        Setting.objects.create(
+            name='Stats MSISDNs',
+            type='t',
+            text_value='27123456789',
+            group=self.group,
+        )
+
+        def create_visit(status, date):
+            """helper function for creating visits easily"""
+            return Visit.objects.create(
+                patient=self.patient2,
+                status=status,
+                clinic=self.clinic,
+                date=date
+            )
+
+        # setup visits to test
+        visit_yesterday_attended = create_visit('a', yesterday)
+        visit_yesterday_missed = create_visit('m', yesterday)
+        visit_tomorrow_scheduled = create_visit('s', tomorrow)
+        visit_tomorrow_rescheduled = create_visit('r', tomorrow)
+        visit_two_weeks_scheduled = create_visit('s', two_weeks)
+        visit_two_weeks_rescheduled = create_visit('r', two_weeks)
+
+        # send the SMSs over the dummy gateway
+        group_names = ['Temba Lethu']
         reminders.all(gateway.gateway, group_names)
         # send the stats
         reminders.send_stats(gateway.gateway, group_names, today.date())

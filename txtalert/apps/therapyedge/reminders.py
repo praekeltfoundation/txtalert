@@ -65,9 +65,12 @@ def send_stats_for_group(gateway, today, group):
     yesterday = today - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
     twoweeks = today + timedelta(weeks=2)
-    users = group.user_set.all()
+
+    # get all the visits for the groups' users' clinics
     visits = Visit.objects.filter(patient__opted_in=True,
-                                    patient__owner__in=users)
+                                  clinic__user__groups=group)
+
+    users = group.user_set.all()
 
     # get stats for today's bulk of SMSs sent
     tomorrow_count = visits.filter(date__exact=tomorrow).count()
