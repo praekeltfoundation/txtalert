@@ -15,6 +15,13 @@
         }
     },
     {
+        "pk": 2,
+        "model": "auth.user",
+        "fields": {
+            "username": "test_user"
+        }
+    },
+    {
         "pk":"1",
         "model": "core.msisdn",
         "fields":{
@@ -38,7 +45,23 @@
             "updated_at": "1977-12-12T00:00:00"
         }
     },
-
+    {
+        "pk":"2",
+        "model": "core.patient",
+        "fields":{
+            "msisdns":["1"],
+            "id":"2",
+            "te_id":"01-12346",
+            "age":"31",
+            "sex":"f",
+            "opted_in":true,
+            "disclosed":true,
+            "deceased":false,
+            "owner":2,
+            "created_at": "1977-12-12T00:00:00",
+            "updated_at": "1977-12-12T00:00:00"
+        }
+    },
     {
         "pk":"2",
         "model": "core.msisdn",
