@@ -120,7 +120,8 @@ class PatientAdmin(admin.ModelAdmin):
 
 class VisitAdmin(admin.ModelAdmin):
     readonly_fields = ('patient', 'clinic', 'te_visit_id')
-    list_filter = ('clinic', 'patient')
+    list_filter = ('clinic',)
+    search_fields = ['patient__te_id', 'date']
     exclude = ('deleted',)
 
     def queryset(self, request):
