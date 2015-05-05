@@ -94,7 +94,6 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -104,7 +103,6 @@ SECRET_KEY = '^=%eyy8+8%&pvn-v@&+o^t336k-c4^=+-@g!zm-+zd*w%g^bwu'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -115,8 +113,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
     'txtalert.core.auth.middleware.HttpBasicAuthMiddleware',
-    # Uncomment the next line for simple clickjacking protection:
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
 ROOT_URLCONF = 'txtalert.urls'
@@ -140,10 +136,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.flatpages',
-    # Uncomment the next line to enable the admin:
     'django.contrib.admin',
-    # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
     'txtalert.core',
     'txtalert.apps.general.settings',
     'txtalert.apps.general.jquery',
@@ -221,6 +214,10 @@ BOOKING_TOOL_RISK_LEVELS = {
 
 SOUTH_TESTS_MIGRATE = False
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+WRHI_IMPORT_USER = 'admin'
+WRHI_QA_END_POINT = 'http://197.96.6.66/txtalertapi/api/appad'
+WRHI_PROD_END_POINT = 'http://197.96.6.66/txtalertapi/api/appad'
 
 try:
     from production_settings import *
