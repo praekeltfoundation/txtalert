@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from datetime import datetime, timedelta
 from dateutil.parser import parse as date_util_parse
+from txtalert.apps.general.settings.models import Setting
 import requests
 import logging
 import re
@@ -387,7 +388,7 @@ def fetch_patient_data(endpoint):
 
 
 @transaction.atomic
-def update_patient(clinic, patient, owner_user):
+def update_patient(clinic, patient, owner_user, wrhi_msisdn_override):
     ptd_no = None
     mobiles = None
 
@@ -397,7 +398,10 @@ def update_patient(clinic, patient, owner_user):
                 ptd_no = patient['Ptd_No']
 
             if 'Cellphone_number' in patient:
-                temp_str = patient['Cellphone_number']
+                if wrhi_msisdn_override:
+                    temp_str = wrhi_msisdn_override
+                else:
+                    temp_str = patient['Cellphone_number']
                 mobiles = re.split(r'[\\,/;]', temp_str)
 
             if ptd_no and mobiles and len(mobiles) > 0:
@@ -444,6 +448,13 @@ def import_patients(endpoint):
 
     owner = User.objects.filter(username=settings.WRHI_IMPORT_USER).first()
 
+    # Check for sepcial QA setting
+    s = Setting.objects.filter(name='WRHI_MSISDN_OVERRIDE').first()
+    wrhi_msisdn_override = None
+
+    if s:
+        wrhi_msisdn_override = s.text_value
+
     if owner is None:
         logger.error('Configuration error. WRHI_IMPORT_USER has not been set')
         return
@@ -460,7 +471,7 @@ def import_patients(endpoint):
                     patients = clinic['Patients']
 
                     for patient in patients:
-                        update_patient(db_clinic, patient, owner)
+                        update_patient(db_clinic, patient, owner, wrhi_msisdn_override)
 
                 else:
                     logger.warning('import_patients clinic %s has no Patients'
