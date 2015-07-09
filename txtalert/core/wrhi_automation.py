@@ -166,6 +166,7 @@ def create_visit(patient, clinic, date=None, status=None):
             v = Visit.objects.create(
                 **kwargs
             )
+            logger.info("Visit created.")
             return v
 
     return visits
@@ -174,7 +175,6 @@ def create_visit(patient, clinic, date=None, status=None):
 @transaction.atomic
 def process_visit(v, visit_type):
     """
-
     :param v: VisitInc
     :param visit_type:
     :return:
@@ -241,6 +241,8 @@ def process_visit(v, visit_type):
                             next_visit_date = v.get_next_tcb()
 
                             if next_visit_date:
+                                logger.info("Attempting to create visit for %s @ %s on %s"
+                                            % (db_patient.te_id, db_clinic.clinic.name, next_visit_date))
                                 create_visit(
                                     patient=db_patient,
                                     date=next_visit_date,
@@ -258,6 +260,8 @@ def process_visit(v, visit_type):
 
                                 # create a new visit for the reschedule
                                 if res_date:
+                                    logger.info("Attempting to create visit for %s @ %s on %s"
+                                                % (db_patient.te_id, db_clinic.clinic.name, res_date))
                                     create_visit(
                                         patient=db_patient,
                                         date=res_date,
@@ -283,6 +287,8 @@ def process_visit(v, visit_type):
 
                                 if next_visit_date:
                                     # create a new visit for the next_tcb date
+                                    logger.info("Attempting to create visit for %s @ %s on %s"
+                                                % (db_patient.te_id, db_clinic.clinic.name, next_visit_date))
                                     create_visit(
                                         patient=db_patient,
                                         date=next_visit_date,
@@ -310,6 +316,9 @@ def process_visit(v, visit_type):
                 elif visit_type == DONE_VISIT:
                     vt = 'a'
 
+                logger.info("Attempting to create visit for %s @ %s on %s"
+                            % (db_patient.te_id, db_clinic.clinic.name, visit_date))
+
                 create_visit(
                     patient=db_patient,
                     date=visit_date,
@@ -320,6 +329,8 @@ def process_visit(v, visit_type):
                 if visit_type == COMING_VISIT and visit_date2:
                     # because the query in COMING_VISITS looks at visit_date
                     # and next_tcb we might have two none existing visits
+                    logger.info("Attempting to create visit for %s @ %s on %s"
+                                % (db_patient.te_id, db_clinic.clinic.name, visit_date2))
                     create_visit(
                         patient=db_patient,
                         date=visit_date2,
@@ -413,6 +424,7 @@ def update_patient(clinic, patient, owner_user, wrhi_msisdn_override):
 
                 if db_patient is None:
                     db_patient = Patient.objects.create(te_id=ptd_no, owner=owner_user, last_clinic=clinic.clinic)
+                    logger.info("Patient %s has been created in %s clinic" % (ptd_no, clinic.clinic.name))
 
                 count = 0
 
@@ -421,12 +433,15 @@ def update_patient(clinic, patient, owner_user, wrhi_msisdn_override):
 
                     if db_mobile is None:
                         db_mobile = MSISDN.objects.create(msisdn=mobile)
+                        logger.info("MSISDN %s created" % mobile)
 
                     if db_mobile not in db_patient.msisdns.all():
                         db_patient.msisdns.add(db_mobile)
+                        logger.info("MSISDN %s assigned to patient %s" %(db_mobile.msisdn, ptd_no))
 
                     if count == 0 and db_patient.active_msisdn is None:
                         db_patient.active_msisdn = db_mobile
+                        logger.info("MSISDN %s marked as active for patient %s" % (db_mobile.msisdn, ptd_no))
 
                     db_patient.save()
                     count += 1
