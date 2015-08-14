@@ -10,6 +10,9 @@ from txtalert.core.models import Clinic
 from xml.parsers.expat import ExpatError
 import sys
 import traceback
+import logging
+
+logger = logging.getLogger("importer")
 
 
 class Command(BaseCommand):
@@ -62,16 +65,14 @@ class Command(BaseCommand):
             since = midnight - timedelta(days=1)
             # until 30 days later
             until = midnight + timedelta(days=options['days'])
-            print clinic.name, 'from', since, 'until', until
+            logging.info("%s from %s until %s" % (clinic.name, since, until))
             try:
                 for key, value in importer.import_all_changes(
                         user,
                         clinic,
                         since=since,
                         until=until,
-                        visit_type=visit_type
-                    ).items():
+                        visit_type=visit_type).items():
                     print "\t%s: %s" % (key, len(value))
             except ExpatError, e:
-                print "Exception during processing XML for clinic ", clinic
-                traceback.print_exc()
+                logging.error("Exception during processing XML for clinic %s %s" % (clinic, traceback.print_exc()))
